@@ -124,19 +124,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* MANIFESTO */}
-      <section>
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-20 grid lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-3">
-            <div className="eyebrow text-[#5C5C5C]">Manifesto</div>
-          </div>
-          <div className="lg:col-span-9">
-            <p className="text-2xl lg:text-4xl font-light leading-snug tracking-tight">
-              We don&apos;t sell peptides — we help girls <span className="bg-[#FF2D87] text-white px-2">find honest vendors</span>, decode certificates of analysis, and stop guessing at syringe units. Every link with a &ldquo;ref=&rdquo; earns us a small commission — never at your cost. <span className="chrome-text font-serif-glam">✦ glittery transparency ✦</span>
-            </p>
-          </div>
-        </div>
-      </section>
+      {/* MANIFESTO removed */}
     </div>
   );
 }
