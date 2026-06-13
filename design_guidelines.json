@@ -1,0 +1,72 @@
+{
+  "theme": "light",
+  "archetype": "4_swiss_high_contrast",
+  "typography": {
+    "headings": "Outfit",
+    "body": "IBM Plex Sans",
+    "mono": "JetBrains Mono",
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl tracking-tighter font-black",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl tracking-tight font-bold",
+      "h3": "text-xl sm:text-2xl tracking-tight font-semibold",
+      "body": "text-base leading-relaxed",
+      "labels": "text-xs uppercase tracking-[0.2em] font-mono",
+      "calculator_output": "text-5xl sm:text-6xl tracking-tighter font-mono font-black"
+    }
+  },
+  "colors": {
+    "background": "#FFFFFF",
+    "foreground": "#0A0A0A",
+    "primary": "#002FA7",
+    "primary_foreground": "#FFFFFF",
+    "secondary": "#F5F5F5",
+    "secondary_foreground": "#0A0A0A",
+    "accent": "#E60000",
+    "accent_foreground": "#FFFFFF",
+    "muted": "#F2F2F2",
+    "muted_foreground": "#5C5C5C",
+    "border": "#E5E5E5",
+    "surface": {
+      "strategy": "grid_borders",
+      "description": "Expose the skeleton. 95% monochrome. Color is function only. Use pure white or 10% grey with 1px stark borders. Zero shadows. Flat UI."
+    }
+  },
+  "layout_spacing": {
+    "philosophy": "Generous spacing combined with strict geometric grids. Dense tables for data tools.",
+    "marketing_hero": "p-12 md:p-24. High contrast, asymmetric.",
+    "dashboard_tools": "The 'Control Room' grid. gap-4, tight data alignment.",
+    "radii": "rounded-none"
+  },
+  "components": {
+    "buttons": "Square edges, high contrast. Primary buttons are #002FA7 with white text. Hover states explicitly invert or lighten.",
+    "cards": "border-collapse layout. No shadows. 1px borders.",
+    "calculator": "Input fields must use monospace fonts. Results panel should be inverted (Black bg, White text) for dramatic contrast. Use Shadcn forms but strip any soft aesthetics.",
+    "tables": "Price comparison tool MUST use dense, border-collapsed tables with hover-row highlighting. Keep it extremely scannable.",
+    "navigation": "Solid white header, 1px bottom border. Clean links, no hamburger menu on desktop."
+  },
+  "motion": {
+    "strategy": "Minimalist and precise. Micro-interactions only.",
+    "hover": "Instant or very fast (0.15s) color/bg swaps. No bouncy scaling."
+  },
+  "icons_assets": {
+    "library": "@phosphor-icons/react",
+    "style": "Sharp, geometric, or duotone. Functional, not decorative.",
+    "images": {
+      "hero_background": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1600",
+      "abstract_science": "https://images.unsplash.com/photo-xhkYt9Q5xfk?auto=format&fit=crop&q=80&w=1200",
+      "vial_lab_1": "https://images.unsplash.com/photo-x8Wbe0rGrjA?auto=format&fit=crop&q=80&w=800",
+      "vial_lab_2": "https://images.unsplash.com/photo-iuiKtPNHObA?auto=format&fit=crop&q=80&w=800"
+    }
+  },
+  "instructions_to_main_agent": [
+    "Install required fonts from Google Fonts: Outfit (headings), IBM Plex Sans (body), and JetBrains Mono (data/calculator). Do NOT use Inter.",
+    "Install @phosphor-icons/react for functional, sharp icons.",
+    "Strictly follow the color palette. Do NOT use soft shadows, rounded corners (use rounded-none), or gradients.",
+    "For the Vendor Directory, use a Bento-style or strict Grid Border layout. Expose borders between cards.",
+    "The Peptide Reconstitution Calculator must have an inverted (dark) results panel with large monospace numbers (JetBrains Mono).",
+    "The Peptide Price Comparison tool must use a dense Shadcn Table, heavily optimized for scanning. Make the headers sortable.",
+    "CRITICAL: Ensure ALL interactive and key informational elements have 'data-testid' attributes (e.g., data-testid='calculator-submit-btn').",
+    "Admin dashboard should follow 'Control Room' grid: dense, utilitarian, strictly functional.",
+    "Do NOT use HTML inputs for advanced interactions; rely entirely on heavily customized Shadcn components with sharp edges."
+  ]
+}
