@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 
 export default function Calculator() {
-  const [peptideMg, setPeptideMg] = useState(5);
-  const [bacWaterMl, setBacWaterMl] = useState(2);
-  const [vialSize, setVialSize] = useState(3);
-  const [doseValue, setDoseValue] = useState(250);
+  const [peptideMg, setPeptideMg] = useState("");
+  const [bacWaterMl, setBacWaterMl] = useState("");
+  const [vialSize, setVialSize] = useState(null);
+  const [doseValue, setDoseValue] = useState("");
   const [doseUnit, setDoseUnit] = useState("mcg"); // mg | mcg | IU
   const [frequency, setFrequency] = useState({ label: "Daily", perWeek: 7, sub: "1x/day" });
   const syringeUnits = 100; // U-100 standard
