@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 export default function Calculator() {
   const [peptideMg, setPeptideMg] = useState(5);
   const [bacWaterMl, setBacWaterMl] = useState(2);
+  const [vialSize, setVialSize] = useState(3);
   const [doseValue, setDoseValue] = useState(250);
   const [doseUnit, setDoseUnit] = useState("mcg"); // mg | mcg | IU
   const [frequency, setFrequency] = useState({ label: "Daily", perWeek: 7, sub: "1x/day" });
@@ -91,10 +92,10 @@ export default function Calculator() {
                 {vialPills.map((ml) => (
                   <button
                     key={ml}
-                    onClick={() => setBacWaterMl(ml)}
+                    onClick={() => setVialSize(ml)}
                     data-testid={`vial-${ml}`}
                     className={`py-3 rounded-full border text-sm font-semibold transition ${
-                      Number(bacWaterMl) === ml
+                      Number(vialSize) === ml
                         ? "bg-[#FF2D87] text-white border-[#FF2D87] shadow-[0_4px_14px_rgba(255,45,135,0.35)]"
                         : "bg-white border-[#E5C8DC] text-[#0A0A0A] hover:border-[#FF2D87]"
                     }`}
