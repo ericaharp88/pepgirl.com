@@ -14,14 +14,16 @@ export default function Vendors() {
 
   const isSkin = (v) => (v.tags || []).some((t) => t.toLowerCase().includes("skin"));
   const isSupp = (v) => (v.tags || []).some((t) => t.toLowerCase() === "supplements");
+  const isClothes = (v) => (v.tags || []).some((t) => t.toLowerCase() === "clothes");
   const filtered = !vendors ? null : vendors.filter((v) =>
     filter === "All" ? true
     : filter === "Skin Care" ? isSkin(v)
     : filter === "Supplements" ? isSupp(v)
-    : (!isSkin(v) && !isSupp(v))
+    : filter === "Clothes" ? isClothes(v)
+    : (!isSkin(v) && !isSupp(v) && !isClothes(v))
   );
 
-  const tabs = ["All", "Peptides", "Skin Care", "Supplements"];
+  const tabs = ["All", "Peptides", "Skin Care", "Supplements", "Clothes"];
 
   return (
     <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-16">
