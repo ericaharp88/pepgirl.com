@@ -102,24 +102,6 @@ export default function Calculator() {
               </div>
             </div>
           </div>
-
-          {/* Presets */}
-          <div className="mt-10 pt-8 border-t border-[#E5E5E5]">
-            <div className="eyebrow text-[#5C5C5C] mb-3">Quick presets</div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {presets.map((p) => (
-                <button
-                  key={p.name}
-                  onClick={() => { setPeptideMg(p.mg); setBacWaterMl(p.ml); setDoseMcg(p.dose); }}
-                  className="bg-white border border-[#0A0A0A] p-3 font-mono text-[10px] uppercase tracking-[0.2em] text-left hover:bg-[#FF2D87] hover:text-white hover:border-[#FF2D87]"
-                  data-testid={`preset-${p.name.toLowerCase()}`}
-                >
-                  → {p.name}<br />
-                  <span className="opacity-60">{p.mg}mg · {p.dose}mcg</span>
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* ────────────── OUTPUT ────────────── */}
