@@ -182,15 +182,16 @@ export default function Compare() {
     return m;
   }, [data]);
 
-  // Collect available categories
-  const categories = useMemo(() => {
-    if (!data) return [];
-    const set = new Set();
-    data.peptides.forEach((p) => {
-      if (p.category) set.add(p.category);
-    });
-    return ["All", ...Array.from(set).sort()];
-  }, [data]);
+  // ----- Tag filters (keyword-based, work even for AI-imported peptides) -----
+  const TAG_FILTERS = useMemo(() => ({
+    All: () => true,
+    Skin: (p) => /\b(ghk[-\s]?cu|copper|kpv|argireline|snap[-\s]?8|melanotan|epitalon|epithalon|glutathione|cosmetic|skin|serum|cream|peptide.*cu)\b/i.test(p.name),
+    GLP: (p) => /\b(semaglutide|tirzepatide|retatrutide|cagrilintide|liraglutide|aod[-\s]?9604|glp[-\s]?[123]|glp\s?[123](sg|tz|rt|t|r)?|glpsg|am833)\b/i.test(p.name),
+    "Nasal Sprays": (p) => /\b(nasal|spray)\b/i.test(p.name),
+    Capsules: (p) => /\b(capsules?|caps?|tablets?|pills?)\b/i.test(p.name),
+  }), []);
+
+  const TAG_KEYS = ["All", "Skin", "GLP", "Nasal Sprays", "Capsules"];
 
   const visible = useMemo(() => {
     if (!data) return [];
@@ -199,14 +200,22 @@ export default function Compare() {
       const q = search.toLowerCase();
       arr = arr.filter((p) => p.name.toLowerCase().includes(q));
     }
-    if (activeTag !== "All") {
-      arr = arr.filter((p) => p.category === activeTag);
-    }
+    const filterFn = TAG_FILTERS[activeTag] || TAG_FILTERS.All;
+    arr = arr.filter(filterFn);
     arr.sort((a, b) =>
       sortDir === "asc" ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
     );
     return arr;
-  }, [data, pricesByPeptide, search, sortDir, activeTag]);
+  }, [data, pricesByPeptide, search, sortDir, activeTag, TAG_FILTERS]);
+
+  // Counts per tab (for badges)
+  const tagCounts = useMemo(() => {
+    if (!data) return {};
+    const counts = {};
+    const withPrices = data.peptides.filter((p) => (pricesByPeptide[p.id] || []).length > 0);
+    TAG_KEYS.forEach((k) => { counts[k] = withPrices.filter(TAG_FILTERS[k]).length; });
+    return counts;
+  }, [data, pricesByPeptide, TAG_FILTERS]);
 
   if (!data) {
     return (
@@ -237,6 +246,34 @@ export default function Compare() {
         </div>
       </div>
 
+      {/* Tag filter tabs */}
+      <div className="flex flex-wrap gap-2 mb-8" data-testid="tag-tabs">
+        {TAG_KEYS.map((c) => {
+          const n = tagCounts[c] ?? 0;
+          const active = activeTag === c;
+          return (
+            <button
+              key={c}
+              onClick={() => setActiveTag(c)}
+              data-testid={`tag-${c.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+              disabled={n === 0 && c !== "All"}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition border ${
+                active
+                  ? "bg-[#FF2D87] text-white border-[#FF2D87] shadow-[0_4px_14px_rgba(255,45,135,0.35)]"
+                  : n === 0
+                  ? "bg-[#F8F8F8] text-[#C0C0C0] border-[#F0F0F0] cursor-not-allowed"
+                  : "bg-white text-[#0A0A0A] border-[#F0CFE0] hover:bg-[#FFF0F7]"
+              }`}
+            >
+              {c}
+              <span className={`text-[10px] font-bold ${active ? "text-white/80" : "text-[#FF2D87]"}`}>
+                {n}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Controls */}
       <div className="flex flex-col md:flex-row md:items-center gap-4 mb-8">
         <Input
@@ -249,29 +286,11 @@ export default function Compare() {
         <button
           onClick={() => setSortDir(sortDir === "asc" ? "desc" : "asc")}
           data-testid="sort-toggle"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#FF2D87] text-white text-xs font-mono uppercase tracking-wider hover:bg-[#0A0A0A] transition"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0A0A0A] text-white text-xs font-mono uppercase tracking-wider hover:bg-[#FF2D87] transition w-fit"
         >
           Name {sortDir === "asc" ? "A→Z" : "Z→A"}{" "}
           {sortDir === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
         </button>
-        {categories.length > 2 && (
-          <div className="flex flex-wrap gap-1.5">
-            {categories.map((c) => (
-              <button
-                key={c}
-                onClick={() => setActiveTag(c)}
-                data-testid={`cat-${c}`}
-                className={`px-3 py-1.5 text-[11px] font-mono uppercase tracking-wider rounded-full transition ${
-                  activeTag === c
-                    ? "bg-[#0A0A0A] text-white"
-                    : "bg-[#FFF0F7] text-[#5C5C5C] hover:bg-[#FFE4F1]"
-                }`}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Grid of peptide cards */}
