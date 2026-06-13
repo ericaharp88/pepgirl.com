@@ -203,37 +203,134 @@ function PeptidesPanel() {
   );
 }
 
-/* ----------------- PRICES ----------------- */
+/* ----------------- PRICES (manual-friendly) ----------------- */
 function PricesPanel() {
   const [items, setItems] = useState([]);
   const [peptides, setPeptides] = useState([]);
   const [vendors, setVendors] = useState([]);
-  const [form, setForm] = useState(blankPrice);
   const [busy, setBusy] = useState(null);
 
+  // Quick-add form state — vendor stays selected across saves
+  const [vendorId, setVendorId] = useState("");
+  const [peptideQuery, setPeptideQuery] = useState("");
+  const [peptideId, setPeptideId] = useState("");
+  const [sizeMg, setSizeMg] = useState(5);
+  const [priceUsd, setPriceUsd] = useState("");
+  const [productUrl, setProductUrl] = useState("");
+
+  // Bulk paste box
+  const [bulkText, setBulkText] = useState("");
+
   const load = async () => {
-    const [pr, pe, vn] = await Promise.all([api.get("/prices"), api.get("/peptides"), api.get("/vendors")]);
+    const [pr, pe, vn] = await Promise.all([
+      api.get("/prices"), api.get("/peptides"), api.get("/vendors")
+    ]);
     setItems(pr.data); setPeptides(pe.data); setVendors(vn.data);
   };
   useEffect(() => { load(); }, []);
 
   const lookup = (arr, id, key = "name") => arr.find((x) => x.id === id)?.[key] || "—";
 
-  const save = async () => {
-    try {
-      await api.post("/prices", { ...form, size_mg: Number(form.size_mg), price_usd: Number(form.price_usd) });
-      toast.success("Price added"); setForm(blankPrice); load();
-    } catch (e) { toast.error(fmtErr(e.response?.data?.detail)); }
+  // ----- Peptide autocomplete -----
+  const peptideMatches = peptideQuery.trim()
+    ? peptides
+        .filter((p) => p.name.toLowerCase().includes(peptideQuery.toLowerCase()))
+        .slice(0, 8)
+    : [];
+  const exactMatch = peptides.find(
+    (p) => p.name.toLowerCase() === peptideQuery.trim().toLowerCase()
+  );
+
+  const ensurePeptide = async () => {
+    if (peptideId) return peptideId;
+    if (exactMatch) return exactMatch.id;
+    if (!peptideQuery.trim()) return null;
+    const name = peptideQuery.trim();
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const { data } = await api.post("/peptides", {
+      name, slug, description: "", typical_dose_mcg: 0, category: "",
+    });
+    const fresh = await api.get("/peptides");
+    setPeptides(fresh.data);
+    return data.id;
   };
+
+  const saveOne = async () => {
+    if (!vendorId) { toast.error("Pick a vendor first"); return; }
+    if (!peptideQuery.trim() && !peptideId) { toast.error("Type a peptide name"); return; }
+    if (!priceUsd || Number(priceUsd) <= 0) { toast.error("Enter a price"); return; }
+    setBusy("save");
+    try {
+      const pid = await ensurePeptide();
+      if (!pid) { toast.error("Could not resolve peptide"); return; }
+      await api.post("/prices", {
+        peptide_id: pid, vendor_id: vendorId,
+        size_mg: Number(sizeMg) || 0,
+        price_usd: Number(priceUsd),
+        product_url: productUrl.trim(),
+        scrape_selector: "",
+      });
+      toast.success(`Added ${peptideQuery || lookup(peptides, pid)} · ${sizeMg}mg · $${priceUsd}`);
+      // Keep vendor selected, clear the rest
+      setPeptideQuery(""); setPeptideId(""); setSizeMg(5);
+      setPriceUsd(""); setProductUrl("");
+      load();
+    } catch (e) {
+      toast.error(fmtErr(e.response?.data?.detail));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  // ----- Bulk paste -----
+  const parseBulkRow = (line) => {
+    // Accept tab OR comma OR multiple spaces
+    const parts = line.split(/\t|,|\s{2,}/).map((s) => s.trim()).filter(Boolean);
+    if (parts.length < 3) return null;
+    const [name, size, price, url = ""] = parts;
+    return {
+      name, size: parseFloat(size.replace(/[^\d.]/g, "")) || 0,
+      price: parseFloat(price.replace(/[^\d.]/g, "")) || 0, url,
+    };
+  };
+
+  const runBulk = async () => {
+    if (!vendorId) { toast.error("Pick a vendor first"); return; }
+    const lines = bulkText.split("\n").map((l) => l.trim()).filter(Boolean);
+    const rows = lines.map(parseBulkRow).filter(Boolean);
+    if (!rows.length) { toast.error("No valid rows. Format: name TAB size TAB price [TAB url]"); return; }
+    if (!confirm(`Add ${rows.length} prices to ${lookup(vendors, vendorId)}?`)) return;
+    setBusy("bulk");
+    let added = 0, failed = 0;
+    let freshPeptides = peptides;
+    for (const r of rows) {
+      try {
+        let pep = freshPeptides.find((p) => p.name.toLowerCase() === r.name.toLowerCase());
+        if (!pep) {
+          const slug = r.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+          const { data } = await api.post("/peptides", {
+            name: r.name, slug, description: "", typical_dose_mcg: 0, category: "",
+          });
+          pep = data;
+          freshPeptides = [...freshPeptides, pep];
+        }
+        await api.post("/prices", {
+          peptide_id: pep.id, vendor_id: vendorId,
+          size_mg: r.size, price_usd: r.price,
+          product_url: r.url, scrape_selector: "",
+        });
+        added += 1;
+      } catch (e) {
+        failed += 1;
+      }
+    }
+    toast.success(`Bulk done · added ${added} · failed ${failed}`);
+    setBulkText("");
+    setBusy(null);
+    load();
+  };
+
   const del = async (id) => { await api.delete(`/prices/${id}`); load(); };
-  const scrape = async (id) => {
-    setBusy(id);
-    try {
-      const { data } = await api.post(`/prices/${id}/scrape`);
-      toast.success(`Scraped → $${data.price_usd}`); load();
-    } catch (e) { toast.error(fmtErr(e.response?.data?.detail)); }
-    finally { setBusy(null); }
-  };
   const scrapeAll = async () => {
     setBusy("all");
     try {
@@ -245,51 +342,135 @@ function PricesPanel() {
   };
 
   const aiBulkImport = async () => {
-    if (!confirm("Run AI bulk import for ALL vendors? This scrapes each vendor's catalog and uses an LLM to extract products. Takes 2-5 minutes and uses Emergent LLM credits (~$1-3 typical).")) return;
+    if (!confirm("Run AI bulk import for ALL comparison-enabled vendors? Takes 2-5 min and uses Emergent LLM credits (~$1-3).")) return;
     setBusy("ai");
     try {
       const { data } = await api.post("/prices/bulk-import", null, { timeout: 600000 });
-      toast.success(`AI import done · ${data.peptides_added} new peptides · ${data.prices_added} new prices · ${data.prices_updated} updated`);
+      toast.success(`AI import done · +${data.peptides_added} peptides · +${data.prices_added} prices · ${data.prices_updated} updated`);
       load();
-    } catch (e) { toast.error(fmtErr(e.response?.data?.detail) || "Import failed (may have timed out — refresh to see partial results)"); }
-    finally { setBusy(null); }
+    } catch (e) {
+      toast.error(fmtErr(e.response?.data?.detail) || "Import may have timed out — refresh to see partial results");
+    } finally { setBusy(null); }
   };
+
+  // Filter the "Recent" list to the currently-selected vendor for fast verification
+  const recent = vendorId
+    ? items.filter((p) => p.vendor_id === vendorId).slice(0, 30)
+    : items.slice(0, 30);
 
   return (
     <div className="grid lg:grid-cols-12 gap-8">
-      <div className="lg:col-span-5 border border-[#0A0A0A] p-6">
-        <SectionHeader title="New price entry" />
-        <div className="space-y-4">
-          <div>
-            <Label className="eyebrow text-[#5C5C5C]">Peptide</Label>
-            <Select value={form.peptide_id} onValueChange={(v) => setForm({ ...form, peptide_id: v })}>
-              <SelectTrigger className="rounded-none border-[#0A0A0A] mt-2 font-mono" data-testid="pr-peptide"><SelectValue placeholder="Select peptide" /></SelectTrigger>
-              <SelectContent className="rounded-none">
-                {peptides.map((p) => <SelectItem key={p.id} value={p.id} className="rounded-none font-mono text-sm">{p.name}</SelectItem>)}
+      {/* LEFT: Quick add */}
+      <div className="lg:col-span-5 space-y-6">
+        <div className="border border-[#0A0A0A] p-6">
+          <SectionHeader title="Quick add price" />
+
+          {/* Vendor selector — sticky across saves */}
+          <div className="mb-5">
+            <Label className="eyebrow text-[#5C5C5C]">1 · Vendor (stays selected)</Label>
+            <Select value={vendorId} onValueChange={setVendorId}>
+              <SelectTrigger className="rounded-none border-[#0A0A0A] mt-2 font-mono" data-testid="pr-vendor">
+                <SelectValue placeholder="Pick a vendor first…" />
+              </SelectTrigger>
+              <SelectContent className="rounded-none max-h-80">
+                {vendors.map((v) => (
+                  <SelectItem key={v.id} value={v.id} className="rounded-none font-mono text-sm">
+                    {v.name} {v.comparison_enabled === false && "· (no compare)"}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
-          <div>
-            <Label className="eyebrow text-[#5C5C5C]">Vendor</Label>
-            <Select value={form.vendor_id} onValueChange={(v) => setForm({ ...form, vendor_id: v })}>
-              <SelectTrigger className="rounded-none border-[#0A0A0A] mt-2 font-mono" data-testid="pr-vendor"><SelectValue placeholder="Select vendor" /></SelectTrigger>
-              <SelectContent className="rounded-none">
-                {vendors.map((v) => <SelectItem key={v.id} value={v.id} className="rounded-none font-mono text-sm">{v.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
+
+          {/* Peptide autocomplete */}
+          <div className="mb-4">
+            <Label className="eyebrow text-[#5C5C5C]">2 · Peptide (type to search)</Label>
+            <Input
+              value={peptideQuery}
+              onChange={(e) => { setPeptideQuery(e.target.value); setPeptideId(""); }}
+              placeholder="e.g. BPC-157"
+              className="rounded-none border-[#0A0A0A] mt-2 font-mono"
+              data-testid="pr-peptide-search"
+            />
+            {peptideMatches.length > 0 && !exactMatch && !peptideId && (
+              <div className="mt-1 border border-[#E5E5E5] bg-white max-h-40 overflow-y-auto">
+                {peptideMatches.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => { setPeptideQuery(p.name); setPeptideId(p.id); }}
+                    className="w-full text-left px-3 py-2 text-sm font-mono hover:bg-[#FFF0F7] border-b border-[#F0F0F0]"
+                    data-testid={`pr-pep-match-${p.slug}`}
+                  >
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+            )}
+            {peptideQuery.trim() && !exactMatch && !peptideMatches.length && (
+              <div className="mt-1 px-3 py-2 text-xs font-mono text-[#FF2D87] bg-[#FFF0F7] border border-[#F0CFE0]">
+                + New peptide will be created: <b>{peptideQuery.trim()}</b>
+              </div>
+            )}
           </div>
-          <Field label="Vial size (mg)" type="number" value={form.size_mg} onChange={(v) => setForm({ ...form, size_mg: v })} />
-          <Field label="Price (USD)" type="number" value={form.price_usd} onChange={(v) => setForm({ ...form, price_usd: v })} />
-          <Field label="Product URL (for scrape)" value={form.product_url} onChange={(v) => setForm({ ...form, product_url: v })} testId="pr-url" />
-          <Field label="CSS Selector (price element)" value={form.scrape_selector} onChange={(v) => setForm({ ...form, scrape_selector: v })} testId="pr-selector" />
-          <div className="text-[11px] font-mono text-[#5C5C5C] leading-relaxed">
-            Tip: CSS selector example → <code>.price .amount</code> or <code>span.product-price</code>
+
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div>
+              <Label className="eyebrow text-[#5C5C5C]">3 · Size (mg)</Label>
+              <Input type="number" step="0.5" value={sizeMg}
+                onChange={(e) => setSizeMg(e.target.value)}
+                className="rounded-none border-[#0A0A0A] mt-2 font-mono"
+                data-testid="pr-size" />
+            </div>
+            <div>
+              <Label className="eyebrow text-[#5C5C5C]">4 · Price (USD)</Label>
+              <Input type="number" step="0.01" value={priceUsd}
+                placeholder="39.99"
+                onChange={(e) => setPriceUsd(e.target.value)}
+                className="rounded-none border-[#0A0A0A] mt-2 font-mono"
+                data-testid="pr-price" />
+            </div>
           </div>
-          <Button onClick={save} data-testid="pr-save" className="w-full rounded-none bg-[#FF2D87] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">Add price</Button>
+
+          <div className="mb-4">
+            <Label className="eyebrow text-[#5C5C5C]">5 · Product URL (optional)</Label>
+            <Input value={productUrl}
+              onChange={(e) => setProductUrl(e.target.value)}
+              placeholder="https://vendor.com/product/..."
+              className="rounded-none border-[#0A0A0A] mt-2 font-mono"
+              data-testid="pr-url" />
+          </div>
+
+          <Button onClick={saveOne} disabled={busy === "save"}
+            data-testid="pr-save"
+            className="w-full rounded-none bg-[#FF2D87] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">
+            {busy === "save" ? "Saving…" : "+ Add price (vendor stays)"}
+          </Button>
+        </div>
+
+        {/* Bulk paste */}
+        <div className="border border-[#0A0A0A] p-6">
+          <SectionHeader title="Bulk paste" />
+          <p className="text-xs font-mono text-[#5C5C5C] mb-3 leading-relaxed">
+            Paste one row per line. Format: <b>name [TAB] size [TAB] price [TAB] url(optional)</b>.
+            Tabs, commas, or multiple spaces all work as separators.
+          </p>
+          <Textarea value={bulkText} onChange={(e) => setBulkText(e.target.value)}
+            placeholder={"BPC-157\t5\t39.99\nTB-500\t5\t59.99\nSemaglutide\t10\t189.00"}
+            rows={6}
+            className="rounded-none border-[#0A0A0A] font-mono text-xs"
+            data-testid="pr-bulk-text" />
+          <Button onClick={runBulk} disabled={busy === "bulk"}
+            data-testid="pr-bulk-go"
+            className="w-full mt-3 rounded-none bg-[#0A0A0A] text-white hover:bg-[#FF2D87] h-10 font-mono uppercase tracking-widest text-xs">
+            {busy === "bulk" ? "Importing…" : "Import all rows"}
+          </Button>
         </div>
       </div>
+
+      {/* RIGHT: Recent + bulk actions */}
       <div className="lg:col-span-7">
-        <SectionHeader title={`Prices (${items.length})`} action={
+        <SectionHeader title={vendorId ? `Recent — ${lookup(vendors, vendorId)}` : "Recent prices"} action={
           <div className="flex gap-2">
             <Button onClick={aiBulkImport} disabled={busy === "ai"} className="rounded-none bg-[#FF2D87] text-white hover:bg-[#0A0A0A] font-mono uppercase tracking-widest text-xs" data-testid="ai-bulk-import">
               <RefreshCw size={14} className={`mr-2 ${busy === "ai" ? "animate-spin" : ""}`} /> AI bulk import
@@ -299,18 +480,27 @@ function PricesPanel() {
             </Button>
           </div>
         } />
-        <div className="border border-[#E5E5E5] max-h-[600px] overflow-y-auto">
-          {items.map((pr) => (
+        <div className="border border-[#E5E5E5] max-h-[680px] overflow-y-auto">
+          {recent.length === 0 && (
+            <div className="p-6 text-sm font-mono text-[#A0A0A0]">No prices yet for this vendor.</div>
+          )}
+          {recent.map((pr) => (
             <div key={pr.id} className="border-b border-[#E5E5E5] p-3 grid grid-cols-12 gap-3 items-center text-sm">
-              <div className="col-span-3"><div className="font-bold">{lookup(peptides, pr.peptide_id)}</div><div className="text-[10px] font-mono text-[#5C5C5C]">{pr.size_mg} mg</div></div>
-              <div className="col-span-3 font-mono text-xs">{lookup(vendors, pr.vendor_id)}</div>
-              <div className="col-span-2 font-mono text-xl font-bold">${pr.price_usd?.toFixed(2)}</div>
-              <div className="col-span-2 text-[10px] font-mono text-[#5C5C5C] truncate" title={pr.last_status}>{pr.last_status}</div>
-              <div className="col-span-2 flex gap-2 justify-end">
-                <Button variant="ghost" size="icon" onClick={() => scrape(pr.id)} disabled={busy === pr.id || !pr.product_url} className="rounded-none hover:bg-[#FF2D87] hover:text-white" data-testid={`scrape-${pr.id}`}>
-                  <RotateCw size={14} className={busy === pr.id ? "animate-spin" : ""} />
+              <div className="col-span-4">
+                <div className="font-bold">{lookup(peptides, pr.peptide_id)}</div>
+                <div className="text-[10px] font-mono text-[#5C5C5C]">{lookup(vendors, pr.vendor_id)}</div>
+              </div>
+              <div className="col-span-2 font-mono text-[#FF2D87] font-bold">{pr.size_mg} mg</div>
+              <div className="col-span-2 font-mono font-bold">${Number(pr.price_usd).toFixed(2)}</div>
+              <div className="col-span-3 text-[10px] font-mono text-[#5C5C5C] truncate">
+                {pr.last_status || "manual"}
+              </div>
+              <div className="col-span-1 flex justify-end">
+                <Button variant="ghost" size="icon" onClick={() => del(pr.id)}
+                  className="rounded-none hover:bg-[#E60000] hover:text-white h-8 w-8"
+                  data-testid={`pr-del-${pr.id}`}>
+                  <Trash2 size={14} />
                 </Button>
-                <Button variant="ghost" size="icon" onClick={() => del(pr.id)} className="rounded-none hover:bg-[#E60000] hover:text-white"><Trash2 size={14} /></Button>
               </div>
             </div>
           ))}
