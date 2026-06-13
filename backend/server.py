@@ -99,6 +99,7 @@ class Vendor(BaseModel):
     tags: List[str] = []
     discount_code: str = ""
     featured: bool = False
+    comparison_enabled: bool = True  # show in /compare table & include in AI bulk import
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
@@ -112,6 +113,7 @@ class VendorIn(BaseModel):
     tags: List[str] = []
     discount_code: str = ""
     featured: bool = False
+    comparison_enabled: bool = True
 
 
 class Resource(BaseModel):
@@ -403,8 +405,17 @@ async def scrape_all(admin: dict = Depends(get_current_admin)):
 @api_router.get("/comparison")
 async def comparison():
     peptides = await db.peptides.find({}, {"_id": 0}).to_list(1000)
-    vendors = await db.vendors.find({}, {"_id": 0}).to_list(500)
-    prices = await db.prices.find({}, {"_id": 0}).to_list(5000)
+    vendors = await db.vendors.find(
+        {"$or": [{"comparison_enabled": True},
+                 {"comparison_enabled": {"$exists": False}}]},
+        {"_id": 0}
+    ).to_list(500)
+    vendor_ids = {v["id"] for v in vendors}
+    all_prices = await db.prices.find({}, {"_id": 0}).to_list(5000)
+    prices = [p for p in all_prices if p["vendor_id"] in vendor_ids]
+    # Only return peptides that actually have at least one price across enabled vendors
+    used_pep_ids = {p["peptide_id"] for p in prices}
+    peptides = [p for p in peptides if p["id"] in used_pep_ids]
     return {"peptides": peptides, "vendors": vendors, "prices": prices}
 
 
@@ -422,7 +433,9 @@ async def bulk_import_prices(admin: dict = Depends(get_current_admin),
 
     from scraper import bulk_scrape  # lazy import — keeps startup fast
 
-    query = {"slug": vendor_slug} if vendor_slug else {}
+    query = {"slug": vendor_slug} if vendor_slug else {
+        "$or": [{"comparison_enabled": True}, {"comparison_enabled": {"$exists": False}}]
+    }
     vendor_docs = await db.vendors.find(query, {"_id": 0}).to_list(100)
     if not vendor_docs:
         raise HTTPException(status_code=404, detail="No vendors found")
@@ -549,6 +562,23 @@ async def seed_sample_data():
         del_res = await db.vendors.delete_many({"slug": {"$in": legacy_slugs}})
         logger.info(f"Removed {del_res.deleted_count} legacy sample vendors and their prices.")
 
+    # ───── Mark non-comparison vendors and wipe any of their prices ─────
+    NON_COMPARISON_SLUGS = ["take-ploom", "belliwelli", "moon-brew", "ryze-mushroom-coffee", "comfrt"]
+    nc_docs = await db.vendors.find({"slug": {"$in": NON_COMPARISON_SLUGS}},
+                                    {"id": 1, "slug": 1, "_id": 0}).to_list(50)
+    if nc_docs:
+        nc_ids = [d["id"] for d in nc_docs]
+        await db.vendors.update_many({"id": {"$in": nc_ids}},
+                                     {"$set": {"comparison_enabled": False}})
+        wiped = await db.prices.delete_many({"vendor_id": {"$in": nc_ids}})
+        if wiped.deleted_count:
+            logger.info(f"Wiped {wiped.deleted_count} price entries from non-comparison vendors.")
+    # Garbage-collect peptides that no longer have any price
+    used_pep_ids = await db.prices.distinct("peptide_id")
+    orphan = await db.peptides.delete_many({"id": {"$nin": used_pep_ids}})
+    if orphan.deleted_count:
+        logger.info(f"Removed {orphan.deleted_count} orphan peptides (no prices).")
+
     vendors = [
         # ───── Peptide vendors (Erica's affiliates) ─────
         {"name": "Amino Well USA", "slug": "amino-well-usa",
@@ -626,13 +656,13 @@ async def seed_sample_data():
          "affiliate_url": "https://www.takeploom.com/ERICA10",
          "logo_url": "https://www.google.com/s2/favicons?domain=takeploom.com&sz=128",
          "rating": 4.5, "tags": ["Supplements", "GLP-1"],
-         "discount_code": "ERICA10", "featured": True},
+         "discount_code": "ERICA10", "featured": True, "comparison_enabled": False},
         {"name": "BelliWelli", "slug": "belliwelli",
          "description": "Gut-friendly snacks and supplements.",
          "affiliate_url": "https://belliwelli.com/SFXBWYBY",
          "logo_url": "https://www.google.com/s2/favicons?domain=belliwelli.com&sz=128",
          "rating": 4.4, "tags": ["Supplements", "Gut Health"],
-         "discount_code": "SFXBWYBY", "featured": False},
+         "discount_code": "SFXBWYBY", "featured": False, "comparison_enabled": False},
         {"name": "Moon Brew", "slug": "moon-brew",
          "description": "Functional mushroom + adaptogen brews.",
          "affiliate_url": "https://moonbrew.co/SFRM3XWP",
@@ -644,7 +674,7 @@ async def seed_sample_data():
          "affiliate_url": "https://get.aspr.app/SH1dHj",
          "logo_url": "https://www.google.com/s2/favicons?domain=ryzesuperfoods.com&sz=128",
          "rating": 4.6, "tags": ["Supplements", "Mushroom", "Coffee"],
-         "discount_code": "", "featured": True},
+         "discount_code": "", "featured": True, "comparison_enabled": False},
 
         # ───── Clothes ─────
         {"name": "Comfrt", "slug": "comfrt",
