@@ -223,6 +223,17 @@ function PricesPanel() {
     finally { setBusy(null); }
   };
 
+  const aiBulkImport = async () => {
+    if (!confirm("Run AI bulk import for ALL vendors? This scrapes each vendor's catalog and uses an LLM to extract products. Takes 2-5 minutes and uses Emergent LLM credits (~$1-3 typical).")) return;
+    setBusy("ai");
+    try {
+      const { data } = await api.post("/prices/bulk-import", null, { timeout: 600000 });
+      toast.success(`AI import done · ${data.peptides_added} new peptides · ${data.prices_added} new prices · ${data.prices_updated} updated`);
+      load();
+    } catch (e) { toast.error(fmtErr(e.response?.data?.detail) || "Import failed (may have timed out — refresh to see partial results)"); }
+    finally { setBusy(null); }
+  };
+
   return (
     <div className="grid lg:grid-cols-12 gap-8">
       <div className="lg:col-span-5 border border-[#0A0A0A] p-6">
@@ -258,9 +269,14 @@ function PricesPanel() {
       </div>
       <div className="lg:col-span-7">
         <SectionHeader title={`Prices (${items.length})`} action={
-          <Button onClick={scrapeAll} disabled={busy === "all"} className="rounded-none bg-[#0A0A0A] text-white hover:bg-[#FF2D87] font-mono uppercase tracking-widest text-xs" data-testid="scrape-all">
-            <RefreshCw size={14} className={`mr-2 ${busy === "all" ? "animate-spin" : ""}`} /> Scrape all
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={aiBulkImport} disabled={busy === "ai"} className="rounded-none bg-[#FF2D87] text-white hover:bg-[#0A0A0A] font-mono uppercase tracking-widest text-xs" data-testid="ai-bulk-import">
+              <RefreshCw size={14} className={`mr-2 ${busy === "ai" ? "animate-spin" : ""}`} /> AI bulk import
+            </Button>
+            <Button onClick={scrapeAll} disabled={busy === "all"} className="rounded-none bg-[#0A0A0A] text-white hover:bg-[#FF2D87] font-mono uppercase tracking-widest text-xs" data-testid="scrape-all">
+              <RefreshCw size={14} className={`mr-2 ${busy === "all" ? "animate-spin" : ""}`} /> Scrape all
+            </Button>
+          </div>
         } />
         <div className="border border-[#E5E5E5] max-h-[600px] overflow-y-auto">
           {items.map((pr) => (

@@ -408,6 +408,106 @@ async def comparison():
     return {"peptides": peptides, "vendors": vendors, "prices": prices}
 
 
+# ---------------- AI Bulk Import ----------------
+@api_router.post("/prices/bulk-import")
+async def bulk_import_prices(admin: dict = Depends(get_current_admin),
+                             vendor_slug: Optional[str] = None,
+                             dry_run: bool = False):
+    """Scrape every vendor's catalog with an LLM and upsert peptides + prices.
+    If `vendor_slug` is provided, only scrape that one vendor.
+    If `dry_run=true`, returns the extracted data WITHOUT writing to DB."""
+    llm_key = os.environ.get("EMERGENT_LLM_KEY")
+    if not llm_key:
+        raise HTTPException(status_code=500, detail="EMERGENT_LLM_KEY not configured on server")
+
+    from scraper import bulk_scrape  # lazy import — keeps startup fast
+
+    query = {"slug": vendor_slug} if vendor_slug else {}
+    vendor_docs = await db.vendors.find(query, {"_id": 0}).to_list(100)
+    if not vendor_docs:
+        raise HTTPException(status_code=404, detail="No vendors found")
+
+    scrape_results = await bulk_scrape(vendor_docs, llm_key)
+
+    summary = {
+        "vendors_attempted": len(scrape_results),
+        "vendors_successful": 0,
+        "peptides_added": 0,
+        "prices_added": 0,
+        "prices_updated": 0,
+        "details": [],
+    }
+
+    for res in scrape_results:
+        vendor = next((v for v in vendor_docs if v["slug"] == res["vendor_slug"]), None)
+        if not vendor:
+            continue
+
+        detail = {
+            "vendor_slug": res["vendor_slug"],
+            "vendor_name": vendor["name"],
+            "shop_url": res["shop_url"],
+            "error": res["error"],
+            "products_found": len(res["products"]),
+            "added": 0,
+            "updated": 0,
+            "sample": res["products"][:5],
+        }
+
+        if res["error"] or not res["products"]:
+            summary["details"].append(detail)
+            continue
+
+        summary["vendors_successful"] += 1
+        now = datetime.now(timezone.utc).isoformat()
+
+        for p in res["products"]:
+            if dry_run:
+                continue
+            # Upsert peptide by canonical name -> slug
+            pep_slug = re.sub(r"[^a-z0-9]+", "-", p["name"].lower()).strip("-")
+            if not pep_slug:
+                continue
+            existing_pep = await db.peptides.find_one({"slug": pep_slug}, {"_id": 0})
+            if not existing_pep:
+                pep_obj = Peptide(name=p["name"], slug=pep_slug, description="",
+                                  typical_dose_mcg=0.0, category="")
+                await db.peptides.insert_one(pep_obj.model_dump())
+                pep_id = pep_obj.id
+                summary["peptides_added"] += 1
+            else:
+                pep_id = existing_pep["id"]
+
+            # Upsert price by (peptide_id, vendor_id, size_mg)
+            size_mg = float(p["size_mg"] or 0.0)
+            existing_price = await db.prices.find_one(
+                {"peptide_id": pep_id, "vendor_id": vendor["id"], "size_mg": size_mg},
+                {"_id": 0}
+            )
+            if existing_price:
+                await db.prices.update_one(
+                    {"id": existing_price["id"]},
+                    {"$set": {"price_usd": p["price_usd"], "product_url": p["product_url"],
+                              "last_scraped": now, "last_status": "ai-scrape",
+                              "updated_at": now}}
+                )
+                detail["updated"] += 1
+                summary["prices_updated"] += 1
+            else:
+                pe = PriceEntry(
+                    peptide_id=pep_id, vendor_id=vendor["id"], size_mg=size_mg,
+                    price_usd=p["price_usd"], product_url=p["product_url"] or "",
+                    scrape_selector="", last_scraped=now, last_status="ai-scrape",
+                )
+                await db.prices.insert_one(pe.model_dump())
+                detail["added"] += 1
+                summary["prices_added"] += 1
+
+        summary["details"].append(detail)
+
+    return summary
+
+
 # ---------------- Health ----------------
 @api_router.get("/")
 async def root():
