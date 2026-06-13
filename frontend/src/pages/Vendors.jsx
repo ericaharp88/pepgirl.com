@@ -13,11 +13,15 @@ export default function Vendors() {
   }, []);
 
   const isSkin = (v) => (v.tags || []).some((t) => t.toLowerCase().includes("skin"));
+  const isSupp = (v) => (v.tags || []).some((t) => t.toLowerCase() === "supplements");
   const filtered = !vendors ? null : vendors.filter((v) =>
-    filter === "All" ? true : filter === "Skin Care" ? isSkin(v) : !isSkin(v)
+    filter === "All" ? true
+    : filter === "Skin Care" ? isSkin(v)
+    : filter === "Supplements" ? isSupp(v)
+    : (!isSkin(v) && !isSupp(v))
   );
 
-  const tabs = ["All", "Peptides", "Skin Care"];
+  const tabs = ["All", "Peptides", "Skin Care", "Supplements"];
 
   return (
     <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-16">
