@@ -36,7 +36,7 @@ export default function Calculator() {
 
   const fmt = (n, d = 2) => (Number.isFinite(n) ? n.toFixed(d) : "—");
 
-  const tabs = ["Reconstitute", "Pre-Mixed", "IU Dosing", "Testosterone", "Mix"];
+  const tabs = ["Reconstitute"];
   const vialPills = [2, 3, 5, 10];
   const freqOptions = [
     { label: "Daily",   perWeek: 7,   sub: "1x/day" },
