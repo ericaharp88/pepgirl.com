@@ -46,13 +46,9 @@ export default function Vendors() {
               className="p-8 bg-white flex flex-col"
               data-testid={`vendor-card-${v.slug}`}
             >
-              <div className="flex items-start justify-between mb-6">
+              <div className="mb-6">
                 <div className="font-mono text-xs uppercase tracking-[0.25em] text-[#5C5C5C]">
                   {v.featured ? "★ Featured" : "Listed"}
-                </div>
-                <div className="flex items-center gap-1 font-mono text-sm">
-                  <Star size={14} fill="#FF2D87" strokeWidth={0} />
-                  {v.rating?.toFixed(1)}
                 </div>
               </div>
               <h2 className="text-3xl font-bold tracking-tight mb-2">{v.name}</h2>
