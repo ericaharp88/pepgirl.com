@@ -13,28 +13,36 @@ export default function Home() {
     <div>
       {/* HERO */}
       <section className="border-b border-[#E5E5E5]">
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-16 lg:py-28 grid lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-8">
+        <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-16 lg:py-24 grid lg:grid-cols-12 gap-12 items-center">
+          <div className="lg:col-span-7">
             <div className="eyebrow text-[#FF2D87] mb-6" data-testid="hero-eyebrow">
-              Peptide price intelligence · for the girls · est. 2026
+              Peptide Resources and Education · for the girls · est. 2026
             </div>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-[-0.04em] leading-[0.92]">
-              Compare, calculate,<br/>
-              source peptides<br/>
-              <span className="pink-text font-serif-glam italic font-normal">like a girl.</span>
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-[-0.04em] leading-[0.95]">
+              Glow up using<br/>
+              peptides <span className="font-serif-glam italic font-normal pink-text">with Erica</span>
             </h1>
             <p className="mt-8 text-lg max-w-2xl text-[#5C5C5C] leading-relaxed">
-              The no-nonsense affiliate hub for research peptides — with the receipts.
-              Vendor prices side-by-side, a calculator that turns mcg into syringe units,
-              and zero gatekeeping. Sparkles included.
+              Welcome to <span className="font-bold text-[#0A0A0A]">Pep Girl Price Check</span> — a wellness
+              and peptide education hub for peptide researchers. Explore trusted vendors,
+              science-backed protocols, and tools designed to help you thrive in your research lab.
             </p>
             <div className="mt-10 flex flex-wrap gap-3">
+              <a
+                href="https://www.skool.com/ericas-elevated-life-9005"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="hero-cta-skool"
+                className="bg-[#FF2D87] text-white px-6 py-4 text-sm font-mono uppercase tracking-[0.2em] hover:bg-[#0A0A0A] inline-flex items-center gap-3"
+              >
+                Join Skool Research Community <ArrowRight size={16} />
+              </a>
               <Link
                 to="/compare"
                 data-testid="hero-cta-compare"
-                className="bg-[#FF2D87] text-white px-6 py-4 text-sm font-mono uppercase tracking-[0.2em] hover:bg-[#0A0A0A] inline-flex items-center gap-3"
+                className="border border-[#0A0A0A] px-6 py-4 text-sm font-mono uppercase tracking-[0.2em] hover:bg-[#0A0A0A] hover:text-white inline-flex items-center gap-3"
               >
-                Compare Prices <ArrowRight size={16} />
+                Compare Prices
               </Link>
               <Link
                 to="/calculator"
@@ -45,12 +53,36 @@ export default function Home() {
               </Link>
             </div>
           </div>
-          <div className="lg:col-span-4 border-l border-[#E5E5E5] pl-8 hidden lg:block">
-            <div className="space-y-6">
-              <Stat label="Vendors tracked" value="04" />
-              <Stat label="Peptides indexed" value="06" />
-              <Stat label="Live price points" value="24" />
-              <Stat label="Disclosure" value="Affiliate" mono />
+          <div className="lg:col-span-5 flex justify-center lg:justify-end">
+            <div className="relative">
+              {/* Decorative chrome ring */}
+              <div
+                aria-hidden
+                className="absolute -inset-3 rounded-[50%]"
+                style={{
+                  background:
+                    "conic-gradient(from 180deg, #FF2D87, #FFFFFF, #C0C0C0, #FF6FB5, #FFFFFF, #FF2D87)",
+                  filter: "blur(2px)",
+                }}
+              />
+              <div
+                className="relative overflow-hidden border-4 border-white shadow-[0_0_0_2px_#FF2D87]"
+                style={{ width: 340, height: 460, borderRadius: "50%" }}
+                data-testid="erica-photo"
+              >
+                <img
+                  src="https://customer-assets.emergentagent.com/job_peptide-hub-37/artifacts/5qrfs077_IMG_0602.jpeg"
+                  alt="Erica — Pep Girl Price Check"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div
+                aria-hidden
+                className="absolute -bottom-4 -left-4 text-2xl font-serif-glam italic"
+                style={{ color: "#FF2D87" }}
+              >
+                ✦ hi, i&apos;m erica ✦
+              </div>
             </div>
           </div>
         </div>
