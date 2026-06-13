@@ -135,7 +135,7 @@ export default function Calculator() {
                 className="flex-1 outline-none bg-transparent text-2xl font-bold font-mono py-2"
               />
               <div className="flex gap-1 bg-[#FFF0F7] rounded-full p-1">
-                {["mg", "mcg", "IU"].map((u) => (
+                {["mg", "mcg"].map((u) => (
                   <button
                     key={u}
                     onClick={() => setDoseUnit(u)}
