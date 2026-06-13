@@ -16,6 +16,59 @@ from emergentintegrations.llm.chat import LlmChat, UserMessage, TextDelta, Strea
 
 logger = logging.getLogger(__name__)
 
+# Playwright is heavy — import lazily only when we actually need it
+_PW_BROWSER = None
+_PW_LOCK = asyncio.Lock()
+
+
+async def _get_browser():
+    global _PW_BROWSER
+    async with _PW_LOCK:
+        if _PW_BROWSER is None:
+            from playwright.async_api import async_playwright
+            pw = await async_playwright().start()
+            _PW_BROWSER = await pw.chromium.launch(
+                headless=True,
+                args=["--no-sandbox", "--disable-blink-features=AutomationControlled"],
+            )
+    return _PW_BROWSER
+
+
+async def playwright_fetch_html(url: str, timeout: int = 30000) -> Optional[str]:
+    """Fetch a JS-rendered page using a headless Chromium browser."""
+    try:
+        browser = await _get_browser()
+        context = await browser.new_context(
+            user_agent=(
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
+            ),
+            viewport={"width": 1440, "height": 900},
+        )
+        page = await context.new_page()
+        await page.goto(url, wait_until="domcontentloaded", timeout=timeout)
+        # Let lazy-loaded products render
+        try:
+            await page.wait_for_load_state("networkidle", timeout=8000)
+        except Exception:
+            pass
+        # Scroll to trigger lazy loading
+        try:
+            await page.evaluate(
+                "() => new Promise(res => { let y=0; const t=setInterval(()=>{ "
+                "window.scrollBy(0,800); y+=800; "
+                "if (y>document.body.scrollHeight){clearInterval(t);res();} },200); })"
+            )
+            await page.wait_for_timeout(1500)
+        except Exception:
+            pass
+        html = await page.content()
+        await context.close()
+        return html
+    except Exception as e:
+        logger.warning("playwright_fetch_html %s error: %s", url, e)
+        return None
+
 BROWSER_HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -232,23 +285,61 @@ def normalize_peptide_name(name: str) -> str:
 
 
 async def scrape_vendor(vendor: dict, llm_key: str) -> dict:
-    """Returns {'vendor_slug', 'shop_url', 'products', 'error'}."""
+    """Returns {'vendor_slug', 'shop_url', 'products', 'error'}.
+
+    Pipeline:
+      1. Try fast HTTP fetch + LLM extract.
+      2. If blocked / empty / no products found, fall back to headless Playwright.
+    """
     name = vendor["name"]
     affiliate_url = vendor["affiliate_url"]
     logger.info("Scraping %s ...", name)
 
+    # ---- Phase 1: fast HTTP path ----
     disc = discover_shop_html(affiliate_url)
-    if not disc:
+    shop_url = None
+    cleaned = ""
+    products = []
+
+    if disc:
+        shop_url, html = disc
+        cleaned = clean_html_for_llm(html, base_url=shop_url)
+        if cleaned.strip():
+            products = await extract_products_llm(cleaned, name, shop_url, llm_key)
+
+    # ---- Phase 2: Playwright fallback ----
+    needs_browser = (
+        not disc or not cleaned.strip() or len(products) == 0
+    )
+    if needs_browser:
+        logger.info("  %s -> falling back to Playwright (headless browser)", name)
+        candidate_urls = [affiliate_url]
+        parsed = urlparse(affiliate_url)
+        root = f"{parsed.scheme}://{parsed.netloc}"
+        for path in ["/shop", "/shop/", "/products", "/collections/all", "/store"]:
+            candidate_urls.append(root + path)
+
+        for cu in candidate_urls:
+            html = await playwright_fetch_html(cu)
+            if not html:
+                continue
+            new_cleaned = clean_html_for_llm(html, base_url=cu)
+            if not new_cleaned.strip():
+                continue
+            new_products = await extract_products_llm(new_cleaned, name, cu, llm_key)
+            if new_products:
+                shop_url = cu
+                products = new_products
+                logger.info("  %s -> Playwright extracted %d products from %s",
+                            name, len(new_products), cu)
+                break
+
+    if not products and not disc:
         return {"vendor_slug": vendor["slug"], "shop_url": None, "products": [],
-                "error": "could not fetch catalog (403/blocked or network)"}
-    shop_url, html = disc
-
-    cleaned = clean_html_for_llm(html, base_url=shop_url)
-    if not cleaned.strip():
+                "error": "could not fetch catalog via HTTP or Playwright"}
+    if not products:
         return {"vendor_slug": vendor["slug"], "shop_url": shop_url, "products": [],
-                "error": "cleaned HTML was empty"}
-
-    products = await extract_products_llm(cleaned, name, shop_url, llm_key)
+                "error": "no products extracted"}
 
     out = []
     for p in products:
@@ -274,7 +365,7 @@ async def scrape_vendor(vendor: dict, llm_key: str) -> dict:
             "product_url": purl,
         })
 
-    logger.info("  %s -> %d products", name, len(out))
+    logger.info("  %s -> %d products kept after filtering", name, len(out))
     return {"vendor_slug": vendor["slug"], "shop_url": shop_url, "products": out, "error": None}
 
 
@@ -285,4 +376,14 @@ async def bulk_scrape(vendors: list, llm_key: str, max_concurrent: int = 3):
         async with sem:
             return await scrape_vendor(v, llm_key)
 
-    return await asyncio.gather(*[_run(v) for v in vendors])
+    try:
+        return await asyncio.gather(*[_run(v) for v in vendors])
+    finally:
+        # Clean up the shared browser instance after a full run
+        global _PW_BROWSER
+        if _PW_BROWSER is not None:
+            try:
+                await _PW_BROWSER.close()
+            except Exception:
+                pass
+            _PW_BROWSER = None
