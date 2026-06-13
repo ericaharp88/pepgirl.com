@@ -440,34 +440,17 @@ async def seed_sample_data():
     (or title) is missing. Safe to re-run; never overwrites user-edited records."""
     logger.info("Running idempotent sample-data seed...")
 
-    vendors = [
-        # ───── Existing defaults ─────
-        {"name": "PeptideSciences", "slug": "peptide-sciences",
-         "description": "US-based research peptides with COA on every product.",
-         "affiliate_url": "https://www.peptidesciences.com/?ref=peptidehub",
-         "logo_url": "https://www.google.com/s2/favicons?domain=peptidesciences.com&sz=128",
-         "rating": 4.7, "tags": ["Peptides", "USA", "COA", "Research"],
-         "discount_code": "", "featured": True},
-        {"name": "Pure Peptides USA", "slug": "pure-peptides-usa",
-         "description": "Third-party tested peptides shipped from US labs.",
-         "affiliate_url": "https://purepeptidesusa.com/?ref=peptidehub",
-         "logo_url": "https://www.google.com/s2/favicons?domain=purepeptidesusa.com&sz=128",
-         "rating": 4.5, "tags": ["Peptides", "USA", "Tested"],
-         "discount_code": "", "featured": True},
-        {"name": "Amino Asylum", "slug": "amino-asylum",
-         "description": "Budget-friendly with broad peptide selection.",
-         "affiliate_url": "https://aminoasylum.shop/?ref=peptidehub",
-         "logo_url": "https://www.google.com/s2/favicons?domain=aminoasylum.shop&sz=128",
-         "rating": 4.2, "tags": ["Peptides", "Budget", "Variety"],
-         "discount_code": "", "featured": False},
-        {"name": "Limitless Life", "slug": "limitless-life",
-         "description": "High-purity peptides, premium pricing.",
-         "affiliate_url": "https://limitlesslifenootropics.com/?ref=peptidehub",
-         "logo_url": "https://www.google.com/s2/favicons?domain=limitlesslifenootropics.com&sz=128",
-         "rating": 4.6, "tags": ["Peptides", "Premium", "Purity"],
-         "discount_code": "", "featured": False},
+    # ───── One-time cleanup: remove legacy sample vendors that were never on Erica's list ─────
+    legacy_slugs = ["peptide-sciences", "pure-peptides-usa", "amino-asylum", "limitless-life"]
+    legacy_docs = await db.vendors.find({"slug": {"$in": legacy_slugs}}, {"id": 1, "_id": 0}).to_list(50)
+    if legacy_docs:
+        legacy_ids = [d["id"] for d in legacy_docs]
+        await db.prices.delete_many({"vendor_id": {"$in": legacy_ids}})
+        del_res = await db.vendors.delete_many({"slug": {"$in": legacy_slugs}})
+        logger.info(f"Removed {del_res.deleted_count} legacy sample vendors and their prices.")
 
-        # ───── New peptide vendors (Erica's affiliates) ─────
+    vendors = [
+        # ───── Peptide vendors (Erica's affiliates) ─────
         {"name": "Amino Well USA", "slug": "amino-well-usa",
          "description": "Research peptides from a US-based lab.",
          "affiliate_url": "https://aminowellusa.com/?ref=xmqfndph",
@@ -610,25 +593,8 @@ async def seed_sample_data():
         peptide_ids[p["slug"]] = obj.id
         inserted_peptide += 1
 
-    # Only seed sample prices if there are no prices at all (avoid duplicating
-    # the user's own price entries on re-runs).
-    if await db.prices.count_documents({}) == 0 and peptide_ids and vendor_ids:
-        import random
-        random.seed(42)
-        original_vendor_slugs = ["peptide-sciences", "pure-peptides-usa", "amino-asylum", "limitless-life"]
-        for pslug, pid in peptide_ids.items():
-            for vslug in original_vendor_slugs:
-                vid = vendor_ids.get(vslug)
-                if not vid:
-                    continue
-                size = random.choice([5, 10])
-                base = {"bpc-157": 35, "tb-500": 60, "semaglutide": 110, "tirzepatide": 180,
-                        "ipamorelin": 30, "cjc-1295": 28}[pslug]
-                price = round(base * (size / 5) * random.uniform(0.85, 1.25), 2)
-                obj = PriceEntry(peptide_id=pid, vendor_id=vid, size_mg=size,
-                                 price_usd=price, product_url="", scrape_selector="")
-                await db.prices.insert_one(obj.model_dump())
-
+    # Sample price seeding was removed along with the legacy sample vendors.
+    # User can add their own peptide prices via the Admin → Prices panel.
     resources = [
         {"title": "How to Reconstitute Peptides Safely",
          "category": "Guide",
