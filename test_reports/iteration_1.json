@@ -1,0 +1,29 @@
+{
+  "summary": "First-iteration full-stack testing of Peptide Hub MVP. Backend: 15/15 pytest passed (auth, vendors/peptides/prices/resources CRUD, comparison, scrape-all skipped). Frontend: home tiles, vendors grid (4 cards + visit links), calculator math (10.0 units / 0.100 mL / 2500 mcg/mL with defaults), compare table (6 rows x 4 vendors, search narrows to 1 for 'BPC', sort-name works), resources (3 expandable toggles), login -> /admin redirect with token in localStorage, persistence across reload, admin vendor create flow showed 'Vendor added' toast and entry in list, scrape-all completed. Unauthenticated POST /api/vendors correctly returns 401.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Global", "issues": ["Console shows expected 401 from /auth/me on public pages when anonymous - cosmetic noise only"]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/backend_test.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "Optional: silence the 401 console error from /auth/me on public pages by swallowing the rejection silently in auth.jsx (already caught, but axios still logs).",
+    "Optional hardening: CORS uses allow_credentials=True with allow_origins=['*'] (from CORS_ORIGINS='*'); browsers ignore credentialed CORS with wildcard. Works today only because frontend falls back to Bearer header from localStorage. Set CORS_ORIGINS to the explicit preview URL for stricter production behavior."
+  ],
+  "critical_code_review_comments": [
+    "CORS config: allow_credentials=True with wildcard origin is invalid for credentialed requests; relying solely on Bearer token fallback. Should set explicit origin.",
+    "JWT cookie set with secure=False; acceptable for preview but should be True in production.",
+    "Scrape endpoints synchronous (requests + bs4) inside async handlers - blocks event loop. Fine for low volume; consider httpx + asyncio for scale.",
+    "/api/auth/me returns 401 on every public page load (auth.jsx mounts on every route) - generates console noise but no functional impact."
+  ],
+  "updated_files": ["/app/backend/tests/backend_test.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "admin@peptidehub.com / admin123 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "Created and cleaned up TEST_FE_Vendor (FE) and TEST_Vendor / TEST_Pep / TEST_Resource (backend). All TEST_ data removed after run.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "All MVP flows verified working end-to-end. Backend pytest suite at /app/backend/tests/backend_test.py covers auth + all CRUD + comparison + scrape-all. Re-use it for regression."
+}
