@@ -1,7 +1,7 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import { Button } from "./ui/button";
-import { Logo } from "./Logo";
+import { Logo, LogoText } from "./Logo";
 
 export default function Layout({ children }) {
   const { user, logout } = useAuth();
@@ -18,9 +18,9 @@ export default function Layout({ children }) {
     <div className="min-h-screen flex flex-col bg-[#FFF5FA] text-[#0A0A0A]">
       <div className="glitter-strip h-2 w-full" aria-hidden />
       <header className="border-b-2 border-[#0A0A0A] sticky top-0 bg-[#FFF5FA]/95 backdrop-blur z-40">
-        <div className="max-w-[1400px] mx-auto flex items-center justify-between px-6 lg:px-12 h-20">
+        <div className="max-w-[1400px] mx-auto flex items-center justify-between px-6 lg:px-12 h-28">
           <Link to="/" data-testid="logo-link">
-            <Logo />
+            <Logo size={96} />
           </Link>
           <nav className="hidden md:flex items-center gap-1">
             {navItems.map((n) => (
@@ -93,7 +93,7 @@ export default function Layout({ children }) {
         <div className="glitter-strip h-1 w-full" aria-hidden />
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-16 grid md:grid-cols-3 gap-8 relative z-10">
           <div>
-            <Logo dark />
+            <LogoText />
             <p className="text-sm text-[#FFB8D8] mt-6 leading-relaxed">
               Peptide price intelligence for the modern girl. Built by the girls, for the girls.
             </p>
