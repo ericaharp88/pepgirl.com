@@ -97,6 +97,7 @@ class Vendor(BaseModel):
     logo_url: str = ""
     rating: float = 0.0
     tags: List[str] = []
+    discount_code: str = ""
     featured: bool = False
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
@@ -109,6 +110,7 @@ class VendorIn(BaseModel):
     logo_url: str = ""
     rating: float = 0.0
     tags: List[str] = []
+    discount_code: str = ""
     featured: bool = False
 
 
@@ -434,29 +436,153 @@ async def seed_admin():
 
 
 async def seed_sample_data():
-    if await db.vendors.count_documents({}) > 0:
-        return
-    logger.info("Seeding sample data...")
+    """Idempotent seed: inserts vendors / peptides / resources only if their slug
+    (or title) is missing. Safe to re-run; never overwrites user-edited records."""
+    logger.info("Running idempotent sample-data seed...")
+
     vendors = [
-        {"name": "PeptideSciences", "slug": "peptide-sciences", "description": "US-based research peptides with COA on every product.",
-         "affiliate_url": "https://www.peptidesciences.com/?ref=peptidehub", "logo_url": "",
-         "rating": 4.7, "tags": ["USA", "COA", "Research"], "featured": True},
-        {"name": "Pure Peptides USA", "slug": "pure-peptides-usa", "description": "Third-party tested peptides shipped from US labs.",
-         "affiliate_url": "https://purepeptidesusa.com/?ref=peptidehub", "logo_url": "",
-         "rating": 4.5, "tags": ["USA", "Tested"], "featured": True},
-        {"name": "Amino Asylum", "slug": "amino-asylum", "description": "Budget-friendly with broad peptide selection.",
-         "affiliate_url": "https://aminoasylum.shop/?ref=peptidehub", "logo_url": "",
-         "rating": 4.2, "tags": ["Budget", "Variety"], "featured": False},
-        {"name": "Limitless Life", "slug": "limitless-life", "description": "High-purity peptides, premium pricing.",
-         "affiliate_url": "https://limitlesslifenootropics.com/?ref=peptidehub", "logo_url": "",
-         "rating": 4.6, "tags": ["Premium", "Purity"], "featured": False},
+        # ───── Existing defaults ─────
+        {"name": "PeptideSciences", "slug": "peptide-sciences",
+         "description": "US-based research peptides with COA on every product.",
+         "affiliate_url": "https://www.peptidesciences.com/?ref=peptidehub",
+         "logo_url": "https://www.google.com/s2/favicons?domain=peptidesciences.com&sz=128",
+         "rating": 4.7, "tags": ["Peptides", "USA", "COA", "Research"],
+         "discount_code": "", "featured": True},
+        {"name": "Pure Peptides USA", "slug": "pure-peptides-usa",
+         "description": "Third-party tested peptides shipped from US labs.",
+         "affiliate_url": "https://purepeptidesusa.com/?ref=peptidehub",
+         "logo_url": "https://www.google.com/s2/favicons?domain=purepeptidesusa.com&sz=128",
+         "rating": 4.5, "tags": ["Peptides", "USA", "Tested"],
+         "discount_code": "", "featured": True},
+        {"name": "Amino Asylum", "slug": "amino-asylum",
+         "description": "Budget-friendly with broad peptide selection.",
+         "affiliate_url": "https://aminoasylum.shop/?ref=peptidehub",
+         "logo_url": "https://www.google.com/s2/favicons?domain=aminoasylum.shop&sz=128",
+         "rating": 4.2, "tags": ["Peptides", "Budget", "Variety"],
+         "discount_code": "", "featured": False},
+        {"name": "Limitless Life", "slug": "limitless-life",
+         "description": "High-purity peptides, premium pricing.",
+         "affiliate_url": "https://limitlesslifenootropics.com/?ref=peptidehub",
+         "logo_url": "https://www.google.com/s2/favicons?domain=limitlesslifenootropics.com&sz=128",
+         "rating": 4.6, "tags": ["Peptides", "Premium", "Purity"],
+         "discount_code": "", "featured": False},
+
+        # ───── New peptide vendors (Erica's affiliates) ─────
+        {"name": "Amino Well USA", "slug": "amino-well-usa",
+         "description": "Research peptides from a US-based lab.",
+         "affiliate_url": "https://aminowellusa.com/?ref=xmqfndph",
+         "logo_url": "https://www.google.com/s2/favicons?domain=aminowellusa.com&sz=128",
+         "rating": 4.6, "tags": ["Peptides", "USA"],
+         "discount_code": "ERICA", "featured": True},
+        {"name": "Felix Chems", "slug": "felix-chems",
+         "description": "1 FREE Hospira bac water with every order. Felix Friday deals every Friday.",
+         "affiliate_url": "https://felixchem.is/refer/8220/",
+         "logo_url": "https://www.google.com/s2/favicons?domain=felixchem.is&sz=128",
+         "rating": 4.6, "tags": ["Peptides", "BAC Water"],
+         "discount_code": "ERICAS10", "featured": True},
+        {"name": "Glow Aminos", "slug": "glow-aminos",
+         "description": "Curated peptide selection with member savings.",
+         "affiliate_url": "https://glowaminos.com/shop/?coupon=ERICA",
+         "logo_url": "https://www.google.com/s2/favicons?domain=glowaminos.com&sz=128",
+         "rating": 4.5, "tags": ["Peptides"],
+         "discount_code": "ERICA", "featured": False},
+        {"name": "Peptide Tech", "slug": "peptide-tech",
+         "description": "Research peptides — 8x tested, 99%+ pure.",
+         "affiliate_url": "https://peptidetech.co/?ref=jrmrcamc&utm_source=affiliate",
+         "logo_url": "https://www.google.com/s2/favicons?domain=peptidetech.co&sz=128",
+         "rating": 4.8, "tags": ["Peptides", "Tested", "High Purity"],
+         "discount_code": "ERICA", "featured": True},
+        {"name": "Modified Aminos", "slug": "modified-aminos",
+         "description": "Capsules & nasal sprays — alternative delivery formats.",
+         "affiliate_url": "https://modifiedaminos.shop/?ref=ERICA",
+         "logo_url": "https://www.google.com/s2/favicons?domain=modifiedaminos.shop&sz=128",
+         "rating": 4.5, "tags": ["Peptides", "Capsules", "Nasal Spray"],
+         "discount_code": "ERICA", "featured": False},
+        {"name": "Fusion Peptide", "slug": "fusion-peptide",
+         "description": "Research-grade peptides with consistent QC.",
+         "affiliate_url": "https://fusionpeptide.com/?ref=erica",
+         "logo_url": "https://www.google.com/s2/favicons?domain=fusionpeptide.com&sz=128",
+         "rating": 4.4, "tags": ["Peptides"],
+         "discount_code": "ERICA", "featured": False},
+        {"name": "Tcore Bio Tech", "slug": "tcore-bio-tech",
+         "description": "Biotech-grade research peptides.",
+         "affiliate_url": "https://tcorebiotech.com/?ref=erica",
+         "logo_url": "https://www.google.com/s2/favicons?domain=tcorebiotech.com&sz=128",
+         "rating": 4.4, "tags": ["Peptides", "Biotech"],
+         "discount_code": "ERICA20", "featured": False},
+        {"name": "True Peptide Labs", "slug": "true-peptide-labs",
+         "description": "Lab-tested peptides for research applications.",
+         "affiliate_url": "https://truepeptidelabs.com/?ref=glpgirly",
+         "logo_url": "https://www.google.com/s2/favicons?domain=truepeptidelabs.com&sz=128",
+         "rating": 4.5, "tags": ["Peptides", "Tested"],
+         "discount_code": "ERICA15", "featured": False},
+
+        # ───── Skin Care ─────
+        {"name": "Scantifix", "slug": "scantifix",
+         "description": "Raw peptide skin care and microneedling pens.",
+         "affiliate_url": "https://www.scantifix.com?sca_ref=9118700.xZuOQ8i17C",
+         "logo_url": "https://www.google.com/s2/favicons?domain=scantifix.com&sz=128",
+         "rating": 4.6, "tags": ["Skin Care", "Peptides", "Microneedling"],
+         "discount_code": "ERICA", "featured": True},
+        {"name": "Routine Skin", "slug": "routine-skin",
+         "description": "GHK-Cu 5% serums and creams for skin renewal.",
+         "affiliate_url": "https://www.routineskin.com/ericascorsur",
+         "logo_url": "https://www.google.com/s2/favicons?domain=routineskin.com&sz=128",
+         "rating": 4.6, "tags": ["Skin Care", "GHK-Cu"],
+         "discount_code": "ERICA10", "featured": False},
+        {"name": "Auro Wellness", "slug": "auro-wellness",
+         "description": "Topical Glutathione (Glutaryl, Auro GSH) — supports detox, immune function, mitochondrial energy, and defends skin from oxidative stress.",
+         "affiliate_url": "https://aurowellness.com/ref/10361483",
+         "logo_url": "https://www.google.com/s2/favicons?domain=aurowellness.com&sz=128",
+         "rating": 4.7, "tags": ["Skin Care", "Glutathione", "Wellness"],
+         "discount_code": "ERICA", "featured": True},
+
+        # ───── Supplements ─────
+        {"name": "Take Ploom", "slug": "take-ploom",
+         "description": "GLP-1 support supplements.",
+         "affiliate_url": "https://www.takeploom.com/ERICA10",
+         "logo_url": "https://www.google.com/s2/favicons?domain=takeploom.com&sz=128",
+         "rating": 4.5, "tags": ["Supplements", "GLP-1"],
+         "discount_code": "ERICA10", "featured": True},
+        {"name": "BelliWelli", "slug": "belliwelli",
+         "description": "Gut-friendly snacks and supplements.",
+         "affiliate_url": "https://belliwelli.com/SFXBWYBY",
+         "logo_url": "https://www.google.com/s2/favicons?domain=belliwelli.com&sz=128",
+         "rating": 4.4, "tags": ["Supplements", "Gut Health"],
+         "discount_code": "SFXBWYBY", "featured": False},
+        {"name": "Moon Brew", "slug": "moon-brew",
+         "description": "Functional mushroom + adaptogen brews.",
+         "affiliate_url": "https://moonbrew.co/SFRM3XWP",
+         "logo_url": "https://www.google.com/s2/favicons?domain=moonbrew.co&sz=128",
+         "rating": 4.5, "tags": ["Supplements", "Mushroom", "Adaptogen"],
+         "discount_code": "SFRM3XWP", "featured": False},
+        {"name": "Ryze Mushroom Coffee", "slug": "ryze-mushroom-coffee",
+         "description": "Mushroom coffee blend — link saves 15% off.",
+         "affiliate_url": "https://get.aspr.app/SH1dHj",
+         "logo_url": "https://www.google.com/s2/favicons?domain=ryzesuperfoods.com&sz=128",
+         "rating": 4.6, "tags": ["Supplements", "Mushroom", "Coffee"],
+         "discount_code": "", "featured": True},
+
+        # ───── Clothes ─────
+        {"name": "Comfrt", "slug": "comfrt",
+         "description": "Comfort-focused everyday clothing.",
+         "affiliate_url": "https://comfrt.com/ERICA947",
+         "logo_url": "https://www.google.com/s2/favicons?domain=comfrt.com&sz=128",
+         "rating": 4.5, "tags": ["Clothes"],
+         "discount_code": "ERICA947", "featured": False},
     ]
+
     vendor_ids = {}
+    inserted_vendor = 0
     for v in vendors:
+        existing = await db.vendors.find_one({"slug": v["slug"]}, {"id": 1, "_id": 0})
+        if existing:
+            vendor_ids[v["slug"]] = existing["id"]
+            continue
         obj = Vendor(**v)
-        d = obj.model_dump()
-        await db.vendors.insert_one(d)
+        await db.vendors.insert_one(obj.model_dump())
         vendor_ids[v["slug"]] = obj.id
+        inserted_vendor += 1
 
     peptides = [
         {"name": "BPC-157", "slug": "bpc-157", "description": "Body Protective Compound for tissue repair research.",
@@ -473,29 +599,41 @@ async def seed_sample_data():
          "typical_dose_mcg": 100, "category": "GH"},
     ]
     peptide_ids = {}
+    inserted_peptide = 0
     for p in peptides:
+        existing = await db.peptides.find_one({"slug": p["slug"]}, {"id": 1, "_id": 0})
+        if existing:
+            peptide_ids[p["slug"]] = existing["id"]
+            continue
         obj = Peptide(**p)
         await db.peptides.insert_one(obj.model_dump())
         peptide_ids[p["slug"]] = obj.id
+        inserted_peptide += 1
 
-    # Sample prices
-    import random
-    random.seed(42)
-    for pslug, pid in peptide_ids.items():
-        for vslug, vid in vendor_ids.items():
-            size = random.choice([5, 10])
-            base = {"bpc-157": 35, "tb-500": 60, "semaglutide": 110, "tirzepatide": 180,
-                    "ipamorelin": 30, "cjc-1295": 28}[pslug]
-            price = round(base * (size / 5) * random.uniform(0.85, 1.25), 2)
-            obj = PriceEntry(peptide_id=pid, vendor_id=vid, size_mg=size,
-                             price_usd=price, product_url="", scrape_selector="")
-            await db.prices.insert_one(obj.model_dump())
+    # Only seed sample prices if there are no prices at all (avoid duplicating
+    # the user's own price entries on re-runs).
+    if await db.prices.count_documents({}) == 0 and peptide_ids and vendor_ids:
+        import random
+        random.seed(42)
+        original_vendor_slugs = ["peptide-sciences", "pure-peptides-usa", "amino-asylum", "limitless-life"]
+        for pslug, pid in peptide_ids.items():
+            for vslug in original_vendor_slugs:
+                vid = vendor_ids.get(vslug)
+                if not vid:
+                    continue
+                size = random.choice([5, 10])
+                base = {"bpc-157": 35, "tb-500": 60, "semaglutide": 110, "tirzepatide": 180,
+                        "ipamorelin": 30, "cjc-1295": 28}[pslug]
+                price = round(base * (size / 5) * random.uniform(0.85, 1.25), 2)
+                obj = PriceEntry(peptide_id=pid, vendor_id=vid, size_mg=size,
+                                 price_usd=price, product_url="", scrape_selector="")
+                await db.prices.insert_one(obj.model_dump())
 
     resources = [
         {"title": "How to Reconstitute Peptides Safely",
          "category": "Guide",
          "summary": "Step-by-step BAC water reconstitution for research peptides.",
-         "url": "", "content": "Use bacteriostatic water (0.9% benzyl alcohol). Inject slowly down the inside of the vial. Swirl, do not shake. Store at 2–8°C and use within 30 days."},
+         "url": "", "content": "Use bacteriostatic water (0.9% benzyl alcohol). Inject slowly down the inside of the vial. Swirl, do not shake. Store at 2-8 C and use within 30 days."},
         {"title": "Reading a Peptide Certificate of Analysis (COA)",
          "category": "Guide", "summary": "What HPLC purity, mass spec, and bioburden numbers really mean.",
          "url": "", "content": "Look for >98% HPLC purity, matching mass spec to the theoretical mass, and endotoxin tested below 0.5 EU/mg for injectables used in research."},
@@ -506,11 +644,17 @@ async def seed_sample_data():
          "category": "Reference", "summary": "Common U-100 insulin syringe markings and how they map to mL.",
          "url": "", "content": "1 unit on a U-100 insulin syringe = 0.01 mL. A 50-unit syringe holds 0.5 mL. A 100-unit syringe holds 1.0 mL."},
     ]
+    inserted_resource = 0
     for r in resources:
+        existing = await db.resources.find_one({"title": r["title"]}, {"id": 1, "_id": 0})
+        if existing:
+            continue
         obj = Resource(**r)
         await db.resources.insert_one(obj.model_dump())
+        inserted_resource += 1
 
-    logger.info("Sample data seeded.")
+    logger.info(f"Seed complete. Inserted: {inserted_vendor} vendors, "
+                f"{inserted_peptide} peptides, {inserted_resource} resources.")
 
 
 @app.on_event("startup")

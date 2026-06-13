@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { toast } from "sonner";
 import { RefreshCw, Trash2, RotateCw } from "lucide-react";
 
-const blankVendor = { name: "", slug: "", description: "", affiliate_url: "", logo_url: "", rating: 4.5, tags: [], featured: false };
+const blankVendor = { name: "", slug: "", description: "", affiliate_url: "", logo_url: "", rating: 4.5, tags: [], discount_code: "", featured: false };
 const blankResource = { title: "", category: "Guide", summary: "", url: "", content: "" };
 const blankPeptide = { name: "", slug: "", description: "", typical_dose_mcg: 0, category: "" };
 const blankPrice = { peptide_id: "", vendor_id: "", size_mg: 5, price_usd: 0, product_url: "", scrape_selector: "" };
@@ -105,6 +105,7 @@ function VendorsPanel() {
             <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="rounded-none border-[#0A0A0A] mt-2 font-mono text-sm" data-testid="v-desc" />
           </div>
           <Field label="Tags (comma-sep)" value={tagsStr} onChange={setTagsStr} />
+          <Field label="Discount code" value={form.discount_code} onChange={(v) => setForm({ ...form, discount_code: v })} testId="v-code" />
           <Field label="Rating (0-5)" type="number" value={form.rating} onChange={(v) => setForm({ ...form, rating: v })} />
           <div className="flex items-center justify-between border border-[#E5E5E5] p-3">
             <Label className="eyebrow">Featured</Label>

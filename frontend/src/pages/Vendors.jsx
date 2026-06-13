@@ -76,13 +76,49 @@ export default function Vendors() {
               className="p-8 bg-white flex flex-col"
               data-testid={`vendor-card-${v.slug}`}
             >
-              <div className="mb-6">
+              <div className="mb-6 flex items-center justify-between gap-3">
                 <div className="font-mono text-xs uppercase tracking-[0.25em] text-[#5C5C5C]">
                   {v.featured ? "★ Featured" : "Listed"}
                 </div>
+                {v.logo_url && (
+                  <img
+                    src={v.logo_url}
+                    alt={`${v.name} logo`}
+                    loading="lazy"
+                    onError={(e) => {
+                      // Fallback: try Google favicon from the vendor's affiliate URL host
+                      try {
+                        const host = new URL(v.affiliate_url).hostname.replace(/^www\./, "");
+                        const fallback = `https://www.google.com/s2/favicons?domain=${host}&sz=128`;
+                        if (e.currentTarget.src !== fallback) {
+                          e.currentTarget.src = fallback;
+                          return;
+                        }
+                      } catch (_) { /* noop */ }
+                      e.currentTarget.style.display = "none";
+                    }}
+                    className="h-10 w-10 object-contain rounded-sm bg-white"
+                    data-testid={`vendor-logo-${v.slug}`}
+                  />
+                )}
               </div>
               <h2 className="text-3xl font-bold tracking-tight mb-2">{v.name}</h2>
-              <p className="text-sm text-[#5C5C5C] mb-6 flex-1">{v.description}</p>
+              <p className="text-sm text-[#5C5C5C] mb-4 flex-1">{v.description}</p>
+
+              {v.discount_code && (
+                <div
+                  data-testid={`vendor-code-${v.slug}`}
+                  className="mb-4 flex items-center gap-2 bg-[#FFF0F7] border border-[#F0CFE0] px-3 py-2 rounded-sm"
+                >
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#5C5C5C]">
+                    Code
+                  </span>
+                  <span className="font-mono font-bold text-sm text-[#FF2D87] tracking-wider">
+                    {v.discount_code}
+                  </span>
+                </div>
+              )}
+
               <div className="flex flex-wrap gap-2 mb-6">
                 {v.tags?.map((t) => (
                   <Badge
