@@ -56,7 +56,12 @@ export default function Calculator() {
           For powder peptides. Calculates diluent and injection volume.
         </p>
 
-        {/* Tabs removed */}
+        {/* Single tab label */}
+        <div className="mt-6 inline-flex p-1.5 bg-[#FFF0F7] rounded-full border border-[#F0CFE0]">
+          <span className="px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#0A0A0A] text-white shadow">
+            Reconstitution Calculator
+          </span>
+        </div>
 
         {/* Step 1 */}
         <Step n="1" title="What's in your vial?">
