@@ -30,7 +30,7 @@ export default function Calculator() {
   return (
     <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-16">
       <div className="border-b border-[#0A0A0A] pb-6 mb-12">
-        <div className="eyebrow text-[#002FA7] mb-3">Tool · 02</div>
+        <div className="eyebrow text-[#FF2D87] mb-3">Tool · 02</div>
         <h1 className="text-5xl lg:text-7xl font-black tracking-tighter">Reconstitution Calculator</h1>
         <p className="text-base text-[#5C5C5C] mt-4 max-w-2xl">
           Convert a peptide vial + BAC water volume into an exact draw on a U-100 insulin syringe.
@@ -86,7 +86,7 @@ export default function Calculator() {
             <div className="eyebrow text-[#7C7C7C]">Draw on syringe</div>
             <div className="text-6xl lg:text-7xl font-mono font-black tracking-tighter mt-2 text-[#FFFFFF]" data-testid="calc-draw-units">
               {fmt(drawUnits, 1)}
-              <span className="text-2xl text-[#002FA7] ml-2">units</span>
+              <span className="text-2xl text-[#FF2D87] ml-2">units</span>
             </div>
           </div>
           <div className="mt-10 grid grid-cols-2 gap-8 border-t border-[#2A2A2A] pt-8">

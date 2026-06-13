@@ -1,6 +1,7 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import { Button } from "./ui/button";
+import { Logo } from "./Logo";
 
 export default function Layout({ children }) {
   const { user, logout } = useAuth();
@@ -14,14 +15,12 @@ export default function Layout({ children }) {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-[#0A0A0A]">
-      <header className="border-b border-[#E5E5E5] sticky top-0 bg-white z-40">
-        <div className="max-w-[1400px] mx-auto flex items-center justify-between px-6 lg:px-12 h-16">
-          <Link to="/" className="flex items-center gap-3" data-testid="logo-link">
-            <span className="w-6 h-6 bg-[#002FA7]" aria-hidden />
-            <span className="font-mono text-sm tracking-[0.25em] uppercase font-bold">
-              PEPTIDE/HUB
-            </span>
+    <div className="min-h-screen flex flex-col bg-[#FFF5FA] text-[#0A0A0A]">
+      <div className="glitter-strip h-2 w-full" aria-hidden />
+      <header className="border-b-2 border-[#0A0A0A] sticky top-0 bg-[#FFF5FA]/95 backdrop-blur z-40">
+        <div className="max-w-[1400px] mx-auto flex items-center justify-between px-6 lg:px-12 h-20">
+          <Link to="/" data-testid="logo-link">
+            <Logo />
           </Link>
           <nav className="hidden md:flex items-center gap-1">
             {navItems.map((n) => (
@@ -30,8 +29,8 @@ export default function Layout({ children }) {
                 to={n.to}
                 data-testid={`nav-${n.to.slice(1)}`}
                 className={({ isActive }) =>
-                  `px-4 py-2 text-sm font-medium border border-transparent hover:border-[#0A0A0A] ${
-                    isActive ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : ""
+                  `px-4 py-2 text-sm font-semibold border border-transparent hover:border-[#FF2D87] hover:text-[#FF2D87] ${
+                    isActive ? "bg-[#FF2D87] text-white border-[#FF2D87]" : ""
                   }`
                 }
               >
@@ -44,7 +43,7 @@ export default function Layout({ children }) {
               <>
                 <Button
                   variant="outline"
-                  className="rounded-none border-[#0A0A0A] hover:bg-[#0A0A0A] hover:text-white"
+                  className="rounded-none border-[#0A0A0A] hover:bg-[#FF2D87] hover:text-white hover:border-[#FF2D87]"
                   onClick={() => nav("/admin")}
                   data-testid="admin-btn"
                 >
@@ -62,7 +61,7 @@ export default function Layout({ children }) {
             ) : (
               <Button
                 variant="outline"
-                className="rounded-none border-[#0A0A0A] hover:bg-[#0A0A0A] hover:text-white"
+                className="rounded-none border-[#0A0A0A] hover:bg-[#FF2D87] hover:text-white hover:border-[#FF2D87]"
                 onClick={() => nav("/login")}
                 data-testid="login-btn"
               >
@@ -71,15 +70,14 @@ export default function Layout({ children }) {
             )}
           </div>
         </div>
-        {/* mobile nav */}
-        <div className="md:hidden border-t border-[#E5E5E5] flex overflow-x-auto">
+        <div className="md:hidden border-t border-[#F0CFE0] flex overflow-x-auto bg-white">
           {navItems.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
               className={({ isActive }) =>
-                `px-4 py-3 text-xs font-mono uppercase tracking-widest border-r border-[#E5E5E5] flex-shrink-0 ${
-                  isActive ? "bg-[#0A0A0A] text-white" : ""
+                `px-4 py-3 text-xs font-mono uppercase tracking-widest border-r border-[#F0CFE0] flex-shrink-0 ${
+                  isActive ? "bg-[#FF2D87] text-white" : ""
                 }`
               }
             >
@@ -91,31 +89,31 @@ export default function Layout({ children }) {
 
       <main className="flex-1">{children}</main>
 
-      <footer className="border-t border-[#E5E5E5] mt-24">
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-12 grid md:grid-cols-3 gap-8">
+      <footer className="border-t-2 border-[#0A0A0A] mt-24 bg-[#0A0A0A] text-white sparkle-bg">
+        <div className="glitter-strip h-1 w-full" aria-hidden />
+        <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-16 grid md:grid-cols-3 gap-8 relative z-10">
           <div>
-            <div className="font-mono text-xs uppercase tracking-[0.25em] text-[#5C5C5C] mb-3">
-              Disclaimer
-            </div>
-            <p className="text-sm leading-relaxed">
-              All peptides referenced on this site are intended strictly for research
-              and laboratory use. Not for human consumption. Verify vendor COAs.
+            <Logo dark />
+            <p className="text-sm text-[#FFB8D8] mt-6 leading-relaxed">
+              Peptide price intelligence for the modern girl. Built by the girls, for the girls.
             </p>
           </div>
           <div>
-            <div className="font-mono text-xs uppercase tracking-[0.25em] text-[#5C5C5C] mb-3">
-              Affiliate notice
-            </div>
-            <p className="text-sm leading-relaxed">
-              Links to vendors on this site may be affiliate links. We may earn a
-              commission on qualifying purchases at no extra cost to you.
+            <div className="font-mono text-xs uppercase tracking-[0.25em] chrome-text mb-3">Disclaimer</div>
+            <p className="text-sm leading-relaxed text-[#E0E0E0]">
+              All peptides referenced on this site are intended strictly for research and
+              laboratory use. Not for human consumption. Verify vendor COAs.
             </p>
           </div>
           <div>
-            <div className="font-mono text-xs uppercase tracking-[0.25em] text-[#5C5C5C] mb-3">
-              © PEPTIDE/HUB {new Date().getFullYear()}
-            </div>
-            <p className="text-sm">Built for serious researchers.</p>
+            <div className="font-mono text-xs uppercase tracking-[0.25em] chrome-text mb-3">Affiliate notice</div>
+            <p className="text-sm leading-relaxed text-[#E0E0E0]">
+              Links to vendors on this site may be affiliate links. We may earn a commission
+              on qualifying purchases at no extra cost to you.
+            </p>
+            <p className="mt-6 text-[10px] font-mono uppercase tracking-[0.3em] text-[#FF6FB5]">
+              © PEPGIRL/PRICE/CHECK {new Date().getFullYear()}
+            </p>
           </div>
         </div>
       </footer>

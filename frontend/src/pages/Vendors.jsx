@@ -15,7 +15,7 @@ export default function Vendors() {
     <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-16">
       <div className="flex items-end justify-between border-b border-[#0A0A0A] pb-6 mb-12">
         <div>
-          <div className="eyebrow text-[#002FA7] mb-3">Directory · 01</div>
+          <div className="eyebrow text-[#FF2D87] mb-3">Directory · 01</div>
           <h1 className="text-5xl lg:text-7xl font-black tracking-tighter">Vendors</h1>
         </div>
         <div className="hidden md:block text-right">
@@ -51,7 +51,7 @@ export default function Vendors() {
                   {v.featured ? "★ Featured" : "Listed"}
                 </div>
                 <div className="flex items-center gap-1 font-mono text-sm">
-                  <Star size={14} fill="#002FA7" strokeWidth={0} />
+                  <Star size={14} fill="#FF2D87" strokeWidth={0} />
                   {v.rating?.toFixed(1)}
                 </div>
               </div>
@@ -73,7 +73,7 @@ export default function Vendors() {
                 target="_blank"
                 rel="noopener noreferrer sponsored"
                 data-testid={`vendor-visit-${v.slug}`}
-                className="bg-[#0A0A0A] text-white px-4 py-3 inline-flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-[0.25em] hover:bg-[#002FA7]"
+                className="bg-[#0A0A0A] text-white px-4 py-3 inline-flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-[0.25em] hover:bg-[#FF2D87]"
               >
                 Visit Vendor <ExternalLink size={14} />
               </a>

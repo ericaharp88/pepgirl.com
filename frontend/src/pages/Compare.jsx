@@ -60,7 +60,7 @@ export default function Compare() {
     <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-16">
       <div className="border-b border-[#0A0A0A] pb-6 mb-12 flex flex-wrap items-end justify-between gap-6">
         <div>
-          <div className="eyebrow text-[#002FA7] mb-3">Tool · 03</div>
+          <div className="eyebrow text-[#FF2D87] mb-3">Tool · 03</div>
           <h1 className="text-5xl lg:text-7xl font-black tracking-tighter">Price Comparison</h1>
           <p className="text-sm text-[#5C5C5C] mt-3">
             Lowest per-mg price highlighted. Sort by column. Last admin-scrape times in tooltips.
@@ -94,7 +94,7 @@ export default function Compare() {
               {data.vendors.map((v) => (
                 <th
                   key={v.id}
-                  className="text-left p-4 font-mono text-xs uppercase tracking-[0.15em] cursor-pointer border-r border-[#2A2A2A] hover:bg-[#002FA7]"
+                  className="text-left p-4 font-mono text-xs uppercase tracking-[0.15em] cursor-pointer border-r border-[#2A2A2A] hover:bg-[#FF2D87]"
                   onClick={() => setSort({ vendorId: v.id, dir: sort.vendorId === v.id && sort.dir === "asc" ? "desc" : "asc" })}
                   data-testid={`sort-vendor-${v.slug}`}
                 >
@@ -126,7 +126,7 @@ export default function Compare() {
                   return (
                     <td
                       key={v.id}
-                      className={`p-4 border-r border-[#E5E5E5] font-mono ${isBest ? "bg-[#002FA7] text-white" : ""}`}
+                      className={`p-4 border-r border-[#E5E5E5] font-mono ${isBest ? "bg-[#FF2D87] text-white" : ""}`}
                       title={c.last_scraped ? `Updated ${c.last_scraped}` : "Manual entry"}
                     >
                       <div className="flex items-center justify-between gap-3">
@@ -161,7 +161,7 @@ export default function Compare() {
       </div>
 
       <p className="mt-6 text-xs font-mono uppercase tracking-[0.2em] text-[#5C5C5C]">
-        Best per-vial price highlighted in <span className="bg-[#002FA7] text-white px-2 py-0.5">blue</span>.
+        Best per-vial price highlighted in <span className="bg-[#FF2D87] text-white px-2 py-0.5">blue</span>.
         Per-mg cost shown beneath.
       </p>
     </div>

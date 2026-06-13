@@ -25,7 +25,7 @@ export default function Admin() {
   return (
     <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-12">
       <div className="border-b border-[#0A0A0A] pb-4 mb-8">
-        <div className="eyebrow text-[#002FA7] mb-2">Control Room</div>
+        <div className="eyebrow text-[#FF2D87] mb-2">Control Room</div>
         <h1 className="text-4xl lg:text-6xl font-black tracking-tighter">Admin Dashboard</h1>
       </div>
       <Tabs defaultValue="vendors">
@@ -110,7 +110,7 @@ function VendorsPanel() {
             <Label className="eyebrow">Featured</Label>
             <Switch checked={form.featured} onCheckedChange={(v) => setForm({ ...form, featured: v })} />
           </div>
-          <Button onClick={save} data-testid="v-save" className="w-full rounded-none bg-[#002FA7] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">Add vendor</Button>
+          <Button onClick={save} data-testid="v-save" className="w-full rounded-none bg-[#FF2D87] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">Add vendor</Button>
         </div>
       </div>
       <div className="lg:col-span-7">
@@ -119,7 +119,7 @@ function VendorsPanel() {
           {items.map((v) => (
             <div key={v.id} className="border-b border-[#E5E5E5] p-4 flex items-start justify-between gap-4">
               <div>
-                <div className="font-bold">{v.name} {v.featured && <span className="ml-2 text-xs font-mono text-[#002FA7]">★</span>}</div>
+                <div className="font-bold">{v.name} {v.featured && <span className="ml-2 text-xs font-mono text-[#FF2D87]">★</span>}</div>
                 <div className="text-xs font-mono text-[#5C5C5C]">{v.slug}</div>
                 <div className="text-xs mt-1 truncate max-w-[420px]">{v.affiliate_url}</div>
               </div>
@@ -160,7 +160,7 @@ function PeptidesPanel() {
             <Label className="eyebrow text-[#5C5C5C]">Description</Label>
             <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="rounded-none border-[#0A0A0A] mt-2 font-mono text-sm" />
           </div>
-          <Button onClick={save} data-testid="p-save" className="w-full rounded-none bg-[#002FA7] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">Add peptide</Button>
+          <Button onClick={save} data-testid="p-save" className="w-full rounded-none bg-[#FF2D87] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">Add peptide</Button>
         </div>
       </div>
       <div className="lg:col-span-7">
@@ -252,12 +252,12 @@ function PricesPanel() {
           <div className="text-[11px] font-mono text-[#5C5C5C] leading-relaxed">
             Tip: CSS selector example → <code>.price .amount</code> or <code>span.product-price</code>
           </div>
-          <Button onClick={save} data-testid="pr-save" className="w-full rounded-none bg-[#002FA7] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">Add price</Button>
+          <Button onClick={save} data-testid="pr-save" className="w-full rounded-none bg-[#FF2D87] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">Add price</Button>
         </div>
       </div>
       <div className="lg:col-span-7">
         <SectionHeader title={`Prices (${items.length})`} action={
-          <Button onClick={scrapeAll} disabled={busy === "all"} className="rounded-none bg-[#0A0A0A] text-white hover:bg-[#002FA7] font-mono uppercase tracking-widest text-xs" data-testid="scrape-all">
+          <Button onClick={scrapeAll} disabled={busy === "all"} className="rounded-none bg-[#0A0A0A] text-white hover:bg-[#FF2D87] font-mono uppercase tracking-widest text-xs" data-testid="scrape-all">
             <RefreshCw size={14} className={`mr-2 ${busy === "all" ? "animate-spin" : ""}`} /> Scrape all
           </Button>
         } />
@@ -269,7 +269,7 @@ function PricesPanel() {
               <div className="col-span-2 font-mono text-xl font-bold">${pr.price_usd?.toFixed(2)}</div>
               <div className="col-span-2 text-[10px] font-mono text-[#5C5C5C] truncate" title={pr.last_status}>{pr.last_status}</div>
               <div className="col-span-2 flex gap-2 justify-end">
-                <Button variant="ghost" size="icon" onClick={() => scrape(pr.id)} disabled={busy === pr.id || !pr.product_url} className="rounded-none hover:bg-[#002FA7] hover:text-white" data-testid={`scrape-${pr.id}`}>
+                <Button variant="ghost" size="icon" onClick={() => scrape(pr.id)} disabled={busy === pr.id || !pr.product_url} className="rounded-none hover:bg-[#FF2D87] hover:text-white" data-testid={`scrape-${pr.id}`}>
                   <RotateCw size={14} className={busy === pr.id ? "animate-spin" : ""} />
                 </Button>
                 <Button variant="ghost" size="icon" onClick={() => del(pr.id)} className="rounded-none hover:bg-[#E60000] hover:text-white"><Trash2 size={14} /></Button>
@@ -316,7 +316,7 @@ function ResourcesPanel() {
             <Label className="eyebrow text-[#5C5C5C]">Content (if internal)</Label>
             <Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={5} className="rounded-none border-[#0A0A0A] mt-2 font-mono text-sm" />
           </div>
-          <Button onClick={save} data-testid="r-save" className="w-full rounded-none bg-[#002FA7] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">Add resource</Button>
+          <Button onClick={save} data-testid="r-save" className="w-full rounded-none bg-[#FF2D87] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">Add resource</Button>
         </div>
       </div>
       <div className="lg:col-span-7">
@@ -325,7 +325,7 @@ function ResourcesPanel() {
           {items.map((r) => (
             <div key={r.id} className="border-b border-[#E5E5E5] p-4 flex items-start justify-between gap-4">
               <div>
-                <div className="text-[10px] font-mono uppercase tracking-widest text-[#002FA7]">{r.category}</div>
+                <div className="text-[10px] font-mono uppercase tracking-widest text-[#FF2D87]">{r.category}</div>
                 <div className="font-bold">{r.title}</div>
                 <div className="text-xs text-[#5C5C5C]">{r.summary}</div>
               </div>

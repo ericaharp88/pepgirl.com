@@ -38,7 +38,7 @@ export default function Login() {
   return (
     <div className="max-w-md mx-auto px-6 py-24">
       <div className="border-b border-[#0A0A0A] pb-4 mb-8">
-        <div className="eyebrow text-[#002FA7] mb-3">Restricted</div>
+        <div className="eyebrow text-[#FF2D87] mb-3">Restricted</div>
         <h1 className="text-4xl font-black tracking-tighter">Admin login</h1>
       </div>
       <form onSubmit={submit} className="space-y-6" data-testid="login-form">
@@ -69,7 +69,7 @@ export default function Login() {
           type="submit"
           disabled={busy}
           data-testid="login-submit"
-          className="w-full rounded-none bg-[#002FA7] hover:bg-[#0A0A0A] text-white h-12 font-mono uppercase tracking-[0.25em] text-xs"
+          className="w-full rounded-none bg-[#FF2D87] hover:bg-[#0A0A0A] text-white h-12 font-mono uppercase tracking-[0.25em] text-xs"
         >
           {busy ? "Signing in…" : "Sign in"}
         </Button>

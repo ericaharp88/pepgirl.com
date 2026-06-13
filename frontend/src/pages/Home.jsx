@@ -15,24 +15,24 @@ export default function Home() {
       <section className="border-b border-[#E5E5E5]">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-16 lg:py-28 grid lg:grid-cols-12 gap-8">
           <div className="lg:col-span-8">
-            <div className="eyebrow text-[#002FA7] mb-6" data-testid="hero-eyebrow">
-              Research peptide intelligence · est. 2026
+            <div className="eyebrow text-[#FF2D87] mb-6" data-testid="hero-eyebrow">
+              Peptide price intelligence · for the girls · est. 2026
             </div>
             <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-[-0.04em] leading-[0.92]">
               Compare, calculate,<br/>
               source peptides<br/>
-              <span className="text-[#002FA7]">with precision.</span>
+              <span className="pink-text font-serif-glam italic font-normal">like a girl.</span>
             </h1>
             <p className="mt-8 text-lg max-w-2xl text-[#5C5C5C] leading-relaxed">
-              A no-nonsense affiliate hub for research peptides. Curated vendors,
-              transparent pricing across suppliers, and a calculator that turns mcg
-              dosing into insulin syringe units in one step.
+              The no-nonsense affiliate hub for research peptides — with the receipts.
+              Vendor prices side-by-side, a calculator that turns mcg into syringe units,
+              and zero gatekeeping. Sparkles included.
             </p>
             <div className="mt-10 flex flex-wrap gap-3">
               <Link
                 to="/compare"
                 data-testid="hero-cta-compare"
-                className="bg-[#002FA7] text-white px-6 py-4 text-sm font-mono uppercase tracking-[0.2em] hover:bg-[#0A0A0A] inline-flex items-center gap-3"
+                className="bg-[#FF2D87] text-white px-6 py-4 text-sm font-mono uppercase tracking-[0.2em] hover:bg-[#0A0A0A] inline-flex items-center gap-3"
               >
                 Compare Prices <ArrowRight size={16} />
               </Link>
@@ -65,7 +65,7 @@ export default function Home() {
                 key={to}
                 to={to}
                 data-testid={`tile-${to.slice(1)}`}
-                className="group p-10 lg:p-14 bg-white hover:bg-[#0A0A0A] hover:text-white"
+                className="group p-10 lg:p-14 bg-white hover:bg-gradient-to-br hover:from-[#FF2D87] hover:to-[#0A0A0A] hover:text-white"
               >
                 <div className="flex items-start justify-between mb-12">
                   <span className="font-mono text-xs tracking-[0.3em]">{label}</span>
@@ -92,7 +92,7 @@ export default function Home() {
           </div>
           <div className="lg:col-span-9">
             <p className="text-2xl lg:text-4xl font-light leading-snug tracking-tight">
-              We don&apos;t sell peptides. We help researchers <span className="bg-[#002FA7] text-white px-2">find honest vendors</span>, decode certificates of analysis, and stop guessing at syringe units. Every link with a &ldquo;ref=&rdquo; earns us a small commission — never at your cost.
+              We don&apos;t sell peptides — we help girls <span className="bg-[#FF2D87] text-white px-2">find honest vendors</span>, decode certificates of analysis, and stop guessing at syringe units. Every link with a &ldquo;ref=&rdquo; earns us a small commission — never at your cost. <span className="chrome-text font-serif-glam">✦ glittery transparency ✦</span>
             </p>
           </div>
         </div>
