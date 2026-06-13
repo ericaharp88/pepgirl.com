@@ -56,23 +56,7 @@ export default function Calculator() {
           For powder peptides. Calculates diluent and injection volume.
         </p>
 
-        {/* Tabs */}
-        <div className="mt-6 flex flex-wrap gap-2 p-1.5 bg-[#FFF0F7] rounded-full border border-[#F0CFE0]" data-testid="calc-tabs">
-          {tabs.map((t, i) => (
-            <button
-              key={t}
-              disabled={i !== 0}
-              className={`px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition ${
-                i === 0
-                  ? "bg-[#0A0A0A] text-white shadow"
-                  : "text-[#A0A0A0] cursor-not-allowed"
-              }`}
-              data-testid={`tab-${t.toLowerCase().replace(/\s+/g, "-")}`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
+        {/* Tabs removed */}
 
         {/* Step 1 */}
         <Step n="1" title="What's in your vial?">
