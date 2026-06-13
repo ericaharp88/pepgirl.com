@@ -6,10 +6,18 @@ import { Skeleton } from "../components/ui/skeleton";
 
 export default function Vendors() {
   const [vendors, setVendors] = useState(null);
+  const [filter, setFilter] = useState("All");
 
   useEffect(() => {
     api.get("/vendors").then(({ data }) => setVendors(data)).catch(() => setVendors([]));
   }, []);
+
+  const isSkin = (v) => (v.tags || []).some((t) => t.toLowerCase().includes("skin"));
+  const filtered = !vendors ? null : vendors.filter((v) =>
+    filter === "All" ? true : filter === "Skin Care" ? isSkin(v) : !isSkin(v)
+  );
+
+  const tabs = ["All", "Peptides", "Skin Care"];
 
   return (
     <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-16">
@@ -22,8 +30,24 @@ export default function Vendors() {
           <div className="text-xs font-mono uppercase tracking-[0.25em] text-[#5C5C5C]">
             Vendors listed
           </div>
-          <div className="text-4xl font-mono font-bold">{vendors ? String(vendors.length).padStart(2, "0") : "--"}</div>
+          <div className="text-4xl font-mono font-bold">{filtered ? String(filtered.length).padStart(2, "0") : "--"}</div>
         </div>
+      </div>
+
+      {/* Category filter */}
+      <div className="flex flex-wrap gap-0 border border-[#0A0A0A] mb-10 w-fit" data-testid="vendor-filter">
+        {tabs.map((t) => (
+          <button
+            key={t}
+            onClick={() => setFilter(t)}
+            data-testid={`filter-${t.toLowerCase().replace(/\s+/g, "-")}`}
+            className={`px-5 py-2 text-xs font-mono uppercase tracking-[0.25em] border-r border-[#0A0A0A] last:border-r-0 ${
+              filter === t ? "bg-[#FF2D87] text-white" : "bg-white hover:bg-[#FFE3F0]"
+            }`}
+          >
+            {t}
+          </button>
+        ))}
       </div>
 
       {!vendors && (
@@ -34,13 +58,13 @@ export default function Vendors() {
         </div>
       )}
 
-      {vendors && vendors.length === 0 && (
-        <p className="font-mono text-sm">No vendors yet. Admin can add them from the dashboard.</p>
+      {filtered && filtered.length === 0 && (
+        <p className="font-mono text-sm">No vendors match this filter.</p>
       )}
 
-      {vendors && vendors.length > 0 && (
+      {filtered && filtered.length > 0 && (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 grid-borders border-t border-l border-[#E5E5E5]">
-          {vendors.map((v) => (
+          {filtered.map((v) => (
             <div
               key={v.id}
               className="p-8 bg-white flex flex-col"
