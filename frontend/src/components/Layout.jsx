@@ -95,7 +95,7 @@ export default function Layout({ children }) {
           <div>
             <LogoText />
             <p className="text-sm text-[#FFB8D8] mt-6 leading-relaxed">
-              Peptide price intelligence for the modern girl. Built by the girls, for the girls.
+              Peptides · Confidence · You. Built by the girls, for the girls.
             </p>
           </div>
           <div>
@@ -112,7 +112,7 @@ export default function Layout({ children }) {
               on qualifying purchases at no extra cost to you.
             </p>
             <p className="mt-6 text-[10px] font-mono uppercase tracking-[0.3em] text-[#FF6FB5]">
-              © PEPGIRL/PRICE/CHECK {new Date().getFullYear()}
+              © PEPGIRL.COM {new Date().getFullYear()}
             </p>
           </div>
         </div>

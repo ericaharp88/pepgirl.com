@@ -26,7 +26,7 @@ export default function Home() {
             {/* Paragraph (left) */}
             <div className="lg:col-span-7 order-2 lg:order-1">
               <p className="text-lg lg:text-xl text-[#0A0A0A] leading-relaxed">
-                Welcome to <span className="font-bold">Pep Girl Price Check</span> — a wellness
+                Welcome to <span className="font-bold">Pepgirl.com</span> — a wellness
                 and peptide education hub for peptide researchers. Explore trusted vendors,
                 science-backed protocols, and tools designed to help you thrive in your research lab.
               </p>
@@ -51,7 +51,7 @@ export default function Home() {
                 >
                   <img
                     src="https://customer-assets.emergentagent.com/job_peptide-hub-37/artifacts/5qrfs077_IMG_0602.jpeg"
-                    alt="Erica — Pep Girl Price Check"
+                    alt="Erica — Pepgirl.com"
                     className="w-full h-full object-cover"
                   />
                 </div>
