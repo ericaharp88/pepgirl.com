@@ -79,33 +79,50 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Pic + buttons (right) */}
+            {/* Before/After pair + buttons (right) */}
             <div className="lg:col-span-5 order-1 lg:order-2 flex flex-col items-center">
-              <div className="relative">
-                <div
-                  aria-hidden
-                  className="absolute -inset-3 rounded-[50%]"
-                  style={{
-                    background:
-                      "conic-gradient(from 180deg, #FF2D87, #FFFFFF, #C0C0C0, #FF6FB5, #FFFFFF, #FF2D87)",
-                    filter: "blur(2px)",
-                  }}
-                />
-                <div
-                  className="relative overflow-hidden border-4 border-white shadow-[0_0_0_2px_#FF2D87]"
-                  style={{ width: 320, height: 430, borderRadius: "50%" }}
-                  data-testid="erica-photo"
-                >
-                  <img
-                    src="https://customer-assets.emergentagent.com/job_peptide-hub-37/artifacts/5qrfs077_IMG_0602.jpeg"
-                    alt="Erica — Pepgirl.com"
-                    className="w-full h-full object-cover"
-                  />
+              <div className="relative w-full max-w-md" data-testid="before-after">
+                {/* "-90 LBS" headline */}
+                <div className="text-center mb-4">
+                  <div className="eyebrow text-[#5C5C5C]">My peptide journey</div>
+                  <div className="mt-1 text-4xl sm:text-5xl font-black tracking-tighter">
+                    <span className="pink-text font-serif-glam italic">−90</span> lbs
+                  </div>
                 </div>
-                <div
-                  aria-hidden
-                  className="absolute -bottom-10 left-1/2 -translate-x-1/2 whitespace-nowrap text-xl font-serif-glam italic text-[#FF2D87]"
-                >
+
+                <div className="grid grid-cols-2 gap-3">
+                  {/* BEFORE */}
+                  <div className="relative">
+                    <div className="overflow-hidden rounded-2xl border-4 border-white shadow-[0_0_0_2px_#F0CFE0,0_8px_24px_rgba(255,45,135,0.12)] aspect-[3/4] bg-[#FFF0F7]">
+                      <img
+                        src="https://customer-assets.emergentagent.com/job_peptide-dosing-1/artifacts/p90s5a8i_IMG_0603.JPG"
+                        alt="Erica — before peptides"
+                        className="w-full h-full object-contain"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="absolute -top-2 -left-2 bg-white border border-[#F0CFE0] px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-[0.18em] text-[#5C5C5C] shadow-sm">
+                      Before
+                    </div>
+                  </div>
+
+                  {/* AFTER */}
+                  <div className="relative">
+                    <div className="overflow-hidden rounded-2xl border-4 border-white shadow-[0_0_0_2px_#FF2D87,0_8px_24px_rgba(255,45,135,0.25)] aspect-[3/4] bg-[#FFF0F7]">
+                      <img
+                        src="https://customer-assets.emergentagent.com/job_peptide-dosing-1/artifacts/dbdnfsu5_IMG_0986.jpg"
+                        alt="Erica — after peptides"
+                        className="w-full h-full object-contain"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="absolute -top-2 -right-2 bg-[#FF2D87] text-white px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-[0.18em] shadow-[0_4px_14px_rgba(255,45,135,0.35)]">
+                      After
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 text-center text-xs font-mono uppercase tracking-[0.2em] text-[#5C5C5C]">
                   ✦ hi, i&apos;m erica ✦
                 </div>
               </div>
