@@ -1,8 +1,9 @@
-import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles } from "lucide-react";
 import api from "../lib/api";
 import SocialBar from "../components/SocialBar";
+import useSeo from "../hooks/useSeo";
 
 const tiles = [
   {
@@ -41,6 +42,11 @@ const tiles = [
 ];
 
 export default function Home() {
+  useSeo({
+    title: "Peptide Vendors, Price Comparison & Education",
+    description: "Pep Girl — compare trusted peptide vendors, find discount codes, calculate doses, and track pricing all in one place. Built by Erica after losing 90 lbs with GLP-1 peptides.",
+    path: "/",
+  });
   const [counts, setCounts] = useState({});
 
   useEffect(() => {

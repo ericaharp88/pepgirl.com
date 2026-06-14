@@ -3,8 +3,14 @@ import api from "../lib/api";
 import { Star, ExternalLink } from "lucide-react";
 import { Badge } from "../components/ui/badge";
 import { Skeleton } from "../components/ui/skeleton";
+import useSeo from "../hooks/useSeo";
 
 export default function Vendors() {
+  useSeo({
+    title: "Vendor Directory",
+    description: "Trusted research peptide vendors, COA-verified, with exclusive Pep Girl discount codes and live promo badges.",
+    path: "/vendors",
+  });
   const [vendors, setVendors] = useState(null);
   const [filter, setFilter] = useState("All");
 

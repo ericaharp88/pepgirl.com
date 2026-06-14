@@ -3,6 +3,7 @@ import api from "../lib/api";
 import { ArrowDown, ArrowUp, ExternalLink, Trophy, CheckCircle2, Copy, Check } from "lucide-react";
 import { Input } from "../components/ui/input";
 import { toast } from "sonner";
+import useSeo from "../hooks/useSeo";
 
 /* ------------------- Vendor strip with discount codes ------------------- */
 function VendorStrip() {
@@ -261,6 +262,11 @@ function PeptideCard({ peptide, prices, vendors }) {
 
 /* ------------------- Page ------------------- */
 export default function Compare() {
+  useSeo({
+    title: "Peptide Price Tool — Compare Every Vendor",
+    description: "Compare peptide prices across trusted vendors. Live prices, every size, cheapest highlighted in pink — only on Pep Girl.",
+    path: "/compare",
+  });
   const [data, setData] = useState(null);
   const [search, setSearch] = useState("");
   const [sortDir, setSortDir] = useState("asc");

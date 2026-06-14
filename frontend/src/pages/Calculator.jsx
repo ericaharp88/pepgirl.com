@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import useSeo from "../hooks/useSeo";
 
 const TdeePill = ({ active, onClick, children, testId }) => (
   <button onClick={onClick} data-testid={testId}
@@ -314,6 +315,11 @@ function BmiCalc() {
 }
 
 export default function Calculator() {
+  useSeo({
+    title: "Peptide Calculator Suite",
+    description: "Free peptide reconstitution calculator, TDEE energy needs, and BMI — all in one place on Pep Girl.",
+    path: "/calculator",
+  });
   const [peptideMg, setPeptideMg] = useState("");
   const [bacWaterMl, setBacWaterMl] = useState("");
   const [vialSize, setVialSize] = useState(null);

@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
 import api from "../lib/api";
 import { ArrowRight } from "lucide-react";
+import useSeo from "../hooks/useSeo";
 
 export default function Resources() {
+  useSeo({
+    title: "Resources & Guides",
+    description: "Curated peptide research guides, protocols, COA references, supply lists, and trusted external resources.",
+    path: "/resources",
+  });
   const [items, setItems] = useState(null);
   const [open, setOpen] = useState(null);
 

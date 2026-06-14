@@ -580,6 +580,47 @@ async def root():
     return {"service": "peptide-hub", "status": "ok"}
 
 
+# ---------------- SEO (mounted on main app, NOT /api) ----------------
+SITE_URL = os.environ.get("SITE_URL", "https://pepgirl.com")
+SEO_ROUTES = ["", "/vendors", "/calculator", "/compare", "/resources"]
+
+
+@app.get("/robots.txt", include_in_schema=False)
+async def robots_txt():
+    body = (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /admin\n"
+        "Disallow: /login\n"
+        "Disallow: /api/\n\n"
+        f"Sitemap: {SITE_URL}/sitemap.xml\n"
+    )
+    return Response(content=body, media_type="text/plain")
+
+
+@app.get("/sitemap.xml", include_in_schema=False)
+async def sitemap_xml():
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    urls = []
+    for path in SEO_ROUTES:
+        priority = "1.0" if path == "" else "0.8"
+        urls.append(
+            f"  <url>\n"
+            f"    <loc>{SITE_URL}{path or '/'}</loc>\n"
+            f"    <lastmod>{today}</lastmod>\n"
+            f"    <changefreq>weekly</changefreq>\n"
+            f"    <priority>{priority}</priority>\n"
+            f"  </url>"
+        )
+    body = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + "\n".join(urls)
+        + "\n</urlset>\n"
+    )
+    return Response(content=body, media_type="application/xml")
+
+
 # ---------------- Startup ----------------
 async def seed_admin():
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@peptidehub.com").lower()
