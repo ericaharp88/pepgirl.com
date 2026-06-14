@@ -186,7 +186,7 @@ export default function Compare() {
   const TAG_FILTERS = useMemo(() => ({
     All: () => true,
     Skin: (p) => /\b(ghk[-\s]?cu|copper|kpv|argireline|snap[-\s]?8|melanotan|epitalon|epithalon|glutathione|cosmetic|skin|serum|cream|peptide.*cu)\b/i.test(p.name),
-    GLP: (p) => /\b(semaglutide|tirzepatide|retatrutide|cagrilintide|liraglutide|aod[-\s]?9604|glp[-\s]?[123]|glp\s?[123](sg|tz|rt|t|r)?|glpsg|am833)\b/i.test(p.name),
+    GLP: (p) => /\b(semaglutide|tirzepatide|retatrutide|cagrilintide|liraglutide|glp[-\s]?[123]|glp\s?[123](sg|tz|rt|t|r)?|glpsg|am833)\b/i.test(p.name),
     "Nasal Sprays": (p) => /\b(nasal|spray)\b/i.test(p.name),
     Capsules: (p) => /\b(capsules?|caps?|tablets?|pills?)\b/i.test(p.name),
   }), []);
