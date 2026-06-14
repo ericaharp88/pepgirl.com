@@ -112,23 +112,23 @@ export default function Home() {
 
               {/* CTAs below pic */}
               <div className="mt-10 flex flex-col gap-3 w-full max-w-sm">
-                <a
-                  href="https://www.skool.com/ericas-elevated-life-9005"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-testid="hero-cta-skool"
+                <Link
+                  to="/compare"
+                  data-testid="hero-cta-price-tool"
                   className="bg-[#FF2D87] text-white px-6 py-4 text-sm font-mono uppercase tracking-[0.2em] hover:bg-[#0A0A0A] inline-flex items-center justify-center gap-3"
                 >
-                  Join Skool Research Community <ArrowRight size={16} />
-                </a>
+                  Pep Girl Price Tool <ArrowRight size={16} />
+                </Link>
                 <div className="grid grid-cols-2 gap-3">
-                  <Link
-                    to="/compare"
-                    data-testid="hero-cta-compare"
+                  <a
+                    href="https://www.skool.com/ericas-elevated-life-9005"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-testid="hero-cta-skool"
                     className="border border-[#0A0A0A] px-4 py-3 text-xs font-mono uppercase tracking-[0.2em] hover:bg-[#0A0A0A] hover:text-white inline-flex items-center justify-center"
                   >
-                    Compare Prices
-                  </Link>
+                    Join Community
+                  </a>
                   <Link
                     to="/calculator"
                     data-testid="hero-cta-calc"
