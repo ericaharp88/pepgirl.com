@@ -253,7 +253,7 @@ async def delete_vendor(vendor_id: str, admin: dict = Depends(get_current_admin)
 # ---------------- Resources ----------------
 @api_router.get("/resources")
 async def list_resources():
-    return await db.resources.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return await db.resources.find({}, {"_id": 0}).sort("created_at", 1).to_list(500)
 
 
 @api_router.post("/resources", response_model=Resource)
