@@ -1,4 +1,4 @@
-const LOGO_URL = "https://customer-assets.emergentagent.com/job_peptide-hub-37/artifacts/u0nn0rhx_pepgirl.png";
+const LOGO_URL = "https://customer-assets.emergentagent.com/job_peptide-dosing-1/artifacts/tbcplspn_7886a451-cc7a-4efd-bb03-768e2c2476b7.png";
 
 export function Logo({ className = "", size = 56 }) {
   return (
