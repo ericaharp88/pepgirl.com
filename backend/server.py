@@ -136,6 +136,24 @@ class ResourceIn(BaseModel):
     content: str = ""
 
 
+class SocialLink(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    platform: str        # e.g. instagram, tiktok, youtube, twitter, threads, pinterest, email
+    url: str
+    label: str = ""      # optional display name override
+    order: int = 0
+    enabled: bool = True
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class SocialLinkIn(BaseModel):
+    platform: str
+    url: str
+    label: str = ""
+    order: int = 0
+    enabled: bool = True
+
+
 class Peptide(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
@@ -256,6 +274,39 @@ async def update_resource(rid: str, payload: ResourceIn, admin: dict = Depends(g
 @api_router.delete("/resources/{rid}")
 async def delete_resource(rid: str, admin: dict = Depends(get_current_admin)):
     await db.resources.delete_one({"id": rid})
+    return {"ok": True}
+
+
+# ---------------- Social Links ----------------
+@api_router.get("/socials")
+async def list_socials():
+    items = await db.socials.find({"enabled": True}, {"_id": 0}).sort("order", 1).to_list(50)
+    return items
+
+
+@api_router.get("/socials/all")
+async def list_socials_admin(admin: dict = Depends(get_current_admin)):
+    return await db.socials.find({}, {"_id": 0}).sort("order", 1).to_list(50)
+
+
+@api_router.post("/socials", response_model=SocialLink)
+async def create_social(payload: SocialLinkIn, admin: dict = Depends(get_current_admin)):
+    obj = SocialLink(**payload.model_dump())
+    await db.socials.insert_one(obj.model_dump())
+    return obj
+
+
+@api_router.put("/socials/{sid}")
+async def update_social(sid: str, payload: SocialLinkIn, admin: dict = Depends(get_current_admin)):
+    result = await db.socials.update_one({"id": sid}, {"$set": payload.model_dump()})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return await db.socials.find_one({"id": sid}, {"_id": 0})
+
+
+@api_router.delete("/socials/{sid}")
+async def delete_social(sid: str, admin: dict = Depends(get_current_admin)):
+    await db.socials.delete_one({"id": sid})
     return {"ok": True}
 
 

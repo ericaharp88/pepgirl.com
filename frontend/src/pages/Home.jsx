@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, FlaskConical, Calculator, ScanLine, BookOpen } from "lucide-react";
+import SocialBar from "../components/SocialBar";
 
 const tiles = [
   { to: "/vendors", title: "Vendor Directory", desc: "Vetted research peptide suppliers with COAs.", Icon: FlaskConical, label: "01" },
@@ -11,6 +12,7 @@ const tiles = [
 export default function Home() {
   return (
     <div>
+      <SocialBar />
       {/* HERO */}
       <section className="border-b border-[#E5E5E5]">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-16 lg:py-24">

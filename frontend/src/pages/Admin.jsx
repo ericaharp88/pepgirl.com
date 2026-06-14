@@ -30,7 +30,7 @@ export default function Admin() {
       </div>
       <Tabs defaultValue="vendors">
         <TabsList className="rounded-none bg-white border border-[#0A0A0A] p-0 h-auto">
-          {["vendors", "peptides", "prices", "resources"].map((t) => (
+          {["vendors", "peptides", "prices", "resources", "socials"].map((t) => (
             <TabsTrigger
               key={t}
               value={t}
@@ -45,6 +45,7 @@ export default function Admin() {
         <TabsContent value="peptides" className="mt-8"><PeptidesPanel /></TabsContent>
         <TabsContent value="prices" className="mt-8"><PricesPanel /></TabsContent>
         <TabsContent value="resources" className="mt-8"><ResourcesPanel /></TabsContent>
+        <TabsContent value="socials" className="mt-8"><SocialsPanel /></TabsContent>
       </Tabs>
     </div>
   );
@@ -652,6 +653,132 @@ function ResourcesPanel() {
                 <div className="text-xs text-[#5C5C5C]">{r.summary}</div>
               </div>
               <Button variant="ghost" size="icon" onClick={() => del(r.id)} className="rounded-none hover:bg-[#E60000] hover:text-white"><Trash2 size={16} /></Button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ----------------- SOCIALS ----------------- */
+const PLATFORM_OPTIONS = [
+  "instagram", "tiktok", "youtube", "twitter", "x", "threads",
+  "facebook", "pinterest", "linkedin", "snapchat",
+  "podcast", "spotify", "discord", "skool", "telegram", "email", "website", "other"
+];
+const blankSocial = { platform: "instagram", url: "", label: "", order: 0, enabled: true };
+
+function SocialsPanel() {
+  const [items, setItems] = useState([]);
+  const [form, setForm] = useState(blankSocial);
+
+  const load = () =>
+    api.get("/socials/all").then(({ data }) => setItems(data));
+  useEffect(() => { load(); }, []);
+
+  const save = async () => {
+    if (!form.url.trim()) { toast.error("URL required"); return; }
+    try {
+      await api.post("/socials", { ...form, order: Number(form.order) || 0 });
+      toast.success("Added");
+      setForm(blankSocial);
+      load();
+    } catch (e) { toast.error(fmtErr(e.response?.data?.detail)); }
+  };
+
+  const toggle = async (s) => {
+    await api.put(`/socials/${s.id}`, { ...s, enabled: !s.enabled });
+    load();
+  };
+
+  const updateOrder = async (s, delta) => {
+    await api.put(`/socials/${s.id}`, { ...s, order: (s.order || 0) + delta });
+    load();
+  };
+
+  const del = async (id) => {
+    if (!confirm("Remove this social link?")) return;
+    await api.delete(`/socials/${id}`);
+    load();
+  };
+
+  return (
+    <div className="grid lg:grid-cols-12 gap-8">
+      <div className="lg:col-span-5 border border-[#0A0A0A] p-6">
+        <SectionHeader title="New social link" />
+        <div className="space-y-4">
+          <div>
+            <Label className="eyebrow text-[#5C5C5C]">Platform</Label>
+            <Select value={form.platform} onValueChange={(v) => setForm({ ...form, platform: v })}>
+              <SelectTrigger className="rounded-none border-[#0A0A0A] mt-2 font-mono" data-testid="s-platform">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="rounded-none max-h-80">
+                {PLATFORM_OPTIONS.map((p) => (
+                  <SelectItem key={p} value={p} className="rounded-none font-mono text-sm capitalize">
+                    {p}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Field label="URL (or email if platform=email)" value={form.url}
+            onChange={(v) => setForm({ ...form, url: v })} testId="s-url" />
+          <Field label="Display label (optional, defaults to platform name)"
+            value={form.label} onChange={(v) => setForm({ ...form, label: v })} testId="s-label" />
+          <Field label="Order (lower = first)" type="number" value={form.order}
+            onChange={(v) => setForm({ ...form, order: v })} />
+          <Button onClick={save} data-testid="s-save"
+            className="w-full rounded-none bg-[#FF2D87] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">
+            + Add social link
+          </Button>
+          <p className="text-[11px] font-mono text-[#5C5C5C] leading-relaxed">
+            Links appear in a small bar at the top of the homepage. Toggle each one on/off here.
+          </p>
+        </div>
+      </div>
+      <div className="lg:col-span-7">
+        <SectionHeader title={`Social links (${items.length})`} />
+        <div className="border border-[#E5E5E5]">
+          {items.length === 0 && (
+            <div className="p-6 text-sm font-mono text-[#A0A0A0]">
+              No social links yet. Add one on the left.
+            </div>
+          )}
+          {items.map((s) => (
+            <div key={s.id}
+              className="border-b border-[#E5E5E5] p-4 flex items-center gap-3"
+              data-testid={`s-row-${s.platform}-${s.id}`}>
+              <div className="flex-1 min-w-0">
+                <div className="font-bold capitalize">
+                  {s.label || s.platform}
+                  {!s.enabled && (
+                    <span className="ml-2 text-[10px] font-mono uppercase tracking-wider text-[#5C5C5C] bg-[#F0F0F0] px-1.5 py-0.5">
+                      hidden
+                    </span>
+                  )}
+                </div>
+                <div className="text-[10px] font-mono text-[#5C5C5C]">
+                  {s.platform} · order {s.order || 0}
+                </div>
+                <div className="text-xs mt-1 truncate text-[#5C5C5C]">{s.url}</div>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="icon" onClick={() => updateOrder(s, -1)}
+                  className="rounded-none h-8 w-8" title="Move up"
+                  data-testid={`s-up-${s.id}`}>↑</Button>
+                <Button variant="ghost" size="icon" onClick={() => updateOrder(s, 1)}
+                  className="rounded-none h-8 w-8" title="Move down"
+                  data-testid={`s-down-${s.id}`}>↓</Button>
+                <Switch checked={s.enabled} onCheckedChange={() => toggle(s)}
+                  data-testid={`s-toggle-${s.id}`} />
+                <Button variant="ghost" size="icon" onClick={() => del(s.id)}
+                  className="rounded-none hover:bg-[#E60000] hover:text-white h-8 w-8"
+                  data-testid={`s-del-${s.id}`}>
+                  <Trash2 size={14} />
+                </Button>
+              </div>
             </div>
           ))}
         </div>
