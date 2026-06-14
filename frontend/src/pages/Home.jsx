@@ -104,7 +104,7 @@ export default function Home() {
                 </div>
                 <div
                   aria-hidden
-                  className="absolute -bottom-2 -left-2 text-xl font-serif-glam italic text-[#FF2D87]"
+                  className="absolute -bottom-10 left-1/2 -translate-x-1/2 whitespace-nowrap text-xl font-serif-glam italic text-[#FF2D87]"
                 >
                   ✦ hi, i&apos;m erica ✦
                 </div>
