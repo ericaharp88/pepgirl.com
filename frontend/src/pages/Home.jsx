@@ -85,8 +85,8 @@ export default function Home() {
                 {/* "-90 LBS" headline */}
                 <div className="text-center mb-4 px-4 overflow-visible">
                   <div className="eyebrow text-[#5C5C5C]">My peptide journey</div>
-                  <div className="mt-2 text-4xl sm:text-5xl font-black tracking-tighter leading-[1.2] pb-2">
-                    <span className="pink-text font-serif-glam italic mr-1">−90</span>lbs
+                  <div className="mt-2 text-4xl sm:text-5xl font-black tracking-tighter leading-[1.2] pb-2 text-[#FF2D87]">
+                    −90 lbs
                   </div>
                 </div>
 
