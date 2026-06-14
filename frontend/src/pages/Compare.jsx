@@ -64,15 +64,26 @@ function VendorStrip() {
                 {v.name}
                 {v.featured && <CheckCircle2 size={10} className="text-[#FF2D87] flex-shrink-0" />}
               </a>
-              <button
-                onClick={() => copy(v.discount_code)}
-                data-testid={`strip-code-${v.slug}`}
-                className="mt-0.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#FFE4F1] hover:bg-[#FF2D87] hover:text-white text-[10px] font-mono font-bold text-[#FF2D87] tracking-wider transition"
-                title="Click to copy code"
-              >
-                {copied === v.discount_code ? <Check size={10} /> : <Copy size={10} />}
-                {v.discount_code}
-              </button>
+              <div className="mt-0.5 flex flex-wrap items-center gap-1">
+                <button
+                  onClick={() => copy(v.discount_code)}
+                  data-testid={`strip-code-${v.slug}`}
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#FFE4F1] hover:bg-[#FF2D87] hover:text-white text-[10px] font-mono font-bold text-[#FF2D87] tracking-wider transition"
+                  title="Click to copy code"
+                >
+                  {copied === v.discount_code ? <Check size={10} /> : <Copy size={10} />}
+                  {v.discount_code}
+                </button>
+                {v.promo_badge && (
+                  <span
+                    data-testid={`strip-promo-${v.slug}`}
+                    className="inline-block px-1.5 py-0.5 rounded bg-[#FFE700] text-[#0A0A0A] text-[10px] font-mono font-bold tracking-wider"
+                    title="Active promotion"
+                  >
+                    {v.promo_badge}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         ))}
@@ -184,11 +195,21 @@ function PeptideCard({ peptide, prices, vendors }) {
                     <CheckCircle2 size={12} className="text-[#FF2D87] flex-shrink-0" />
                   )}
                 </div>
-                {vendor.discount_code && (
-                  <div className="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded bg-[#FFE4F1] text-[10px] font-mono font-bold text-[#FF2D87] tracking-wider">
-                    {vendor.discount_code}
-                  </div>
-                )}
+                <div className="mt-0.5 flex flex-wrap items-center gap-1">
+                  {vendor.discount_code && (
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-[#FFE4F1] text-[10px] font-mono font-bold text-[#FF2D87] tracking-wider">
+                      {vendor.discount_code}
+                    </span>
+                  )}
+                  {vendor.promo_badge && (
+                    <span
+                      className="inline-flex items-center px-1.5 py-0.5 rounded bg-[#FFE700] text-[#0A0A0A] text-[10px] font-mono font-bold tracking-wider"
+                      title="Active promotion"
+                    >
+                      {vendor.promo_badge}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Price */}

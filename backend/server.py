@@ -98,8 +98,9 @@ class Vendor(BaseModel):
     rating: float = 0.0
     tags: List[str] = []
     discount_code: str = ""
+    promo_badge: str = ""  # short deal flag e.g. "BOGO", "FREE BAC water"
     featured: bool = False
-    comparison_enabled: bool = True  # show in /compare table & include in AI bulk import
+    comparison_enabled: bool = True
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
@@ -112,6 +113,7 @@ class VendorIn(BaseModel):
     rating: float = 0.0
     tags: List[str] = []
     discount_code: str = ""
+    promo_badge: str = ""
     featured: bool = False
     comparison_enabled: bool = True
 
@@ -592,7 +594,7 @@ async def seed_sample_data():
          "affiliate_url": "https://felixchem.is/refer/8220/",
          "logo_url": "https://www.google.com/s2/favicons?domain=felixchem.is&sz=128",
          "rating": 4.6, "tags": ["Peptides", "BAC Water"],
-         "discount_code": "ERICAS10", "featured": True},
+         "discount_code": "ERICAS10", "promo_badge": "FREE BAC water", "featured": True},
         {"name": "Glow Aminos", "slug": "glow-aminos",
          "description": "Curated peptide selection with member savings.",
          "affiliate_url": "https://glowaminos.com/shop/?coupon=ERICA",
@@ -616,7 +618,7 @@ async def seed_sample_data():
          "affiliate_url": "https://fusionpeptide.com/?ref=erica",
          "logo_url": "https://www.google.com/s2/favicons?domain=fusionpeptide.com&sz=128",
          "rating": 4.4, "tags": ["Peptides"],
-         "discount_code": "ERICA", "featured": False},
+         "discount_code": "ERICA", "promo_badge": "BOGO", "featured": False},
         {"name": "Tcore Bio Tech", "slug": "tcore-bio-tech",
          "description": "Biotech-grade research peptides.",
          "affiliate_url": "https://tcorebiotech.com/?ref=erica",
