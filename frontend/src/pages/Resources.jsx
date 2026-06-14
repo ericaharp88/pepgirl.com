@@ -44,10 +44,10 @@ export default function Resources() {
                   href={r.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.25em] border-b border-[#0A0A0A] hover:text-[#FF2D87] hover:border-[#FF2D87]"
+                  className="inline-flex items-center gap-2 px-5 py-3 bg-[#FF2D87] text-white font-mono text-xs uppercase tracking-[0.2em] rounded-full hover:bg-[#0A0A0A] transition shadow-[0_4px_14px_rgba(255,45,135,0.3)]"
                   data-testid={`resource-link-${r.id}`}
                 >
-                  Read external <ArrowRight size={14} />
+                  Visit resource <ArrowRight size={14} />
                 </a>
               ) : (
                 <>

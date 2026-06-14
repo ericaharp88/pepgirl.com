@@ -728,19 +728,22 @@ async def seed_sample_data():
     # Sample price seeding was removed along with the legacy sample vendors.
     # User can add their own peptide prices via the Admin → Prices panel.
     resources = [
-        {"title": "How to Reconstitute Peptides Safely",
-         "category": "Guide",
-         "summary": "Step-by-step BAC water reconstitution for research peptides.",
-         "url": "", "content": "Use bacteriostatic water (0.9% benzyl alcohol). Inject slowly down the inside of the vial. Swirl, do not shake. Store at 2-8 C and use within 30 days."},
-        {"title": "Reading a Peptide Certificate of Analysis (COA)",
-         "category": "Guide", "summary": "What HPLC purity, mass spec, and bioburden numbers really mean.",
-         "url": "", "content": "Look for >98% HPLC purity, matching mass spec to the theoretical mass, and endotoxin tested below 0.5 EU/mg for injectables used in research."},
-        {"title": "GLP-1 Research Landscape 2026",
-         "category": "Research", "summary": "Overview of semaglutide, tirzepatide, retatrutide, and emerging triple agonists.",
-         "url": "https://www.nejm.org/", "content": "An external read on the state of GLP-1 research."},
-        {"title": "Insulin Syringe Unit Reference",
-         "category": "Reference", "summary": "Common U-100 insulin syringe markings and how they map to mL.",
-         "url": "", "content": "1 unit on a U-100 insulin syringe = 0.01 mL. A 50-unit syringe holds 0.5 mL. A 100-unit syringe holds 1.0 mL."},
+        {"title": "Guide to Peptide Protocols",
+         "category": "Protocols",
+         "summary": "A comprehensive collection of research peptide protocols covering dosing schedules, reconstitution methods, and stacking strategies. A practical reference when planning research protocols.",
+         "url": "https://guidetopeptide.com/peptide-protocols/", "content": ""},
+        {"title": "Pep-Pedia",
+         "category": "Encyclopedia",
+         "summary": "An open encyclopedia covering peptide chemistry, mechanisms of action, and research applications. Easy to navigate when learning about a new compound.",
+         "url": "https://pep-pedia.org/", "content": ""},
+        {"title": "Peptide Wiki",
+         "category": "Reference",
+         "summary": "A community-driven wiki documenting peptides, their properties, and current research literature. Great for cross-referencing information from multiple sources.",
+         "url": "https://peptidewiki.co/", "content": ""},
+        {"title": "My Peptide Community \u2014 Erica\u2019s Elevated Life",
+         "category": "Community",
+         "summary": "A private peer community led by Erica focused on peptide education, real-world experience sharing, live Q&A, and ongoing support. Join the conversation.",
+         "url": "https://www.skool.com/ericas-elevated-life-9005", "content": ""},
     ]
     inserted_resource = 0
     for r in resources:
