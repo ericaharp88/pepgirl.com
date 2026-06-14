@@ -127,6 +127,35 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* My Story bio */}
+              <div
+                data-testid="my-story"
+                className="mt-10 w-full max-w-md bg-white rounded-[24px] border border-[#F0CFE0] p-6 lg:p-7 shadow-[0_2px_20px_rgba(255,45,135,0.06)]"
+              >
+                <div className="eyebrow text-[#FF2D87] mb-3">My Story</div>
+                <p className="text-sm text-[#0A0A0A] leading-relaxed">
+                  Eleven years ago, I made one of the biggest decisions of my life
+                  &mdash; weight loss surgery. It gave me a fresh start, but over time
+                  the weight crept back, and with it came years of frustration, shame,
+                  and feeling like I had failed myself. I tried everything to get back
+                  on track and nothing seemed to work.
+                </p>
+                <p className="text-sm text-[#0A0A0A] leading-relaxed mt-4">
+                  Then on{" "}
+                  <span className="font-bold text-[#FF2D87]">June 1st, 2025</span>,
+                  everything changed.
+                </p>
+                <p className="text-sm text-[#0A0A0A] leading-relaxed mt-4">
+                  I discovered GLP-1 peptides and within a year I lost{" "}
+                  <span className="font-bold text-[#FF2D87]">90 pounds</span>. Not just
+                  the weight &mdash; I got my confidence back, my energy back, my life
+                  back. What started as my own desperate search for answers turned into
+                  a full-on passion for research. I started digging into peptides,
+                  vendors, pricing, and protocols because I needed to know everything
+                  &mdash; and once I did, I couldn&apos;t stop sharing it with others.
+                </p>
+              </div>
+
               {/* CTAs below pic */}
               <div className="mt-10 flex flex-col gap-3 w-full max-w-sm">
                 <Link
