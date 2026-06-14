@@ -1,9 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import api from "../lib/api";
 import { ArrowDown, ArrowUp, ExternalLink, Trophy, CheckCircle2, Copy, Check } from "lucide-react";
 import { Input } from "../components/ui/input";
 import { toast } from "sonner";
 import useSeo from "../hooks/useSeo";
+
+const SITE = "https://pepgirl.com";
+
+/* peptide-name -> URL-safe slug (Google-indexable deep link) */
+const slugify = (s = "") =>
+  s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 
 /* ------------------- Vendor strip with discount codes ------------------- */
 function VendorStrip() {
@@ -262,15 +269,16 @@ function PeptideCard({ peptide, prices, vendors }) {
 
 /* ------------------- Page ------------------- */
 export default function Compare() {
-  useSeo({
-    title: "Peptide Price Tool — Compare Every Vendor",
-    description: "Compare peptide prices across trusted vendors. Live prices, every size, cheapest highlighted in pink — only on Pep Girl.",
-    path: "/compare",
-  });
+  const location = useLocation();
   const [data, setData] = useState(null);
   const [search, setSearch] = useState("");
   const [sortDir, setSortDir] = useState("asc");
   const [activeTag, setActiveTag] = useState("All");
+  const cardRefs = useRef({});
+
+  // ----- deep-link: /compare?peptide=semaglutide -----
+  const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const peptideParam = (queryParams.get("peptide") || "").trim().toLowerCase();
 
   useEffect(() => {
     api.get("/comparison").then(({ data }) => setData(data));
@@ -298,6 +306,8 @@ export default function Compare() {
 
   const TAG_KEYS = ["All", "Skin", "GLP", "Nasal Sprays", "Capsules"];
 
+  // Always show ALL peptides that have prices for SEO crawling.
+  // The peptide=? param is used only to spotlight & adjust SEO metadata.
   const visible = useMemo(() => {
     if (!data) return [];
     let arr = data.peptides.filter((p) => (pricesByPeptide[p.id] || []).length > 0);
@@ -322,6 +332,169 @@ export default function Compare() {
     return counts;
   }, [data, pricesByPeptide, TAG_FILTERS]);
 
+  // -------- focused peptide for deep-link SEO --------
+  const focusedPeptide = useMemo(() => {
+    if (!data || !peptideParam) return null;
+    return data.peptides.find(
+      (p) => slugify(p.name) === peptideParam || p.name.toLowerCase() === peptideParam
+    );
+  }, [data, peptideParam]);
+
+  // Scroll deep-linked peptide into view
+  useEffect(() => {
+    if (!focusedPeptide) return;
+    const el = cardRefs.current[focusedPeptide.id];
+    if (el) {
+      setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 250);
+    }
+  }, [focusedPeptide]);
+
+  // -------- DYNAMIC SEO PAYLOAD --------
+  const seoPath = focusedPeptide
+    ? `/compare?peptide=${slugify(focusedPeptide.name)}`
+    : "/compare";
+
+  const { seoTitle, seoDescription } = useMemo(() => {
+    if (focusedPeptide && data) {
+      const prs = (pricesByPeptide[focusedPeptide.id] || []);
+      const lo = prs.length ? Math.min(...prs.map((p) => p.price_usd)) : 0;
+      const hi = prs.length ? Math.max(...prs.map((p) => p.price_usd)) : 0;
+      return {
+        seoTitle: `${focusedPeptide.name} Price Comparison — Cheapest Vendors`,
+        seoDescription: `Compare ${focusedPeptide.name} prices across ${prs.length} listings from trusted research peptide vendors. Prices from $${lo.toFixed(2)}–$${hi.toFixed(2)}. Updated regularly on Pep Girl.`,
+      };
+    }
+    const n = data?.peptides?.length || 0;
+    const v = data?.vendors?.length || 0;
+    return {
+      seoTitle: "Peptide Price Comparison Tool — Compare Every Vendor",
+      seoDescription: `Compare research peptide prices across ${v || "trusted"} vendors and ${n || "dozens of"} peptides — including semaglutide, tirzepatide, retatrutide, BPC-157, TB-500, GHK-Cu, and more. Live pricing, cheapest highlighted, every size.`,
+    };
+  }, [focusedPeptide, data, pricesByPeptide]);
+
+  // Build JSON-LD: ItemList of Product (one per peptide) + FAQPage
+  const jsonLd = useMemo(() => {
+    if (!data) return [];
+    const items = [];
+    const peptideList = visible.length > 0 ? visible : data.peptides;
+    peptideList.slice(0, 50).forEach((p, idx) => {
+      const prs = (pricesByPeptide[p.id] || []);
+      if (!prs.length) return;
+      const offers = prs.map((pr) => {
+        const v = data.vendors.find((vv) => vv.id === pr.vendor_id);
+        return {
+          "@type": "Offer",
+          price: pr.price_usd.toFixed(2),
+          priceCurrency: "USD",
+          url: pr.product_url || (v && v.affiliate_url) || `${SITE}/compare?peptide=${slugify(p.name)}`,
+          availability: "https://schema.org/InStock",
+          seller: v ? { "@type": "Organization", name: v.name } : undefined,
+        };
+      });
+      const lo = Math.min(...prs.map((x) => x.price_usd));
+      const hi = Math.max(...prs.map((x) => x.price_usd));
+      items.push({
+        "@type": "ListItem",
+        position: idx + 1,
+        item: {
+          "@type": "Product",
+          name: p.name,
+          description: `Compare ${p.name} prices across trusted peptide vendors on Pep Girl.`,
+          url: `${SITE}/compare?peptide=${slugify(p.name)}`,
+          category: "Research peptide",
+          offers: {
+            "@type": "AggregateOffer",
+            priceCurrency: "USD",
+            lowPrice: lo.toFixed(2),
+            highPrice: hi.toFixed(2),
+            offerCount: prs.length,
+            offers,
+          },
+        },
+      });
+    });
+
+    const itemList = {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: "Peptide Price Comparison",
+      url: `${SITE}/compare`,
+      numberOfItems: items.length,
+      itemListElement: items,
+    };
+
+    const breadcrumb = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: SITE + "/" },
+        { "@type": "ListItem", position: 2, name: "Peptide Price Tool", item: SITE + "/compare" },
+        ...(focusedPeptide
+          ? [{
+              "@type": "ListItem",
+              position: 3,
+              name: focusedPeptide.name,
+              item: `${SITE}/compare?peptide=${slugify(focusedPeptide.name)}`,
+            }]
+          : []),
+      ],
+    };
+
+    const faq = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "Where can I compare peptide prices across vendors?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text:
+              "Pep Girl's Peptide Price Tool compares live prices across every trusted research peptide vendor, sorted cheapest first, with discount codes and links to each product page.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How often are peptide prices updated?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text:
+              "Prices are refreshed regularly using a combination of AI-powered web scraping and manual review. Each listing shows the price, size, and a per-mg breakdown so you can spot the cheapest option in seconds.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Which peptides does Pep Girl compare?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text:
+              "Pep Girl tracks GLP-1 peptides (semaglutide, tirzepatide, retatrutide, cagrilintide), healing peptides (BPC-157, TB-500), skin peptides (GHK-Cu, GHK, melanotan), nootropic peptides, and many more across multiple vendors.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Do you offer discount codes for peptide vendors?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text:
+              "Yes — Pep Girl maintains an up-to-date list of vendor discount codes that you can tap to copy directly from the price-comparison page.",
+          },
+        },
+      ],
+    };
+
+    return [itemList, breadcrumb, faq];
+  }, [data, visible, pricesByPeptide, focusedPeptide]);
+
+  useSeo({
+    title: seoTitle,
+    description: seoDescription,
+    path: seoPath,
+    keywords:
+      "peptide price comparison, cheapest peptide vendor, semaglutide price, tirzepatide price, retatrutide price, BPC-157 price, TB-500 price, GHK-Cu price, peptide discount codes, research peptides, peptide vendor comparison, Pep Girl",
+    jsonLd,
+  });
+
   if (!data) {
     return (
       <div className="max-w-7xl mx-auto px-6 py-16 font-mono text-sm text-[#5C5C5C]">
@@ -329,6 +502,9 @@ export default function Compare() {
       </div>
     );
   }
+
+  // Lists for the SEO content block at the bottom
+  const allPeptidesWithPrices = data.peptides.filter((p) => (pricesByPeptide[p.id] || []).length > 0);
 
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12">
@@ -338,12 +514,12 @@ export default function Compare() {
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <h1 className="text-5xl lg:text-6xl font-black tracking-tighter">
-              Peptide Price Tool
+              {focusedPeptide ? `${focusedPeptide.name} Prices` : "Peptide Price Comparison"}
             </h1>
             <p className="text-sm text-[#5C5C5C] mt-3 max-w-2xl">
-              Compare trusted vendors, discover hidden deals, and track pricing
-              across the industry &mdash; all in one place. Pep Girl Price Tool
-              helps you spend less time searching and more time saving.
+              {focusedPeptide
+                ? `Compare ${focusedPeptide.name} prices across trusted research peptide vendors. Tap a size to see every listing sorted cheapest first, with discount codes and links to each product page.`
+                : "Compare trusted vendors, discover hidden deals, and track pricing across the industry — all in one place. The Pep Girl Price Tool covers GLP-1 peptides like semaglutide, tirzepatide and retatrutide, healing peptides like BPC-157 and TB-500, skin peptides like GHK-Cu, and many more."}
             </p>
           </div>
           <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#5C5C5C]">
@@ -408,12 +584,18 @@ export default function Compare() {
         data-testid="peptide-grid"
       >
         {visible.map((p) => (
-          <PeptideCard
+          <div
             key={p.id}
-            peptide={p}
-            prices={pricesByPeptide[p.id] || []}
-            vendors={data.vendors}
-          />
+            id={`peptide-${slugify(p.name)}`}
+            ref={(el) => { if (el) cardRefs.current[p.id] = el; }}
+            className={focusedPeptide && focusedPeptide.id === p.id ? "ring-2 ring-[#FF2D87] rounded-[22px]" : ""}
+          >
+            <PeptideCard
+              peptide={p}
+              prices={pricesByPeptide[p.id] || []}
+              vendors={data.vendors}
+            />
+          </div>
         ))}
         {visible.length === 0 && (
           <div className="col-span-full text-center py-12 font-mono text-sm text-[#5C5C5C]">
@@ -421,6 +603,78 @@ export default function Compare() {
           </div>
         )}
       </div>
+
+      {/* ---------------- SEO CONTENT BLOCK ---------------- */}
+      <section
+        data-testid="seo-content"
+        className="mt-20 border-t border-[#F0CFE0] pt-12 grid lg:grid-cols-3 gap-10"
+      >
+        <div className="lg:col-span-2 space-y-6 text-[#0A0A0A]">
+          <div>
+            <h2 className="text-2xl lg:text-3xl font-black tracking-tight mb-3">
+              About the Pep Girl Peptide Price Comparison Tool
+            </h2>
+            <p className="text-sm leading-relaxed text-[#3A3A3A]">
+              Pep Girl is the easiest way to compare research peptide prices side-by-side across
+              every trusted vendor. We track prices for popular research peptides including
+              <strong> semaglutide</strong>, <strong>tirzepatide</strong>, <strong>retatrutide</strong>,
+              <strong> cagrilintide</strong>, <strong>BPC-157</strong>, <strong>TB-500</strong>,
+              <strong> GHK-Cu</strong>, <strong>NAD+</strong>, <strong>MOTS-c</strong>, melanotan,
+              epitalon, KPV, and many more &mdash; in every available size (mg) with the
+              <em> price-per-mg</em> calculated automatically so you can spot the cheapest deal instantly.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-black tracking-tight mb-2">How the tool works</h3>
+            <ul className="text-sm leading-relaxed text-[#3A3A3A] list-disc list-inside space-y-1">
+              <li>Filter by category: GLP-1, skin, nasal sprays, capsules, or browse all.</li>
+              <li>Tap any size pill on a peptide card to compare every vendor at that exact size.</li>
+              <li>The cheapest vendor for each size is highlighted in pink with the <em>Best Value</em> trophy.</li>
+              <li>Tap a vendor discount code to copy it to your clipboard before you check out.</li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-black tracking-tight mb-2">Frequently asked questions</h3>
+            <div className="space-y-3 text-sm leading-relaxed text-[#3A3A3A]">
+              <div>
+                <div className="font-bold text-[#0A0A0A]">How much does semaglutide cost?</div>
+                Semaglutide pricing depends on size (mg) and vendor. The Price Tool above lists every
+                current offer, sorted from cheapest to most expensive, with a price-per-mg breakdown.
+              </div>
+              <div>
+                <div className="font-bold text-[#0A0A0A]">Where can I find the cheapest tirzepatide?</div>
+                Open the GLP category tab and look for the pink-highlighted card &mdash; that&apos;s the
+                lowest current price across our tracked vendors.
+              </div>
+              <div>
+                <div className="font-bold text-[#0A0A0A]">Are these peptides for research only?</div>
+                Yes. All products listed are research peptides, sold for laboratory research use only.
+                Pep Girl is an educational resource and does not provide medical advice.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Peptide directory for crawlers (and humans) */}
+        <aside className="bg-[#FFF0F7] border border-[#F0CFE0] rounded-2xl p-6">
+          <div className="eyebrow text-[#FF2D87] mb-3">All Peptides ({allPeptidesWithPrices.length})</div>
+          <ul className="flex flex-wrap gap-1.5" data-testid="seo-peptide-list">
+            {allPeptidesWithPrices.map((p) => (
+              <li key={p.id}>
+                <a
+                  href={`/compare?peptide=${slugify(p.name)}`}
+                  data-testid={`seo-pep-link-${slugify(p.name)}`}
+                  className="inline-block px-2.5 py-1 rounded-full text-[11px] font-mono bg-white border border-[#F0CFE0] text-[#0A0A0A] hover:bg-[#FF2D87] hover:text-white hover:border-[#FF2D87] transition"
+                >
+                  {p.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      </section>
     </div>
   );
 }
