@@ -335,8 +335,9 @@ export default function Compare() {
               Peptide Price Tool
             </h1>
             <p className="text-sm text-[#5C5C5C] mt-3 max-w-2xl">
-              Every peptide × every size × every vendor — sorted cheapest first. Best
-              value in each card highlighted in pink.
+              Compare trusted vendors, discover hidden deals, and track pricing
+              across the industry &mdash; all in one place. Pep Girl Price Tool
+              helps you spend less time searching and more time saving.
             </p>
           </div>
           <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#5C5C5C]">
