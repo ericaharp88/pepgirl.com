@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import api from "../lib/api";
@@ -472,10 +472,35 @@ function PricesPanel() {
     } finally { setBusy(null); }
   };
 
-  // Filter the "Recent" list to the currently-selected vendor for fast verification
-  const recent = vendorId
-    ? items.filter((p) => p.vendor_id === vendorId).slice(0, 30)
-    : items.slice(0, 30);
+  // ---- Recent list state + sort + search ----
+  const [recentSearch, setRecentSearch] = useState("");
+
+  const recent = useMemo(() => {
+    // Build a name lookup so we can search by peptide name + vendor nickname
+    const pepName = (id) => peptides.find((p) => p.id === id)?.name || "";
+
+    let list = vendorId ? items.filter((p) => p.vendor_id === vendorId) : items;
+
+    // Search across peptide name + display_label + vendor name
+    if (recentSearch.trim()) {
+      const q = recentSearch.trim().toLowerCase();
+      list = list.filter((p) => {
+        const pn = pepName(p.peptide_id).toLowerCase();
+        const lbl = (p.display_label || "").toLowerCase();
+        const vn = (vendors.find((v) => v.id === p.vendor_id)?.name || "").toLowerCase();
+        return pn.includes(q) || lbl.includes(q) || vn.includes(q);
+      });
+    }
+
+    // Sort by most recently updated (newest first)
+    list = [...list].sort((a, b) => {
+      const ad = a.updated_at || "";
+      const bd = b.updated_at || "";
+      return bd.localeCompare(ad);
+    });
+
+    return list.slice(0, 100);
+  }, [items, vendorId, recentSearch, peptides, vendors]);
 
   return (
     <div className="grid lg:grid-cols-12 gap-8">
@@ -608,9 +633,26 @@ function PricesPanel() {
             </Button>
           </div>
         } />
+        {/* Search bar */}
+        <div className="mb-2 flex items-center gap-3">
+          <Input
+            value={recentSearch}
+            onChange={(e) => setRecentSearch(e.target.value)}
+            placeholder="Search recent prices — peptide, vendor, or nickname (e.g. Tirzepatide)"
+            className="rounded-none border-[#0A0A0A] font-mono text-xs h-9"
+            data-testid="pr-recent-search"
+          />
+          <div className="text-[10px] font-mono uppercase tracking-widest text-[#5C5C5C] whitespace-nowrap">
+            {recent.length} {vendorId ? "for vendor" : "total"} · {items.length} all
+          </div>
+        </div>
         <div className="border border-[#E5E5E5] max-h-[680px] overflow-y-auto">
           {recent.length === 0 && (
-            <div className="p-6 text-sm font-mono text-[#A0A0A0]">No prices yet for this vendor.</div>
+            <div className="p-6 text-sm font-mono text-[#A0A0A0]">
+              {recentSearch.trim()
+                ? `No prices match "${recentSearch}".`
+                : "No prices yet for this vendor."}
+            </div>
           )}
           {recent.map((pr) => (
             <PriceRow
