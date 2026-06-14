@@ -179,6 +179,7 @@ class PriceEntry(BaseModel):
     size_mg: float
     price_usd: float
     product_url: str = ""
+    display_label: str = ""  # vendor-specific nickname / title override
     scrape_selector: str = ""  # CSS selector for scraping
     last_scraped: Optional[str] = None
     last_status: str = "manual"
@@ -191,6 +192,7 @@ class PriceEntryIn(BaseModel):
     size_mg: float
     price_usd: float = 0.0
     product_url: str = ""
+    display_label: str = ""
     scrape_selector: str = ""
 
 

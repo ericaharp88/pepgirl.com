@@ -211,6 +211,7 @@ function PriceRow({ pr, peptides, vendors, onChanged }) {
   const [size, setSize] = useState(pr.size_mg);
   const [price, setPrice] = useState(pr.price_usd);
   const [url, setUrl] = useState(pr.product_url || "");
+  const [label, setLabel] = useState(pr.display_label || "");
   const [busy, setBusy] = useState(false);
 
   const lookup = (arr, id) => arr.find((x) => x.id === id)?.name || "—";
@@ -224,6 +225,7 @@ function PriceRow({ pr, peptides, vendors, onChanged }) {
         size_mg: Number(size) || 0,
         price_usd: Number(price) || 0,
         product_url: url.trim(),
+        display_label: label.trim(),
         scrape_selector: pr.scrape_selector || "",
       });
       toast.success("Updated");
@@ -272,6 +274,10 @@ function PriceRow({ pr, peptides, vendors, onChanged }) {
             </Button>
           </div>
         </div>
+        <Input value={label} onChange={(e) => setLabel(e.target.value)}
+          placeholder={`Vendor nickname (optional) — e.g. "GLP-SG", "Sema-Glow"`}
+          className="rounded-none border-[#FF2D87] h-9 font-mono text-xs bg-white"
+          data-testid={`pr-edit-label-${pr.id}`} />
       </div>
     );
   }
@@ -280,6 +286,11 @@ function PriceRow({ pr, peptides, vendors, onChanged }) {
     <div className="border-b border-[#E5E5E5] p-3 grid grid-cols-12 gap-3 items-center text-sm">
       <div className="col-span-4">
         <div className="font-bold">{lookup(peptides, pr.peptide_id)}</div>
+        {pr.display_label && (
+          <div className="text-[10px] font-mono text-[#FF2D87] font-bold uppercase tracking-wider">
+            “{pr.display_label}”
+          </div>
+        )}
         <div className="text-[10px] font-mono text-[#5C5C5C]">{lookup(vendors, pr.vendor_id)}</div>
         {pr.product_url && (
           <a href={pr.product_url} target="_blank" rel="noopener noreferrer"
@@ -323,6 +334,7 @@ function PricesPanel() {
   const [sizeMg, setSizeMg] = useState(5);
   const [priceUsd, setPriceUsd] = useState("");
   const [productUrl, setProductUrl] = useState("");
+  const [displayLabel, setDisplayLabel] = useState("");
 
   // Bulk paste box
   const [bulkText, setBulkText] = useState("");
@@ -374,12 +386,13 @@ function PricesPanel() {
         size_mg: Number(sizeMg) || 0,
         price_usd: Number(priceUsd),
         product_url: productUrl.trim(),
+        display_label: displayLabel.trim(),
         scrape_selector: "",
       });
       toast.success(`Added ${peptideQuery || lookup(peptides, pid)} · ${sizeMg}mg · $${priceUsd}`);
       // Keep vendor selected, clear the rest
       setPeptideQuery(""); setPeptideId(""); setSizeMg(5);
-      setPriceUsd(""); setProductUrl("");
+      setPriceUsd(""); setProductUrl(""); setDisplayLabel("");
       load();
     } catch (e) {
       toast.error(fmtErr(e.response?.data?.detail));
@@ -393,10 +406,10 @@ function PricesPanel() {
     // Accept tab OR comma OR multiple spaces
     const parts = line.split(/\t|,|\s{2,}/).map((s) => s.trim()).filter(Boolean);
     if (parts.length < 3) return null;
-    const [name, size, price, url = ""] = parts;
+    const [name, size, price, url = "", label = ""] = parts;
     return {
       name, size: parseFloat(size.replace(/[^\d.]/g, "")) || 0,
-      price: parseFloat(price.replace(/[^\d.]/g, "")) || 0, url,
+      price: parseFloat(price.replace(/[^\d.]/g, "")) || 0, url, label,
     };
   };
 
@@ -404,7 +417,7 @@ function PricesPanel() {
     if (!vendorId) { toast.error("Pick a vendor first"); return; }
     const lines = bulkText.split("\n").map((l) => l.trim()).filter(Boolean);
     const rows = lines.map(parseBulkRow).filter(Boolean);
-    if (!rows.length) { toast.error("No valid rows. Format: name TAB size TAB price [TAB url]"); return; }
+    if (!rows.length) { toast.error("No valid rows. Format: name TAB size TAB price [TAB url] [TAB nickname]"); return; }
     if (!confirm(`Add ${rows.length} prices to ${lookup(vendors, vendorId)}?`)) return;
     setBusy("bulk");
     let added = 0, failed = 0;
@@ -423,7 +436,7 @@ function PricesPanel() {
         await api.post("/prices", {
           peptide_id: pep.id, vendor_id: vendorId,
           size_mg: r.size, price_usd: r.price,
-          product_url: r.url, scrape_selector: "",
+          product_url: r.url, display_label: r.label, scrape_selector: "",
         });
         added += 1;
       } catch (e) {
@@ -547,6 +560,15 @@ function PricesPanel() {
               data-testid="pr-url" />
           </div>
 
+          <div className="mb-4">
+            <Label className="eyebrow text-[#FF2D87]">6 · Vendor nickname (optional)</Label>
+            <Input value={displayLabel}
+              onChange={(e) => setDisplayLabel(e.target.value)}
+              placeholder={`e.g. "GLP-SG", "Sema-Glow" — overrides peptide name on this row only`}
+              className="rounded-none border-[#FF2D87] mt-2 font-mono"
+              data-testid="pr-label" />
+          </div>
+
           <Button onClick={saveOne} disabled={busy === "save"}
             data-testid="pr-save"
             className="w-full rounded-none bg-[#FF2D87] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">
@@ -558,11 +580,11 @@ function PricesPanel() {
         <div className="border border-[#0A0A0A] p-6">
           <SectionHeader title="Bulk paste" />
           <p className="text-xs font-mono text-[#5C5C5C] mb-3 leading-relaxed">
-            Paste one row per line. Format: <b>name [TAB] size [TAB] price [TAB] url(optional)</b>.
-            Tabs, commas, or multiple spaces all work as separators.
+            Paste one row per line. Format: <b>name [TAB] size [TAB] price [TAB] url [TAB] nickname</b>.
+            URL & nickname are optional. Tabs, commas, or multiple spaces all work as separators.
           </p>
           <Textarea value={bulkText} onChange={(e) => setBulkText(e.target.value)}
-            placeholder={"BPC-157\t5\t39.99\nTB-500\t5\t59.99\nSemaglutide\t10\t189.00"}
+            placeholder={"BPC-157\t5\t39.99\nTB-500\t5\t59.99\nSemaglutide\t10\t189.00\thttps://...\tGLP-SG"}
             rows={6}
             className="rounded-none border-[#0A0A0A] font-mono text-xs"
             data-testid="pr-bulk-text" />

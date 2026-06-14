@@ -30,11 +30,27 @@ function VendorStrip() {
   if (!withCodes.length) return null;
 
   const copy = (code) => {
-    navigator.clipboard?.writeText(code).then(() => {
+    const done = () => {
       setCopied(code);
       toast.success(`Code "${code}" copied`);
       setTimeout(() => setCopied(null), 1500);
-    });
+    };
+    try {
+      const p = navigator.clipboard && navigator.clipboard.writeText(code);
+      if (p && typeof p.then === "function") {
+        p.then(done).catch(() => {
+          try {
+            const ta = document.createElement("textarea");
+            ta.value = code; document.body.appendChild(ta);
+            ta.select(); document.execCommand("copy");
+            document.body.removeChild(ta);
+            done();
+          } catch { toast.error("Couldn't copy code"); }
+        });
+      } else {
+        done();
+      }
+    } catch { toast.error("Couldn't copy code"); }
   };
 
   return (
@@ -110,6 +126,33 @@ function PeptideCard({ peptide, prices, vendors }) {
   }, [prices]);
 
   const [selectedSize, setSelectedSize] = useState(sizes[0] ?? 0);
+  const [copiedCode, setCopiedCode] = useState(null);
+
+  const copyCode = (code) => {
+    if (!code) return;
+    const done = () => {
+      setCopiedCode(code);
+      toast.success(`Code "${code}" copied`);
+      setTimeout(() => setCopiedCode(null), 1500);
+    };
+    try {
+      const p = navigator.clipboard && navigator.clipboard.writeText(code);
+      if (p && typeof p.then === "function") {
+        p.then(done).catch(() => {
+          // Fallback: temporary textarea
+          try {
+            const ta = document.createElement("textarea");
+            ta.value = code; document.body.appendChild(ta);
+            ta.select(); document.execCommand("copy");
+            document.body.removeChild(ta);
+            done();
+          } catch { toast.error("Couldn't copy code"); }
+        });
+      } else {
+        done();
+      }
+    } catch { toast.error("Couldn't copy code"); }
+  };
 
   // Rows for the currently-selected size, sorted cheapest first
   const rows = useMemo(() => {
@@ -203,11 +246,27 @@ function PeptideCard({ peptide, prices, vendors }) {
                     <CheckCircle2 size={12} className="text-[#FF2D87] flex-shrink-0" />
                   )}
                 </div>
+                {price.display_label && (
+                  <div
+                    data-testid={`row-label-${peptide.slug}-${price.size_mg}-${vendor.slug}`}
+                    className="text-[10px] font-mono uppercase tracking-wider text-[#FF2D87] font-bold truncate"
+                    title={`Vendor name for ${peptide.name}: ${price.display_label}`}
+                  >
+                    “{price.display_label}”
+                  </div>
+                )}
                 <div className="mt-0.5 flex flex-wrap items-center gap-1">
                   {vendor.discount_code && (
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-[#FFE4F1] text-[10px] font-mono font-bold text-[#FF2D87] tracking-wider">
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); copyCode(vendor.discount_code); }}
+                      data-testid={`row-code-${peptide.slug}-${price.size_mg}-${vendor.slug}`}
+                      title="Click to copy code"
+                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#FFE4F1] hover:bg-[#FF2D87] hover:text-white text-[10px] font-mono font-bold text-[#FF2D87] tracking-wider transition cursor-pointer"
+                    >
+                      {copiedCode === vendor.discount_code ? <Check size={10} /> : <Copy size={10} />}
                       {vendor.discount_code}
-                    </span>
+                    </button>
                   )}
                   {vendor.promo_badge && (
                     <span
