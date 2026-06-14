@@ -75,9 +75,9 @@ export default function Home() {
             <span className="font-serif-glam italic font-normal pink-text">with Erica</span>
           </h1>
 
-          <div className="grid lg:grid-cols-12 gap-12 items-start">
-            {/* Paragraph (left) */}
-            <div className="lg:col-span-7 order-2 lg:order-1">
+          <div className="flex flex-col gap-12 items-stretch lg:items-center">
+            {/* Paragraph (top on desktop, below image on mobile) */}
+            <div className="order-2 lg:order-1 lg:max-w-3xl lg:text-center lg:mx-auto">
               <p className="text-lg lg:text-xl text-[#0A0A0A] leading-relaxed">
                 Welcome to <span className="font-bold">Pepgirl.com</span> — a wellness
                 and peptide education hub for peptide researchers. Explore trusted vendors,
@@ -85,8 +85,8 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Before/After pair + buttons (right) */}
-            <div className="lg:col-span-5 order-1 lg:order-2 flex flex-col items-center">
+            {/* Before/After pair + buttons (centered on desktop) */}
+            <div className="order-1 lg:order-2 flex flex-col items-center w-full">
               <div className="relative w-full max-w-md" data-testid="before-after">
                 {/* "-90 LBS" headline */}
                 <div className="text-center mb-4 px-4 overflow-visible">
