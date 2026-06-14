@@ -83,10 +83,10 @@ export default function Home() {
             <div className="lg:col-span-5 order-1 lg:order-2 flex flex-col items-center">
               <div className="relative w-full max-w-md" data-testid="before-after">
                 {/* "-90 LBS" headline */}
-                <div className="text-center mb-4">
+                <div className="text-center mb-4 px-4 overflow-visible">
                   <div className="eyebrow text-[#5C5C5C]">My peptide journey</div>
-                  <div className="mt-1 text-4xl sm:text-5xl font-black tracking-tighter">
-                    <span className="pink-text font-serif-glam italic">−90</span> lbs
+                  <div className="mt-2 text-4xl sm:text-5xl font-black tracking-tighter leading-[1.2] pb-2">
+                    <span className="pink-text font-serif-glam italic mr-1">−90</span>lbs
                   </div>
                 </div>
 
