@@ -15,13 +15,17 @@ export default function Vendors() {
   const isSkin = (v) => (v.tags || []).some((t) => t.toLowerCase().includes("skin"));
   const isSupp = (v) => (v.tags || []).some((t) => t.toLowerCase() === "supplements");
   const isClothes = (v) => (v.tags || []).some((t) => t.toLowerCase() === "clothes");
-  const filtered = !vendors ? null : vendors.filter((v) =>
-    filter === "All" ? true
-    : filter === "Skin Care" ? isSkin(v)
-    : filter === "Supplements" ? isSupp(v)
-    : filter === "Clothes" ? isClothes(v)
-    : (!isSkin(v) && !isSupp(v) && !isClothes(v))
-  );
+  // Sort key: peptides/skincare first (0), supplements (1), clothes (2)
+  const sortKey = (v) => (isClothes(v) ? 2 : isSupp(v) ? 1 : 0);
+  const filtered = !vendors ? null : vendors
+    .filter((v) =>
+      filter === "All" ? true
+      : filter === "Skin Care" ? isSkin(v)
+      : filter === "Supplements" ? isSupp(v)
+      : filter === "Clothes" ? isClothes(v)
+      : (!isSkin(v) && !isSupp(v) && !isClothes(v))
+    )
+    .sort((a, b) => sortKey(a) - sortKey(b));
 
   const tabs = ["All", "Peptides", "Skin Care", "Supplements", "Clothes"];
 
