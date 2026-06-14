@@ -108,13 +108,35 @@ export default function Vendors() {
               {v.discount_code && (
                 <div
                   data-testid={`vendor-code-${v.slug}`}
-                  className="mb-4 flex items-center gap-2 bg-[#FFF0F7] border border-[#F0CFE0] px-3 py-2 rounded-sm"
+                  className="mb-4 flex flex-wrap items-center gap-2"
                 >
-                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#5C5C5C]">
-                    Code
-                  </span>
-                  <span className="font-mono font-bold text-sm text-[#FF2D87] tracking-wider">
-                    {v.discount_code}
+                  <div className="inline-flex items-center gap-2 bg-[#FFF0F7] border border-[#F0CFE0] px-3 py-2 rounded-sm">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#5C5C5C]">
+                      Code
+                    </span>
+                    <span className="font-mono font-bold text-sm text-[#FF2D87] tracking-wider">
+                      {v.discount_code}
+                    </span>
+                  </div>
+                  {v.promo_badge && (
+                    <span
+                      data-testid={`vendor-promo-${v.slug}`}
+                      className="inline-flex items-center px-2 py-2 rounded-sm bg-[#FFE700] text-[#0A0A0A] font-mono font-bold text-[11px] tracking-wider"
+                      title="Active promotion"
+                    >
+                      {v.promo_badge}
+                    </span>
+                  )}
+                </div>
+              )}
+              {!v.discount_code && v.promo_badge && (
+                <div className="mb-4">
+                  <span
+                    data-testid={`vendor-promo-${v.slug}`}
+                    className="inline-flex items-center px-2 py-2 rounded-sm bg-[#FFE700] text-[#0A0A0A] font-mono font-bold text-[11px] tracking-wider"
+                    title="Active promotion"
+                  >
+                    {v.promo_badge}
                   </span>
                 </div>
               )}
