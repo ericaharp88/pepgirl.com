@@ -347,9 +347,10 @@ export default function Calculator() {
     return { concentration: conc, doseMl: dMl, drawUnits: draw, dosesPerVial, weeks, days, error: err };
   }, [peptideMg, bacWaterMl, doseMcg, frequency]);
 
+  const [tab, setTab] = useState("reconstitute"); // "reconstitute" | "tdee" | "bmi"
+
   const fmt = (n, d = 2) => (Number.isFinite(n) ? n.toFixed(d) : "—");
 
-  const tabs = ["Reconstitute"];
   const vialPills = [2, 3, 5, 10];
   const freqOptions = [
     { label: "Daily",   perWeek: 7,   sub: "1x/day" },
@@ -360,6 +361,33 @@ export default function Calculator() {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-16">
+      {/* Tab switcher (visible on every calculator tab) */}
+      <div className="flex flex-wrap gap-2 mb-6" data-testid="calc-tabs">
+        {[
+          { id: "reconstitute", label: "Reconstitution" },
+          { id: "tdee",         label: "TDEE" },
+          { id: "bmi",          label: "BMI" },
+        ].map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            data-testid={`calc-tab-${t.id}`}
+            className={`px-5 py-2.5 rounded-full text-xs font-mono uppercase tracking-[0.18em] transition border ${
+              tab === t.id
+                ? "bg-[#FF2D87] text-white border-[#FF2D87] shadow-[0_4px_14px_rgba(255,45,135,0.35)]"
+                : "bg-white text-[#0A0A0A] border-[#F0CFE0] hover:bg-[#FFF0F7]"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "tdee" && <TdeeCalc />}
+      {tab === "bmi" && <BmiCalc />}
+
+      {tab === "reconstitute" && (
+      <>
       {/* Title card */}
       <div className="bg-white rounded-[28px] shadow-[0_2px_20px_rgba(255,45,135,0.08)] border border-[#F0CFE0] p-8 lg:p-12">
         <h1 className="text-4xl lg:text-5xl font-black tracking-tight font-serif-glam">
@@ -527,8 +555,6 @@ export default function Calculator() {
       </div>
 
       {/* TDEE + BMI calculators */}
-      <TdeeCalc />
-      <BmiCalc />
 
       {/* ───── HOW TO USE A PEPTIDE CALCULATOR (educational) ───── */}
       <div
@@ -657,6 +683,8 @@ export default function Calculator() {
           </p>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }
