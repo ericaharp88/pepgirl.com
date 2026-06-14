@@ -95,7 +95,7 @@ export default function Home() {
                   <div className="relative">
                     <div className="overflow-hidden rounded-2xl border-4 border-white shadow-[0_0_0_2px_#F0CFE0,0_8px_24px_rgba(255,45,135,0.12)] aspect-[3/4] bg-[#FFF0F7]">
                       <img
-                        src="https://customer-assets.emergentagent.com/job_peptide-dosing-1/artifacts/p90s5a8i_IMG_0603.JPG"
+                        src="https://customer-assets.emergentagent.com/job_peptide-dosing-1/artifacts/dbdnfsu5_IMG_0986.jpg"
                         alt="Erica — before peptides"
                         className="w-full h-full object-contain"
                         loading="lazy"
@@ -110,7 +110,7 @@ export default function Home() {
                   <div className="relative">
                     <div className="overflow-hidden rounded-2xl border-4 border-white shadow-[0_0_0_2px_#FF2D87,0_8px_24px_rgba(255,45,135,0.25)] aspect-[3/4] bg-[#FFF0F7]">
                       <img
-                        src="https://customer-assets.emergentagent.com/job_peptide-dosing-1/artifacts/dbdnfsu5_IMG_0986.jpg"
+                        src="https://customer-assets.emergentagent.com/job_peptide-dosing-1/artifacts/p90s5a8i_IMG_0603.JPG"
                         alt="Erica — after peptides"
                         className="w-full h-full object-contain"
                         loading="lazy"
