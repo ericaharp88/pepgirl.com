@@ -584,7 +584,7 @@ async def seed_sample_data():
         {"name": "Amino Well USA", "slug": "amino-well-usa",
          "description": "Research peptides from a US-based lab.",
          "affiliate_url": "https://aminowellusa.com/?ref=xmqfndph",
-         "logo_url": "https://www.google.com/s2/favicons?domain=aminowellusa.com&sz=128",
+         "logo_url": "https://customer-assets.emergentagent.com/job_peptide-dosing-1/artifacts/im5sz2z1_amino%20well.webp",
          "rating": 4.6, "tags": ["Peptides", "USA"],
          "discount_code": "ERICA", "featured": True},
         {"name": "Felix Chems", "slug": "felix-chems",
