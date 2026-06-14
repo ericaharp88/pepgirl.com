@@ -87,6 +87,22 @@ export default function Layout({ children }) {
         </div>
       </header>
 
+      {/* Persistent compliance banner — visible on every page */}
+      <div
+        data-testid="disclaimer-banner"
+        className="bg-[#FFF0F7] border-b border-[#F0CFE0] text-[#0A0A0A]"
+        role="note"
+        aria-label="Site disclaimer"
+      >
+        <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-2 text-[11px] sm:text-xs font-mono tracking-wide text-center">
+          <span className="font-bold text-[#FF2D87] uppercase tracking-[0.18em] mr-2">Notice</span>
+          For research and educational purposes only. Content on this site is{" "}
+          <span className="font-semibold">not medical advice</span> and is not intended
+          to diagnose, treat, cure, or prevent any disease. Always consult a qualified
+          healthcare professional before making decisions about your health.
+        </div>
+      </div>
+
       <main className="flex-1">{children}</main>
 
       <footer className="border-t-2 border-[#0A0A0A] mt-24 bg-[#0A0A0A] text-white sparkle-bg">
@@ -101,8 +117,13 @@ export default function Layout({ children }) {
           <div>
             <div className="font-mono text-xs uppercase tracking-[0.25em] chrome-text mb-3">Disclaimer</div>
             <p className="text-sm leading-relaxed text-[#E0E0E0]">
-              All peptides referenced on this site are intended strictly for research and
-              laboratory use. Not for human consumption. Verify vendor COAs.
+              The information provided on Pep Girl is for{" "}
+              <span className="font-semibold text-white">research and educational purposes only</span>{" "}
+              and does not constitute medical advice. Statements have not been evaluated
+              by the FDA. Products referenced are intended strictly for laboratory and
+              research use, not for human consumption. Always consult a qualified
+              healthcare professional before making any decisions about your health,
+              and verify each vendor&apos;s Certificate of Analysis (COA).
             </p>
           </div>
           <div>
