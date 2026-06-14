@@ -13,7 +13,12 @@ function VendorStrip() {
     api.get("/vendors").then(({ data }) => setVendors(data));
   }, []);
 
-  const withCodes = vendors.filter((v) => v.discount_code);
+  // Only peptide & skincare vendors belong on the price-comparison page strip.
+  const isRelevant = (v) => {
+    const tags = (v.tags || []).map((t) => t.toLowerCase());
+    return tags.some((t) => t.includes("peptide") || t.includes("skin"));
+  };
+  const withCodes = vendors.filter((v) => v.discount_code && isRelevant(v));
   if (!withCodes.length) return null;
 
   const copy = (code) => {
