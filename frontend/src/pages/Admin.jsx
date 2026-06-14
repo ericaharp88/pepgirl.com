@@ -10,7 +10,7 @@ import { Textarea } from "../components/ui/textarea";
 import { Switch } from "../components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { toast } from "sonner";
-import { RefreshCw, Trash2, RotateCw } from "lucide-react";
+import { RefreshCw, Trash2, RotateCw, Pencil, Check, X } from "lucide-react";
 
 const blankVendor = { name: "", slug: "", description: "", affiliate_url: "", logo_url: "", rating: 4.5, tags: [], discount_code: "", featured: false, comparison_enabled: true };
 const blankResource = { title: "", category: "Guide", summary: "", url: "", content: "" };
@@ -204,6 +204,110 @@ function PeptidesPanel() {
 }
 
 /* ----------------- PRICES (manual-friendly) ----------------- */
+function PriceRow({ pr, peptides, vendors, onChanged }) {
+  const [editing, setEditing] = useState(false);
+  const [size, setSize] = useState(pr.size_mg);
+  const [price, setPrice] = useState(pr.price_usd);
+  const [url, setUrl] = useState(pr.product_url || "");
+  const [busy, setBusy] = useState(false);
+
+  const lookup = (arr, id) => arr.find((x) => x.id === id)?.name || "—";
+
+  const save = async () => {
+    setBusy(true);
+    try {
+      await api.put(`/prices/${pr.id}`, {
+        peptide_id: pr.peptide_id,
+        vendor_id: pr.vendor_id,
+        size_mg: Number(size) || 0,
+        price_usd: Number(price) || 0,
+        product_url: url.trim(),
+        scrape_selector: pr.scrape_selector || "",
+      });
+      toast.success("Updated");
+      setEditing(false);
+      onChanged();
+    } catch (e) {
+      toast.error(fmtErr(e.response?.data?.detail));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const remove = async () => {
+    if (!confirm(`Delete ${lookup(peptides, pr.peptide_id)} · ${pr.size_mg}mg?`)) return;
+    await api.delete(`/prices/${pr.id}`);
+    onChanged();
+  };
+
+  if (editing) {
+    return (
+      <div className="border-b border-[#E5E5E5] p-3 bg-[#FFF8FC] space-y-2 text-sm"
+           data-testid={`pr-edit-${pr.id}`}>
+        <div className="font-bold">{lookup(peptides, pr.peptide_id)} · {lookup(vendors, pr.vendor_id)}</div>
+        <div className="grid grid-cols-12 gap-2 items-center">
+          <Input value={size} onChange={(e) => setSize(e.target.value)} type="number" step="0.5"
+            placeholder="size (mg)"
+            className="col-span-2 rounded-none border-[#0A0A0A] h-9 font-mono text-xs"
+            data-testid={`pr-edit-size-${pr.id}`} />
+          <Input value={price} onChange={(e) => setPrice(e.target.value)} type="number" step="0.01"
+            placeholder="price"
+            className="col-span-2 rounded-none border-[#0A0A0A] h-9 font-mono text-xs"
+            data-testid={`pr-edit-price-${pr.id}`} />
+          <Input value={url} onChange={(e) => setUrl(e.target.value)}
+            placeholder="product URL"
+            className="col-span-6 rounded-none border-[#0A0A0A] h-9 font-mono text-xs"
+            data-testid={`pr-edit-url-${pr.id}`} />
+          <div className="col-span-2 flex gap-1 justify-end">
+            <Button size="icon" onClick={save} disabled={busy}
+              className="h-9 w-9 rounded-none bg-[#FF2D87] hover:bg-[#0A0A0A] text-white"
+              data-testid={`pr-edit-save-${pr.id}`}>
+              <Check size={14} />
+            </Button>
+            <Button size="icon" variant="ghost" onClick={() => setEditing(false)}
+              className="h-9 w-9 rounded-none">
+              <X size={14} />
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="border-b border-[#E5E5E5] p-3 grid grid-cols-12 gap-3 items-center text-sm">
+      <div className="col-span-4">
+        <div className="font-bold">{lookup(peptides, pr.peptide_id)}</div>
+        <div className="text-[10px] font-mono text-[#5C5C5C]">{lookup(vendors, pr.vendor_id)}</div>
+        {pr.product_url && (
+          <a href={pr.product_url} target="_blank" rel="noopener noreferrer"
+             className="text-[10px] font-mono text-[#FF2D87] hover:underline truncate block max-w-[260px]"
+             title={pr.product_url}>
+            ↗ {pr.product_url.replace(/^https?:\/\//, "").slice(0, 36)}…
+          </a>
+        )}
+      </div>
+      <div className="col-span-2 font-mono text-[#FF2D87] font-bold">{pr.size_mg} mg</div>
+      <div className="col-span-2 font-mono font-bold">${Number(pr.price_usd).toFixed(2)}</div>
+      <div className="col-span-2 text-[10px] font-mono text-[#5C5C5C] truncate">
+        {pr.last_status || "manual"}
+      </div>
+      <div className="col-span-2 flex gap-1 justify-end">
+        <Button variant="ghost" size="icon" onClick={() => setEditing(true)}
+          className="rounded-none hover:bg-[#FF2D87] hover:text-white h-8 w-8"
+          data-testid={`pr-edit-btn-${pr.id}`}>
+          <Pencil size={14} />
+        </Button>
+        <Button variant="ghost" size="icon" onClick={remove}
+          className="rounded-none hover:bg-[#E60000] hover:text-white h-8 w-8"
+          data-testid={`pr-del-${pr.id}`}>
+          <Trash2 size={14} />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function PricesPanel() {
   const [items, setItems] = useState([]);
   const [peptides, setPeptides] = useState([]);
@@ -485,24 +589,13 @@ function PricesPanel() {
             <div className="p-6 text-sm font-mono text-[#A0A0A0]">No prices yet for this vendor.</div>
           )}
           {recent.map((pr) => (
-            <div key={pr.id} className="border-b border-[#E5E5E5] p-3 grid grid-cols-12 gap-3 items-center text-sm">
-              <div className="col-span-4">
-                <div className="font-bold">{lookup(peptides, pr.peptide_id)}</div>
-                <div className="text-[10px] font-mono text-[#5C5C5C]">{lookup(vendors, pr.vendor_id)}</div>
-              </div>
-              <div className="col-span-2 font-mono text-[#FF2D87] font-bold">{pr.size_mg} mg</div>
-              <div className="col-span-2 font-mono font-bold">${Number(pr.price_usd).toFixed(2)}</div>
-              <div className="col-span-3 text-[10px] font-mono text-[#5C5C5C] truncate">
-                {pr.last_status || "manual"}
-              </div>
-              <div className="col-span-1 flex justify-end">
-                <Button variant="ghost" size="icon" onClick={() => del(pr.id)}
-                  className="rounded-none hover:bg-[#E60000] hover:text-white h-8 w-8"
-                  data-testid={`pr-del-${pr.id}`}>
-                  <Trash2 size={14} />
-                </Button>
-              </div>
-            </div>
+            <PriceRow
+              key={pr.id}
+              pr={pr}
+              peptides={peptides}
+              vendors={vendors}
+              onChanged={load}
+            />
           ))}
         </div>
       </div>
