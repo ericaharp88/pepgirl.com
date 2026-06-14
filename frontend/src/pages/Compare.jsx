@@ -233,7 +233,7 @@ export default function Compare() {
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <h1 className="text-5xl lg:text-6xl font-black tracking-tighter">
-              Peptide Price Compare
+              Peptide Price Tool
             </h1>
             <p className="text-sm text-[#5C5C5C] mt-3 max-w-2xl">
               Every peptide × every size × every vendor — sorted cheapest first. Best
