@@ -1,7 +1,80 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../lib/api";
-import { ArrowDown, ArrowUp, ExternalLink, Trophy, CheckCircle2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ExternalLink, Trophy, CheckCircle2, Copy, Check } from "lucide-react";
 import { Input } from "../components/ui/input";
+import { toast } from "sonner";
+
+/* ------------------- Vendor strip with discount codes ------------------- */
+function VendorStrip() {
+  const [vendors, setVendors] = useState([]);
+  const [copied, setCopied] = useState(null);
+
+  useEffect(() => {
+    api.get("/vendors").then(({ data }) => setVendors(data));
+  }, []);
+
+  const withCodes = vendors.filter((v) => v.discount_code);
+  if (!withCodes.length) return null;
+
+  const copy = (code) => {
+    navigator.clipboard?.writeText(code).then(() => {
+      setCopied(code);
+      toast.success(`Code "${code}" copied`);
+      setTimeout(() => setCopied(null), 1500);
+    });
+  };
+
+  return (
+    <div className="mb-8" data-testid="vendor-strip">
+      <div className="flex items-center justify-between mb-3">
+        <div className="eyebrow text-[#5C5C5C]">All vendor discount codes · tap to copy</div>
+        <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#5C5C5C]">
+          {withCodes.length} codes
+        </div>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+        {withCodes.map((v) => (
+          <div
+            key={v.id}
+            className="bg-white border border-[#F0CFE0] rounded-xl p-3 flex items-center gap-2 hover:border-[#FF2D87] transition"
+            data-testid={`strip-vendor-${v.slug}`}
+          >
+            <div className="w-9 h-9 flex-shrink-0 rounded-md bg-white border border-[#F0F0F0] flex items-center justify-center overflow-hidden">
+              {v.logo_url ? (
+                <img src={v.logo_url} alt={v.name} className="w-full h-full object-contain"
+                  onError={(e) => { e.currentTarget.style.display = "none"; }} />
+              ) : (
+                <span className="text-[10px] font-mono font-bold text-[#5C5C5C]">
+                  {v.name.slice(0, 2).toUpperCase()}
+                </span>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <a
+                href={v.affiliate_url}
+                target="_blank"
+                rel="noopener noreferrer sponsored"
+                className="text-xs font-bold text-[#0A0A0A] truncate hover:text-[#FF2D87] flex items-center gap-1"
+              >
+                {v.name}
+                {v.featured && <CheckCircle2 size={10} className="text-[#FF2D87] flex-shrink-0" />}
+              </a>
+              <button
+                onClick={() => copy(v.discount_code)}
+                data-testid={`strip-code-${v.slug}`}
+                className="mt-0.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#FFE4F1] hover:bg-[#FF2D87] hover:text-white text-[10px] font-mono font-bold text-[#FF2D87] tracking-wider transition"
+                title="Click to copy code"
+              >
+                {copied === v.discount_code ? <Check size={10} /> : <Copy size={10} />}
+                {v.discount_code}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /* ------------------- Per-peptide card ------------------- */
 function PeptideCard({ peptide, prices, vendors }) {
@@ -245,6 +318,9 @@ export default function Compare() {
           </div>
         </div>
       </div>
+
+      {/* Vendor strip with discount codes */}
+      <VendorStrip />
 
       {/* Tag filter tabs */}
       <div className="flex flex-wrap gap-2 mb-8" data-testid="tag-tabs">
