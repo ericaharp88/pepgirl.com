@@ -667,9 +667,15 @@ async def seed_sample_data():
         wiped = await db.prices.delete_many({"vendor_id": {"$in": nc_ids}})
         if wiped.deleted_count:
             logger.info(f"Wiped {wiped.deleted_count} price entries from non-comparison vendors.")
-    # Garbage-collect peptides that no longer have any price
+    # Garbage-collect peptides that no longer have any price.
+    # Protect the 6 canonical seeded peptide slugs so they don't get
+    # vacuumed away and re-inserted on every restart.
+    CANON_SEED_SLUGS = ["bpc-157", "tb-500", "semaglutide", "tirzepatide", "ipamorelin", "cjc-1295"]
     used_pep_ids = await db.prices.distinct("peptide_id")
-    orphan = await db.peptides.delete_many({"id": {"$nin": used_pep_ids}})
+    orphan = await db.peptides.delete_many({
+        "id": {"$nin": used_pep_ids},
+        "slug": {"$nin": CANON_SEED_SLUGS},
+    })
     if orphan.deleted_count:
         logger.info(f"Removed {orphan.deleted_count} orphan peptides (no prices).")
 
