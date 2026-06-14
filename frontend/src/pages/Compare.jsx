@@ -514,12 +514,12 @@ export default function Compare() {
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <h1 className="text-5xl lg:text-6xl font-black tracking-tighter">
-              {focusedPeptide ? `${focusedPeptide.name} Prices` : "Peptide Price Comparison"}
+              Peptide Price Tool
             </h1>
             <p className="text-sm text-[#5C5C5C] mt-3 max-w-2xl">
-              {focusedPeptide
-                ? `Compare ${focusedPeptide.name} prices across trusted research peptide vendors. Tap a size to see every listing sorted cheapest first, with discount codes and links to each product page.`
-                : "Compare trusted vendors, discover hidden deals, and track pricing across the industry — all in one place. The Pep Girl Price Tool covers GLP-1 peptides like semaglutide, tirzepatide and retatrutide, healing peptides like BPC-157 and TB-500, skin peptides like GHK-Cu, and many more."}
+              Compare trusted vendors, discover hidden deals, and track pricing
+              across the industry &mdash; all in one place. Pep Girl Price Tool
+              helps you spend less time searching and more time saving.
             </p>
           </div>
           <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#5C5C5C]">
