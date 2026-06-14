@@ -806,7 +806,7 @@ async def seed_sample_data():
          "url": "https://www.peppypens.com/", "content": ""},
         {"title": "My Peptide Community \u2014 Erica\u2019s Elevated Life",
          "category": "Community",
-         "summary": "A private peer community led by Erica focused on peptide education, real-world experience sharing, live Q&A, and ongoing support. Join the conversation.",
+         "summary": "A private peer community led by Erica focused on peptide education, real-world experience sharing, and ongoing support. Join the conversation.",
          "url": "https://www.skool.com/ericas-elevated-life-9005", "content": ""},
     ]
     inserted_resource = 0
