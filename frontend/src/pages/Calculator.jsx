@@ -1,5 +1,318 @@
 import { useMemo, useState } from "react";
 
+const TdeePill = ({ active, onClick, children, testId }) => (
+  <button onClick={onClick} data-testid={testId}
+    className={`px-3 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition ${
+      active
+        ? "bg-[#FF2D87] text-white shadow-[0_2px_8px_rgba(255,45,135,0.35)]"
+        : "bg-[#FFF0F7] text-[#5C5C5C] hover:bg-[#FFE4F1]"
+    }`}>{children}</button>
+);
+
+/* ───────────────── TDEE CALCULATOR ───────────────── */
+function TdeeCalc() {
+  const [sex, setSex] = useState("female");
+  const [age, setAge] = useState("");
+  const [units, setUnits] = useState("imperial"); // "imperial" | "metric"
+  const [heightFt, setHeightFt] = useState("");
+  const [heightIn, setHeightIn] = useState("");
+  const [heightCm, setHeightCm] = useState("");
+  const [weight, setWeight] = useState("");
+  const [activity, setActivity] = useState({ label: "Light", mult: 1.375, sub: "1-3 days/wk" });
+  const [goal, setGoal] = useState({ label: "Maintain", delta: 0 });
+
+  const activities = [
+    { label: "Sedentary",   mult: 1.2,    sub: "Little / no exercise" },
+    { label: "Light",       mult: 1.375,  sub: "1–3 days/wk" },
+    { label: "Moderate",    mult: 1.55,   sub: "3–5 days/wk" },
+    { label: "Active",      mult: 1.725,  sub: "6–7 days/wk" },
+    { label: "Very Active", mult: 1.9,    sub: "Athlete / 2x daily" },
+  ];
+
+  const goals = [
+    { label: "Lose",     delta: -500 },
+    { label: "Maintain", delta: 0 },
+    { label: "Gain",     delta: 500 },
+  ];
+
+  const result = useMemo(() => {
+    const a = Number(age) || 0;
+    let kg = 0, cm = 0;
+    if (units === "metric") {
+      kg = Number(weight) || 0;
+      cm = Number(heightCm) || 0;
+    } else {
+      kg = (Number(weight) || 0) * 0.45359237;
+      cm = ((Number(heightFt) || 0) * 12 + (Number(heightIn) || 0)) * 2.54;
+    }
+    if (!a || !kg || !cm) return null;
+    // Mifflin-St Jeor
+    const bmr = sex === "male"
+      ? 10 * kg + 6.25 * cm - 5 * a + 5
+      : 10 * kg + 6.25 * cm - 5 * a - 161;
+    const tdee = bmr * activity.mult;
+    const target = tdee + goal.delta;
+    return { bmr, tdee, target };
+  }, [sex, age, units, heightFt, heightIn, heightCm, weight, activity, goal]);
+
+  const Pill = TdeePill;
+
+  return (
+    <div data-testid="tdee-calculator"
+      className="mt-10 bg-white rounded-[28px] shadow-[0_2px_20px_rgba(255,45,135,0.08)] border border-[#F0CFE0] p-8 lg:p-12">
+      <div className="inline-flex p-1.5 bg-[#FFF0F7] rounded-full border border-[#F0CFE0] mb-5">
+        <span className="px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#0A0A0A] text-white shadow">
+          Energy
+        </span>
+      </div>
+      <h2 className="text-3xl lg:text-4xl font-black tracking-tight font-serif-glam">
+        TDEE Calculator
+      </h2>
+      <p className="text-sm text-[#5C5C5C] mt-2">
+        Estimate your daily calorie burn (BMR + activity) and target intake.
+      </p>
+
+      <div className="mt-8 space-y-6">
+        {/* Sex + Units */}
+        <div className="flex flex-wrap gap-3 items-center">
+          <div className="text-[11px] font-mono uppercase tracking-wider text-[#5C5C5C] w-20">Sex</div>
+          <Pill active={sex === "female"} onClick={() => setSex("female")} testId="tdee-female">Female</Pill>
+          <Pill active={sex === "male"} onClick={() => setSex("male")} testId="tdee-male">Male</Pill>
+          <div className="ml-auto inline-flex bg-[#FFF0F7] rounded-full p-1">
+            <button onClick={() => setUnits("imperial")} data-testid="tdee-imperial"
+              className={`px-3 py-1 rounded-full text-[11px] font-mono uppercase tracking-wider ${units === "imperial" ? "bg-[#0A0A0A] text-white" : "text-[#5C5C5C]"}`}>Imperial</button>
+            <button onClick={() => setUnits("metric")} data-testid="tdee-metric"
+              className={`px-3 py-1 rounded-full text-[11px] font-mono uppercase tracking-wider ${units === "metric" ? "bg-[#0A0A0A] text-white" : "text-[#5C5C5C]"}`}>Metric</button>
+          </div>
+        </div>
+
+        {/* Age + Height + Weight */}
+        <div className="grid sm:grid-cols-3 gap-4">
+          <div>
+            <label className="text-[11px] font-mono uppercase tracking-wider text-[#5C5C5C]">Age (years)</label>
+            <input type="number" value={age} onChange={(e) => setAge(e.target.value)}
+              data-testid="tdee-age"
+              className="mt-1 w-full rounded-xl border border-[#F0CFE0] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#FF2D87]" />
+          </div>
+          {units === "imperial" ? (
+            <div>
+              <label className="text-[11px] font-mono uppercase tracking-wider text-[#5C5C5C]">Height</label>
+              <div className="mt-1 flex gap-2">
+                <input type="number" placeholder="ft" value={heightFt} onChange={(e) => setHeightFt(e.target.value)}
+                  data-testid="tdee-height-ft"
+                  className="w-1/2 rounded-xl border border-[#F0CFE0] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#FF2D87]" />
+                <input type="number" placeholder="in" value={heightIn} onChange={(e) => setHeightIn(e.target.value)}
+                  data-testid="tdee-height-in"
+                  className="w-1/2 rounded-xl border border-[#F0CFE0] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#FF2D87]" />
+              </div>
+            </div>
+          ) : (
+            <div>
+              <label className="text-[11px] font-mono uppercase tracking-wider text-[#5C5C5C]">Height (cm)</label>
+              <input type="number" value={heightCm} onChange={(e) => setHeightCm(e.target.value)}
+                data-testid="tdee-height-cm"
+                className="mt-1 w-full rounded-xl border border-[#F0CFE0] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#FF2D87]" />
+            </div>
+          )}
+          <div>
+            <label className="text-[11px] font-mono uppercase tracking-wider text-[#5C5C5C]">
+              Weight ({units === "imperial" ? "lbs" : "kg"})
+            </label>
+            <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)}
+              data-testid="tdee-weight"
+              className="mt-1 w-full rounded-xl border border-[#F0CFE0] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#FF2D87]" />
+          </div>
+        </div>
+
+        {/* Activity */}
+        <div>
+          <div className="text-[11px] font-mono uppercase tracking-wider text-[#5C5C5C] mb-2">Activity level</div>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            {activities.map((a) => (
+              <button key={a.label} onClick={() => setActivity(a)}
+                data-testid={`tdee-act-${a.label.toLowerCase().replace(/\s+/g, "-")}`}
+                className={`p-2 rounded-xl text-left transition ${
+                  activity.label === a.label
+                    ? "bg-[#FF2D87] text-white shadow-[0_2px_8px_rgba(255,45,135,0.35)]"
+                    : "bg-[#FFF0F7] hover:bg-[#FFE4F1] text-[#0A0A0A]"
+                }`}>
+                <div className="text-xs font-bold uppercase">{a.label}</div>
+                <div className="text-[9px] font-mono opacity-80">{a.sub}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Goal */}
+        <div>
+          <div className="text-[11px] font-mono uppercase tracking-wider text-[#5C5C5C] mb-2">Goal</div>
+          <div className="flex flex-wrap gap-2">
+            {goals.map((g) => (
+              <Pill key={g.label} active={goal.label === g.label} onClick={() => setGoal(g)}
+                testId={`tdee-goal-${g.label.toLowerCase()}`}>
+                {g.label} {g.delta !== 0 && (g.delta > 0 ? `+${g.delta}` : g.delta)}
+              </Pill>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Result */}
+      <div className="mt-8 grid sm:grid-cols-3 gap-3" data-testid="tdee-result">
+        <div className="bg-[#FFF0F7] rounded-2xl p-4 border border-[#F0CFE0] text-center">
+          <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#5C5C5C]">BMR</div>
+          <div className="text-2xl font-black font-mono mt-1 text-[#0A0A0A]">
+            {result ? Math.round(result.bmr) : "—"}
+          </div>
+          <div className="text-[10px] text-[#5C5C5C] mt-1">kcal at rest</div>
+        </div>
+        <div className="bg-[#FFF0F7] rounded-2xl p-4 border border-[#F0CFE0] text-center">
+          <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#5C5C5C]">TDEE</div>
+          <div className="text-2xl font-black font-mono mt-1 text-[#0A0A0A]">
+            {result ? Math.round(result.tdee) : "—"}
+          </div>
+          <div className="text-[10px] text-[#5C5C5C] mt-1">maintenance kcal</div>
+        </div>
+        <div className="bg-[#FF2D87] rounded-2xl p-4 text-center text-white shadow-[0_2px_20px_rgba(255,45,135,0.18)]">
+          <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/85">Target</div>
+          <div className="text-2xl font-black font-mono mt-1">
+            {result ? Math.round(result.target) : "—"}
+          </div>
+          <div className="text-[10px] text-white/85 mt-1">kcal · {goal.label.toLowerCase()}</div>
+        </div>
+      </div>
+      <p className="mt-4 text-[10px] font-mono uppercase tracking-[0.2em] text-[#A0A0A0] text-center">
+        Mifflin-St Jeor formula · Estimate only · Not medical advice
+      </p>
+    </div>
+  );
+}
+
+/* ───────────────── BMI CALCULATOR ───────────────── */
+function BmiCalc() {
+  const [units, setUnits] = useState("imperial");
+  const [heightFt, setHeightFt] = useState("");
+  const [heightIn, setHeightIn] = useState("");
+  const [heightCm, setHeightCm] = useState("");
+  const [weight, setWeight] = useState("");
+
+  const { bmi, category, color } = useMemo(() => {
+    let kg = 0, m = 0;
+    if (units === "metric") {
+      kg = Number(weight) || 0;
+      m = (Number(heightCm) || 0) / 100;
+    } else {
+      kg = (Number(weight) || 0) * 0.45359237;
+      m = ((Number(heightFt) || 0) * 12 + (Number(heightIn) || 0)) * 0.0254;
+    }
+    if (!kg || !m) return { bmi: null, category: "—", color: "#5C5C5C" };
+    const b = kg / (m * m);
+    let cat = "Normal weight", c = "#22c55e";
+    if (b < 18.5)        { cat = "Underweight";        c = "#3b82f6"; }
+    else if (b < 25)     { cat = "Normal weight";      c = "#22c55e"; }
+    else if (b < 30)     { cat = "Overweight";         c = "#f59e0b"; }
+    else if (b < 35)     { cat = "Obese (Class I)";    c = "#ef4444"; }
+    else if (b < 40)     { cat = "Obese (Class II)";   c = "#dc2626"; }
+    else                 { cat = "Obese (Class III)";  c = "#b91c1c"; }
+    return { bmi: b, category: cat, color: c };
+  }, [units, heightFt, heightIn, heightCm, weight]);
+
+  return (
+    <div data-testid="bmi-calculator"
+      className="mt-10 bg-white rounded-[28px] shadow-[0_2px_20px_rgba(255,45,135,0.08)] border border-[#F0CFE0] p-8 lg:p-12">
+      <div className="inline-flex p-1.5 bg-[#FFF0F7] rounded-full border border-[#F0CFE0] mb-5">
+        <span className="px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#0A0A0A] text-white shadow">
+          Body Mass
+        </span>
+      </div>
+      <h2 className="text-3xl lg:text-4xl font-black tracking-tight font-serif-glam">
+        BMI Calculator
+      </h2>
+      <p className="text-sm text-[#5C5C5C] mt-2">
+        Body Mass Index &mdash; a quick screening number based on height and weight.
+      </p>
+
+      <div className="mt-8 flex justify-end">
+        <div className="inline-flex bg-[#FFF0F7] rounded-full p-1">
+          <button onClick={() => setUnits("imperial")} data-testid="bmi-imperial"
+            className={`px-3 py-1 rounded-full text-[11px] font-mono uppercase tracking-wider ${units === "imperial" ? "bg-[#0A0A0A] text-white" : "text-[#5C5C5C]"}`}>Imperial</button>
+          <button onClick={() => setUnits("metric")} data-testid="bmi-metric"
+            className={`px-3 py-1 rounded-full text-[11px] font-mono uppercase tracking-wider ${units === "metric" ? "bg-[#0A0A0A] text-white" : "text-[#5C5C5C]"}`}>Metric</button>
+        </div>
+      </div>
+
+      <div className="mt-4 grid sm:grid-cols-2 gap-4">
+        {units === "imperial" ? (
+          <div>
+            <label className="text-[11px] font-mono uppercase tracking-wider text-[#5C5C5C]">Height</label>
+            <div className="mt-1 flex gap-2">
+              <input type="number" placeholder="ft" value={heightFt} onChange={(e) => setHeightFt(e.target.value)}
+                data-testid="bmi-height-ft"
+                className="w-1/2 rounded-xl border border-[#F0CFE0] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#FF2D87]" />
+              <input type="number" placeholder="in" value={heightIn} onChange={(e) => setHeightIn(e.target.value)}
+                data-testid="bmi-height-in"
+                className="w-1/2 rounded-xl border border-[#F0CFE0] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#FF2D87]" />
+            </div>
+          </div>
+        ) : (
+          <div>
+            <label className="text-[11px] font-mono uppercase tracking-wider text-[#5C5C5C]">Height (cm)</label>
+            <input type="number" value={heightCm} onChange={(e) => setHeightCm(e.target.value)}
+              data-testid="bmi-height-cm"
+              className="mt-1 w-full rounded-xl border border-[#F0CFE0] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#FF2D87]" />
+          </div>
+        )}
+        <div>
+          <label className="text-[11px] font-mono uppercase tracking-wider text-[#5C5C5C]">
+            Weight ({units === "imperial" ? "lbs" : "kg"})
+          </label>
+          <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)}
+            data-testid="bmi-weight"
+            className="mt-1 w-full rounded-xl border border-[#F0CFE0] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#FF2D87]" />
+        </div>
+      </div>
+
+      {/* Result */}
+      <div className="mt-8 bg-[#FFF0F7] rounded-2xl p-6 border border-[#F0CFE0] text-center" data-testid="bmi-result">
+        <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#5C5C5C]">Your BMI</div>
+        <div className="text-5xl font-black font-mono mt-2 text-[#0A0A0A]">
+          {bmi ? bmi.toFixed(1) : "—"}
+        </div>
+        <div
+          className="inline-block mt-3 px-3 py-1 rounded-full text-xs font-mono uppercase tracking-wider text-white"
+          style={{ backgroundColor: color }}
+          data-testid="bmi-category"
+        >
+          {category}
+        </div>
+      </div>
+
+      {/* Reference */}
+      <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] font-mono">
+        <div className="rounded-xl border border-[#F0CFE0] p-2 text-center">
+          <div className="font-bold text-[#3b82f6]">&lt; 18.5</div>
+          <div className="text-[#5C5C5C]">Underweight</div>
+        </div>
+        <div className="rounded-xl border border-[#F0CFE0] p-2 text-center">
+          <div className="font-bold text-[#22c55e]">18.5 &ndash; 24.9</div>
+          <div className="text-[#5C5C5C]">Normal</div>
+        </div>
+        <div className="rounded-xl border border-[#F0CFE0] p-2 text-center">
+          <div className="font-bold text-[#f59e0b]">25 &ndash; 29.9</div>
+          <div className="text-[#5C5C5C]">Overweight</div>
+        </div>
+        <div className="rounded-xl border border-[#F0CFE0] p-2 text-center">
+          <div className="font-bold text-[#ef4444]">&ge; 30</div>
+          <div className="text-[#5C5C5C]">Obese</div>
+        </div>
+      </div>
+      <p className="mt-4 text-[10px] font-mono uppercase tracking-[0.2em] text-[#A0A0A0] text-center">
+        Screening tool only · Doesn&rsquo;t distinguish muscle / fat · Not medical advice
+      </p>
+    </div>
+  );
+}
+
 export default function Calculator() {
   const [peptideMg, setPeptideMg] = useState("");
   const [bacWaterMl, setBacWaterMl] = useState("");
@@ -212,6 +525,10 @@ export default function Calculator() {
           </p>
         </div>
       </div>
+
+      {/* TDEE + BMI calculators */}
+      <TdeeCalc />
+      <BmiCalc />
 
       {/* ───── HOW TO USE A PEPTIDE CALCULATOR (educational) ───── */}
       <div
