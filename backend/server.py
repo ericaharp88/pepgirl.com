@@ -641,7 +641,7 @@ async def seed_sample_data():
          "rating": 4.6, "tags": ["Peptides", "USA"],
          "discount_code": "ERICA", "featured": True},
         {"name": "Felix Chems", "slug": "felix-chems",
-         "description": "1 FREE Hospira bac water with every order. Felix Friday deals every Friday.",
+         "description": "1 FREE bac water with every order. Felix Friday deals every Friday.",
          "affiliate_url": "https://felixchem.is/refer/8220/",
          "logo_url": "https://www.google.com/s2/favicons?domain=felixchem.is&sz=128",
          "rating": 4.6, "tags": ["Peptides", "BAC Water", "7x Tested"],
