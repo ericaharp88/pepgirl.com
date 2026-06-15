@@ -162,6 +162,26 @@ export default function Vendors() {
                   </Badge>
                 ))}
               </div>
+
+              {v.nickname_notes && (
+                <details
+                  className="mb-6 border border-[#F0CFE0] bg-[#FFF0F7]"
+                  data-testid={`vendor-nickname-guide-${v.slug}`}
+                >
+                  <summary className="cursor-pointer select-none px-3 py-2 flex items-center justify-between gap-2 hover:bg-[#FFE3F0]">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#FF2D87] font-bold">
+                      Peptide Nickname Guide
+                    </span>
+                    <span className="font-mono text-[10px] text-[#5C5C5C]">
+                      what {v.name} calls them ↓
+                    </span>
+                  </summary>
+                  <pre className="px-3 pb-3 pt-1 whitespace-pre-wrap font-mono text-xs text-[#0A0A0A] leading-relaxed">
+                    {v.nickname_notes}
+                  </pre>
+                </details>
+              )}
+
               <a
                 href={v.affiliate_url}
                 target="_blank"

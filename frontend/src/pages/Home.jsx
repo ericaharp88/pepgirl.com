@@ -24,18 +24,10 @@ const tiles = [
     staticCount: "3 tools",
   },
   {
-    to: "/compare",
-    title: "Peptide Price Tool",
-    desc: "Compare every peptide, size, and vendor — sorted cheapest first.",
-    label: "03",
-    teaser: "live prices",
-    countFrom: "prices",
-  },
-  {
     to: "/resources",
     title: "Resources & Guides",
     desc: "Curated guides, protocols, supply lists, and trusted references.",
-    label: "04",
+    label: "03",
     teaser: "sources",
     countFrom: "resources",
   },
@@ -165,11 +157,11 @@ export default function Home() {
               {/* CTAs below pic */}
               <div className="mt-10 flex flex-col gap-3 w-full max-w-sm">
                 <Link
-                  to="/compare"
-                  data-testid="hero-cta-price-tool"
+                  to="/vendors"
+                  data-testid="hero-cta-vendors"
                   className="bg-[#FF2D87] text-white px-6 py-4 text-sm font-mono uppercase tracking-[0.2em] hover:bg-[#0A0A0A] inline-flex items-center justify-center gap-3"
                 >
-                  Pep Girl Price Tool <ArrowRight size={16} />
+                  Browse Vendors <ArrowRight size={16} />
                 </Link>
                 <div className="grid grid-cols-2 gap-3">
                   <a

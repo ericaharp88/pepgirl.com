@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { toast } from "sonner";
 import { RefreshCw, Trash2, RotateCw, Pencil, Check, X } from "lucide-react";
 
-const blankVendor = { name: "", slug: "", description: "", affiliate_url: "", logo_url: "", rating: 4.5, tags: [], discount_code: "", promo_badge: "", featured: false, comparison_enabled: true };
+const blankVendor = { name: "", slug: "", description: "", affiliate_url: "", logo_url: "", rating: 4.5, tags: [], discount_code: "", promo_badge: "", nickname_notes: "", featured: false, comparison_enabled: true };
 const blankResource = { title: "", category: "Guide", summary: "", url: "", content: "" };
 const blankPeptide = { name: "", slug: "", description: "", typical_dose_mcg: 0, category: "" };
 const blankPrice = { peptide_id: "", vendor_id: "", size_mg: 5, price_usd: 0, product_url: "", scrape_selector: "" };
@@ -108,6 +108,22 @@ function VendorsPanel() {
           <Field label="Tags (comma-sep)" value={tagsStr} onChange={setTagsStr} />
           <Field label="Discount code" value={form.discount_code} onChange={(v) => setForm({ ...form, discount_code: v })} testId="v-code" />
           <Field label="Promo badge (e.g. BOGO, FREE BAC)" value={form.promo_badge} onChange={(v) => setForm({ ...form, promo_badge: v })} testId="v-promo" />
+          <div>
+            <Label className="eyebrow text-[#FF2D87]">
+              Peptide Nickname Guide{" "}
+              <span className="text-[#5C5C5C] normal-case tracking-normal font-mono text-[10px]">
+                (one per line · shows publicly on vendor card)
+              </span>
+            </Label>
+            <Textarea
+              value={form.nickname_notes}
+              onChange={(e) => setForm({ ...form, nickname_notes: e.target.value })}
+              placeholder={`Tirzepatide = GLP2, Peptide T\nSemaglutide = GLP-SG\nRetatrutide = GLP3`}
+              rows={4}
+              className="rounded-none border-[#FF2D87] mt-2 font-mono text-xs"
+              data-testid="v-nickname-notes"
+            />
+          </div>
           <Field label="Rating (0-5)" type="number" value={form.rating} onChange={(v) => setForm({ ...form, rating: v })} />
           <div className="flex items-center justify-between border border-[#E5E5E5] p-3">
             <Label className="eyebrow">Featured</Label>
@@ -133,25 +149,128 @@ function VendorsPanel() {
         <SectionHeader title={`Vendors (${items.length})`} />
         <div className="border border-[#E5E5E5]">
           {items.map((v) => (
-            <div key={v.id} className="border-b border-[#E5E5E5] p-4 flex items-start justify-between gap-4">
-              <div>
-                <div className="font-bold">
-                  {v.name}
-                  {v.featured && <span className="ml-2 text-xs font-mono text-[#FF2D87]">★</span>}
-                  {v.comparison_enabled === false && (
-                    <span className="ml-2 text-[10px] font-mono uppercase tracking-wider text-[#5C5C5C] bg-[#F0F0F0] px-1.5 py-0.5">
-                      no compare
-                    </span>
-                  )}
-                </div>
-                <div className="text-xs font-mono text-[#5C5C5C]">{v.slug}</div>
-                <div className="text-xs mt-1 truncate max-w-[420px]">{v.affiliate_url}</div>
-              </div>
-              <Button variant="ghost" size="icon" onClick={() => del(v.id)} className="rounded-none hover:bg-[#E60000] hover:text-white" data-testid={`v-del-${v.slug}`}><Trash2 size={16} /></Button>
-            </div>
+            <VendorRow key={v.id} vendor={v} onChanged={load} onDelete={() => del(v.id)} />
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+function VendorRow({ vendor, onChanged, onDelete }) {
+  const [editing, setEditing] = useState(false);
+  const [notes, setNotes] = useState(vendor.nickname_notes || "");
+  const [busy, setBusy] = useState(false);
+
+  const save = async () => {
+    setBusy(true);
+    try {
+      await api.put(`/vendors/${vendor.id}`, {
+        name: vendor.name,
+        slug: vendor.slug,
+        description: vendor.description || "",
+        affiliate_url: vendor.affiliate_url,
+        logo_url: vendor.logo_url || "",
+        rating: vendor.rating || 0,
+        tags: vendor.tags || [],
+        discount_code: vendor.discount_code || "",
+        promo_badge: vendor.promo_badge || "",
+        nickname_notes: notes,
+        featured: vendor.featured || false,
+        comparison_enabled: vendor.comparison_enabled !== false,
+      });
+      toast.success("Nickname guide saved");
+      setEditing(false);
+      onChanged();
+    } catch (e) {
+      toast.error(fmtErr(e.response?.data?.detail));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="border-b border-[#E5E5E5] p-4">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="font-bold">
+            {vendor.name}
+            {vendor.featured && <span className="ml-2 text-xs font-mono text-[#FF2D87]">★</span>}
+            {vendor.comparison_enabled === false && (
+              <span className="ml-2 text-[10px] font-mono uppercase tracking-wider text-[#5C5C5C] bg-[#F0F0F0] px-1.5 py-0.5">
+                no compare
+              </span>
+            )}
+          </div>
+          <div className="text-xs font-mono text-[#5C5C5C]">{vendor.slug}</div>
+          <div className="text-xs mt-1 truncate max-w-[420px]">{vendor.affiliate_url}</div>
+          {!editing && vendor.nickname_notes && (
+            <pre
+              data-testid={`v-notes-preview-${vendor.slug}`}
+              className="mt-2 whitespace-pre-wrap text-[11px] font-mono text-[#0A0A0A] bg-[#FFF0F7] border border-[#F0CFE0] px-3 py-2 max-w-[420px]"
+            >
+              {vendor.nickname_notes}
+            </pre>
+          )}
+        </div>
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => { setEditing((e) => !e); setNotes(vendor.nickname_notes || ""); }}
+            className="rounded-none hover:bg-[#FF2D87] hover:text-white"
+            title="Edit peptide nickname guide"
+            data-testid={`v-edit-${vendor.slug}`}
+          >
+            <Pencil size={16} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onDelete}
+            className="rounded-none hover:bg-[#E60000] hover:text-white"
+            data-testid={`v-del-${vendor.slug}`}
+          >
+            <Trash2 size={16} />
+          </Button>
+        </div>
+      </div>
+
+      {editing && (
+        <div className="mt-3 bg-[#FFF8FC] border border-[#FF2D87] p-3">
+          <Label className="eyebrow text-[#FF2D87]">
+            Peptide Nickname Guide{" "}
+            <span className="text-[#5C5C5C] normal-case tracking-normal font-mono text-[10px]">
+              · one per line · shows publicly under this vendor
+            </span>
+          </Label>
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder={`Tirzepatide = GLP2, Peptide T\nSemaglutide = GLP-SG\nRetatrutide = GLP3`}
+            rows={5}
+            className="rounded-none border-[#0A0A0A] mt-2 font-mono text-xs bg-white"
+            data-testid={`v-notes-input-${vendor.slug}`}
+          />
+          <div className="flex gap-2 mt-2 justify-end">
+            <Button
+              variant="ghost"
+              onClick={() => setEditing(false)}
+              className="rounded-none h-9 font-mono text-xs"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={save}
+              disabled={busy}
+              className="rounded-none bg-[#FF2D87] hover:bg-[#0A0A0A] text-white h-9 font-mono uppercase tracking-widest text-xs"
+              data-testid={`v-notes-save-${vendor.slug}`}
+            >
+              {busy ? "Saving…" : "Save guide"}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

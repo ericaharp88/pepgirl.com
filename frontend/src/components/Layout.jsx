@@ -10,7 +10,6 @@ export default function Layout({ children }) {
   const navItems = [
     { to: "/vendors", label: "Vendors" },
     { to: "/calculator", label: "Calculator" },
-    { to: "/compare", label: "Peptide Price Tool" },
     { to: "/resources", label: "Resources" },
   ];
 
