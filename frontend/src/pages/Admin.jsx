@@ -30,7 +30,7 @@ export default function Admin() {
       </div>
       <Tabs defaultValue="vendors">
         <TabsList className="rounded-none bg-white border border-[#0A0A0A] p-0 h-auto">
-          {["vendors", "peptides", "prices", "resources", "socials"].map((t) => (
+          {["vendors", "peptides", "resources", "socials"].map((t) => (
             <TabsTrigger
               key={t}
               value={t}
@@ -43,7 +43,6 @@ export default function Admin() {
         </TabsList>
         <TabsContent value="vendors" className="mt-8"><VendorsPanel /></TabsContent>
         <TabsContent value="peptides" className="mt-8"><PeptidesPanel /></TabsContent>
-        <TabsContent value="prices" className="mt-8"><PricesPanel /></TabsContent>
         <TabsContent value="resources" className="mt-8"><ResourcesPanel /></TabsContent>
         <TabsContent value="socials" className="mt-8"><SocialsPanel /></TabsContent>
       </Tabs>
@@ -129,19 +128,6 @@ function VendorsPanel() {
             <Label className="eyebrow">Featured</Label>
             <Switch checked={form.featured} onCheckedChange={(v) => setForm({ ...form, featured: v })} />
           </div>
-          <div className="flex items-center justify-between border border-[#E5E5E5] p-3">
-            <div>
-              <Label className="eyebrow">In price comparison</Label>
-              <div className="text-[10px] font-mono text-[#5C5C5C] mt-0.5">
-                Off = vendor stays on /vendors but is excluded from /compare & AI scrape
-              </div>
-            </div>
-            <Switch
-              checked={form.comparison_enabled !== false}
-              onCheckedChange={(v) => setForm({ ...form, comparison_enabled: v })}
-              data-testid="v-comparison-enabled"
-            />
-          </div>
           <Button onClick={save} data-testid="v-save" className="w-full rounded-none bg-[#FF2D87] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">Add vendor</Button>
         </div>
       </div>
@@ -196,11 +182,6 @@ function VendorRow({ vendor, onChanged, onDelete }) {
           <div className="font-bold">
             {vendor.name}
             {vendor.featured && <span className="ml-2 text-xs font-mono text-[#FF2D87]">★</span>}
-            {vendor.comparison_enabled === false && (
-              <span className="ml-2 text-[10px] font-mono uppercase tracking-wider text-[#5C5C5C] bg-[#F0F0F0] px-1.5 py-0.5">
-                no compare
-              </span>
-            )}
           </div>
           <div className="text-xs font-mono text-[#5C5C5C]">{vendor.slug}</div>
           <div className="text-xs mt-1 truncate max-w-[420px]">{vendor.affiliate_url}</div>
