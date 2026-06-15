@@ -10,7 +10,7 @@ import { Textarea } from "../components/ui/textarea";
 import { Switch } from "../components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { toast } from "sonner";
-import { RefreshCw, Trash2, RotateCw, Pencil, Check, X } from "lucide-react";
+import { RefreshCw, Trash2, RotateCw, Pencil, Check, X, Star } from "lucide-react";
 
 const blankVendor = { name: "", slug: "", description: "", affiliate_url: "", logo_url: "", rating: 4.5, tags: [], discount_code: "", promo_badge: "", nickname_notes: "", featured: false, comparison_enabled: true };
 const blankResource = { title: "", category: "Guide", summary: "", url: "", content: "" };
@@ -147,24 +147,29 @@ function VendorRow({ vendor, onChanged, onDelete }) {
   const [editing, setEditing] = useState(false);
   const [notes, setNotes] = useState(vendor.nickname_notes || "");
   const [busy, setBusy] = useState(false);
+  const [togglingFeat, setTogglingFeat] = useState(false);
+
+  const putVendor = (patch) =>
+    api.put(`/vendors/${vendor.id}`, {
+      name: vendor.name,
+      slug: vendor.slug,
+      description: vendor.description || "",
+      affiliate_url: vendor.affiliate_url,
+      logo_url: vendor.logo_url || "",
+      rating: vendor.rating || 0,
+      tags: vendor.tags || [],
+      discount_code: vendor.discount_code || "",
+      promo_badge: vendor.promo_badge || "",
+      nickname_notes: vendor.nickname_notes || "",
+      featured: vendor.featured || false,
+      comparison_enabled: vendor.comparison_enabled !== false,
+      ...patch,
+    });
 
   const save = async () => {
     setBusy(true);
     try {
-      await api.put(`/vendors/${vendor.id}`, {
-        name: vendor.name,
-        slug: vendor.slug,
-        description: vendor.description || "",
-        affiliate_url: vendor.affiliate_url,
-        logo_url: vendor.logo_url || "",
-        rating: vendor.rating || 0,
-        tags: vendor.tags || [],
-        discount_code: vendor.discount_code || "",
-        promo_badge: vendor.promo_badge || "",
-        nickname_notes: notes,
-        featured: vendor.featured || false,
-        comparison_enabled: vendor.comparison_enabled !== false,
-      });
+      await putVendor({ nickname_notes: notes });
       toast.success("Nickname guide saved");
       setEditing(false);
       onChanged();
@@ -175,13 +180,26 @@ function VendorRow({ vendor, onChanged, onDelete }) {
     }
   };
 
+  const toggleFeatured = async () => {
+    setTogglingFeat(true);
+    try {
+      const next = !vendor.featured;
+      await putVendor({ featured: next });
+      toast.success(next ? `${vendor.name} featured` : `${vendor.name} un-featured`);
+      onChanged();
+    } catch (e) {
+      toast.error(fmtErr(e.response?.data?.detail));
+    } finally {
+      setTogglingFeat(false);
+    }
+  };
+
   return (
     <div className="border-b border-[#E5E5E5] p-4">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="font-bold">
             {vendor.name}
-            {vendor.featured && <span className="ml-2 text-xs font-mono text-[#FF2D87]">★</span>}
           </div>
           <div className="text-xs font-mono text-[#5C5C5C]">{vendor.slug}</div>
           <div className="text-xs mt-1 truncate max-w-[420px]">{vendor.affiliate_url}</div>
@@ -195,6 +213,24 @@ function VendorRow({ vendor, onChanged, onDelete }) {
           )}
         </div>
         <div className="flex gap-1">
+          <button
+            type="button"
+            onClick={toggleFeatured}
+            disabled={togglingFeat}
+            title={vendor.featured ? "Click to UN-feature this vendor" : "Click to FEATURE this vendor"}
+            data-testid={`v-fav-${vendor.slug}`}
+            className={`h-9 w-9 inline-flex items-center justify-center rounded-none transition ${
+              vendor.featured
+                ? "bg-[#FF2D87] text-white hover:bg-[#0A0A0A]"
+                : "bg-white text-[#C0C0C0] border border-[#E5E5E5] hover:text-[#FF2D87] hover:border-[#FF2D87]"
+            } ${togglingFeat ? "opacity-50" : ""}`}
+          >
+            <Star
+              size={16}
+              fill={vendor.featured ? "currentColor" : "none"}
+              strokeWidth={2}
+            />
+          </button>
           <Button
             variant="ghost"
             size="icon"
