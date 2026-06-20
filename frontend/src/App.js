@@ -1,12 +1,8 @@
 import "./App.css";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./lib/auth";
-import Layout from "./components/Layout";
-import Home from "./pages/Home";
-import Vendors from "./pages/Vendors";
-import Calculator from "./pages/Calculator";
-import Resources from "./pages/Resources";
+import Blank from "./pages/Blank";
 import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 
@@ -15,24 +11,14 @@ function App() {
     <div className="App">
       <AuthProvider>
         <BrowserRouter>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/vendors" element={<Vendors />} />
-              <Route path="/calculator" element={<Calculator />} />
-              {/* Price Tool taken offline — redirect to home */}
-              <Route path="/compare" element={<Navigate to="/" replace />} />
-              <Route path="/resources" element={<Resources />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/admin" element={<Admin />} />
-            </Routes>
-          </Layout>
-          <Toaster
-            position="bottom-right"
-            toastOptions={{
-              style: { borderRadius: 0, border: "1px solid #0A0A0A", fontFamily: "JetBrains Mono, monospace", fontSize: "12px" },
-            }}
-          />
+          <Routes>
+            {/* Admin stays accessible so the owner can come back later */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/admin" element={<Admin />} />
+            {/* Everything else (incl. home, vendors, calculator, etc.) is blank */}
+            <Route path="*" element={<Blank />} />
+          </Routes>
+          <Toaster richColors position="top-right" />
         </BrowserRouter>
       </AuthProvider>
     </div>
