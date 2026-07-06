@@ -586,7 +586,7 @@ async def root():
 
 # ---------------- SEO (mounted on main app, NOT /api) ----------------
 SITE_URL = os.environ.get("SITE_URL", "https://pepgirl.com")
-SEO_ROUTES = ["", "/vendors", "/calculator", "/resources"]
+SEO_ROUTES = ["", "/vendors", "/calculator", "/compare", "/resources"]
 
 
 @app.get("/robots.txt", include_in_schema=False)
@@ -610,18 +610,45 @@ async def sitemap_xml():
     # Core static routes
     for path in SEO_ROUTES:
         priority = "1.0" if path == "" else "0.8"
+        changefreq = "daily" if path == "/compare" else "weekly"
         urls.append(
             f"  <url>\n"
             f"    <loc>{SITE_URL}{path or '/'}</loc>\n"
             f"    <lastmod>{today}</lastmod>\n"
-            f"    <changefreq>weekly</changefreq>\n"
+            f"    <changefreq>{changefreq}</changefreq>\n"
             f"    <priority>{priority}</priority>\n"
             f"  </url>"
         )
 
-    # Per-peptide deep links — DISABLED while Price Tool is offline.
-    # When you re-enable /compare, re-enable this block and add "/compare"
-    # back to SEO_ROUTES above so Google re-indexes peptide pages.
+    # Per-peptide deep links (only ones that actually have prices, so Google
+    # doesn't crawl empty pages)
+    try:
+        vendor_docs = await db.vendors.find(
+            {"$or": [{"comparison_enabled": True},
+                     {"comparison_enabled": {"$exists": False}}]},
+            {"_id": 0, "id": 1}
+        ).to_list(500)
+        vendor_ids = {v["id"] for v in vendor_docs}
+        all_prices = await db.prices.find({}, {"_id": 0, "peptide_id": 1, "vendor_id": 1, "price_usd": 1}).to_list(5000)
+        used_pep_ids = {
+            p["peptide_id"] for p in all_prices
+            if p.get("vendor_id") in vendor_ids and (p.get("price_usd") or 0) > 0
+        }
+        peptides = await db.peptides.find({"id": {"$in": list(used_pep_ids)}}, {"_id": 0, "name": 1}).to_list(1000)
+        for p in peptides:
+            slug = re.sub(r"[^a-z0-9]+", "-", (p.get("name") or "").lower()).strip("-")
+            if not slug:
+                continue
+            urls.append(
+                f"  <url>\n"
+                f"    <loc>{SITE_URL}/compare?peptide={slug}</loc>\n"
+                f"    <lastmod>{today}</lastmod>\n"
+                f"    <changefreq>weekly</changefreq>\n"
+                f"    <priority>0.7</priority>\n"
+                f"  </url>"
+            )
+    except Exception as e:
+        logger.warning(f"sitemap: failed to enumerate peptides ({e})")
 
     body = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'

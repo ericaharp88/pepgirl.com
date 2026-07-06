@@ -30,7 +30,7 @@ export default function Admin() {
       </div>
       <Tabs defaultValue="vendors">
         <TabsList className="rounded-none bg-white border border-[#0A0A0A] p-0 h-auto">
-          {["vendors", "peptides", "resources", "socials"].map((t) => (
+          {["vendors", "peptides", "prices", "resources", "socials"].map((t) => (
             <TabsTrigger
               key={t}
               value={t}
@@ -43,6 +43,7 @@ export default function Admin() {
         </TabsList>
         <TabsContent value="vendors" className="mt-8"><VendorsPanel /></TabsContent>
         <TabsContent value="peptides" className="mt-8"><PeptidesPanel /></TabsContent>
+        <TabsContent value="prices" className="mt-8"><PricesPanel /></TabsContent>
         <TabsContent value="resources" className="mt-8"><ResourcesPanel /></TabsContent>
         <TabsContent value="socials" className="mt-8"><SocialsPanel /></TabsContent>
       </Tabs>
