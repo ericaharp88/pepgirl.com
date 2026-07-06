@@ -17,8 +17,40 @@ from emergentintegrations.llm.chat import LlmChat, UserMessage, TextDelta, Strea
 logger = logging.getLogger(__name__)
 
 # Playwright is heavy — import lazily only when we actually need it
+async def _ensure_chromium_installed():
+    """Install Playwright Chromium on-demand if it's not present.
+    Runs at most once per container start."""
+    import subprocess, sys
+    global _CHROMIUM_READY
+    if _CHROMIUM_READY:
+        return
+    try:
+        # Try to run chromium; if binary is missing, install it
+        proc = await asyncio.create_subprocess_exec(
+            sys.executable, "-m", "playwright", "install", "chromium", "--with-deps",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await proc.communicate()
+        if proc.returncode == 0:
+            logger.info("Playwright chromium install OK")
+        else:
+            # Try without --with-deps (sudo not available on many hosts)
+            proc2 = await asyncio.create_subprocess_exec(
+                sys.executable, "-m", "playwright", "install", "chromium",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            await proc2.communicate()
+            logger.info("Playwright chromium install (no-deps) done")
+    except Exception as e:
+        logger.warning("Chromium install failed: %s", e)
+    _CHROMIUM_READY = True
+
+
 _PW_BROWSER = None
 _PW_LOCK = asyncio.Lock()
+_CHROMIUM_READY = False
 
 
 async def _get_browser():
@@ -27,10 +59,19 @@ async def _get_browser():
         if _PW_BROWSER is None:
             from playwright.async_api import async_playwright
             pw = await async_playwright().start()
-            _PW_BROWSER = await pw.chromium.launch(
-                headless=True,
-                args=["--no-sandbox", "--disable-blink-features=AutomationControlled"],
-            )
+            try:
+                _PW_BROWSER = await pw.chromium.launch(
+                    headless=True,
+                    args=["--no-sandbox", "--disable-blink-features=AutomationControlled"],
+                )
+            except Exception as launch_err:
+                # Browser probably not installed — try to install and retry
+                logger.warning("Chromium launch failed (%s); attempting on-demand install...", launch_err)
+                await _ensure_chromium_installed()
+                _PW_BROWSER = await pw.chromium.launch(
+                    headless=True,
+                    args=["--no-sandbox", "--disable-blink-features=AutomationControlled"],
+                )
     return _PW_BROWSER
 
 
