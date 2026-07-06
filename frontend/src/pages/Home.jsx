@@ -76,7 +76,7 @@ export default function Home() {
           {/* Brand banner image */}
           <div className="mb-10 lg:mb-14">
             <img
-              src="https://customer-assets.emergentagent.com/job_peptide-dosing-1/artifacts/um8tthw6_f0d6925a-f717-444d-8fb2-c7c19d4a9882.png"
+              src="https://customer-assets.emergentagent.com/job_peptide-dosing-1/artifacts/3alss7km_new%20cover.png"
               alt="The Optimized Society by Erica — Optimize Your Health. Elevate Your Life."
               className="w-full h-auto rounded-none block mx-auto"
               style={{ maxHeight: "560px", objectFit: "contain" }}
