@@ -778,6 +778,15 @@ async def seed_sample_data():
         del_res = await db.vendors.delete_many({"slug": {"$in": legacy_slugs}})
         logger.info(f"Removed {del_res.deleted_count} legacy sample vendors and their prices.")
 
+    # ───── Permanently-banned vendors (auto-deleted on every startup) ─────
+    banned_slugs = ["fusion-peptide", "tcore-bio-tech", "true-peptide-labs"]
+    banned_docs = await db.vendors.find({"slug": {"$in": banned_slugs}}, {"id": 1, "_id": 0}).to_list(50)
+    if banned_docs:
+        banned_ids = [d["id"] for d in banned_docs]
+        await db.prices.delete_many({"vendor_id": {"$in": banned_ids}})
+        del_res = await db.vendors.delete_many({"slug": {"$in": banned_slugs}})
+        logger.info(f"Removed {del_res.deleted_count} permanently-banned vendors and their prices.")
+
     # ───── Mark non-comparison vendors and wipe any of their prices ─────
     NON_COMPARISON_SLUGS = ["take-ploom", "belliwelli", "moon-brew", "ryze-mushroom-coffee", "comfrt"]
     nc_docs = await db.vendors.find({"slug": {"$in": NON_COMPARISON_SLUGS}},
@@ -833,24 +842,6 @@ async def seed_sample_data():
          "logo_url": "https://www.google.com/s2/favicons?domain=modifiedaminos.shop&sz=128",
          "rating": 4.5, "tags": ["Peptides", "Capsules", "Nasal Spray", "7x Tested"],
          "discount_code": "ERICA", "featured": False},
-        {"name": "Fusion Peptide", "slug": "fusion-peptide",
-         "description": "Research-grade peptides with consistent QC.",
-         "affiliate_url": "https://fusionpeptide.com/?ref=erica",
-         "logo_url": "https://www.google.com/s2/favicons?domain=fusionpeptide.com&sz=128",
-         "rating": 4.4, "tags": ["Peptides"],
-         "discount_code": "ERICA", "promo_badge": "BOGO", "featured": False},
-        {"name": "Tcore Bio Tech", "slug": "tcore-bio-tech",
-         "description": "Biotech-grade research peptides.",
-         "affiliate_url": "https://tcorebiotech.com/?ref=erica",
-         "logo_url": "https://www.google.com/s2/favicons?domain=tcorebiotech.com&sz=128",
-         "rating": 4.4, "tags": ["Peptides", "Biotech"],
-         "discount_code": "ERICA20", "featured": False},
-        {"name": "True Peptide Labs", "slug": "true-peptide-labs",
-         "description": "Lab-tested peptides for research applications.",
-         "affiliate_url": "https://truepeptidelabs.com/?ref=glpgirly",
-         "logo_url": "https://www.google.com/s2/favicons?domain=truepeptidelabs.com&sz=128",
-         "rating": 4.5, "tags": ["Peptides", "Tested"],
-         "discount_code": "ERICA15", "featured": False},
 
         # ───── Skin Care ─────
         {"name": "Scantifix", "slug": "scantifix",
