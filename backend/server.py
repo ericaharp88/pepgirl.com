@@ -191,6 +191,8 @@ class PriceEntry(BaseModel):
     vendor_id: str
     size_mg: float
     price_usd: float
+    form: str = "vial"  # vial | capsule | liquid | skincare | aminos
+    available: bool = True
     product_url: str = ""
     display_label: str = ""  # vendor-specific nickname / title override
     scrape_selector: str = ""  # CSS selector for scraping
@@ -204,9 +206,33 @@ class PriceEntryIn(BaseModel):
     vendor_id: str
     size_mg: float
     price_usd: float = 0.0
+    form: str = "vial"
+    available: bool = True
     product_url: str = ""
     display_label: str = ""
     scrape_selector: str = ""
+
+
+class Promotion(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    vendor_id: str
+    promo_code: str
+    discount_percent: float = 0.0  # 10 = 10% off
+    description: str = ""
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    active: bool = True
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class PromotionIn(BaseModel):
+    vendor_id: str
+    promo_code: str
+    discount_percent: float = 0.0
+    description: str = ""
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    active: bool = True
 
 
 # ---------------- Auth Endpoints ----------------
@@ -237,8 +263,21 @@ async def me(admin: dict = Depends(get_current_admin)):
 
 # ---------------- Vendors ----------------
 @api_router.get("/vendors")
-async def list_vendors():
+async def list_vendors(request: Request):
     docs = await db.vendors.find({}, {"_id": 0}).sort("featured", -1).to_list(500)
+    # Strip sensitive login_config unless caller is an authenticated admin
+    is_admin = False
+    try:
+        auth = request.headers.get("authorization", "")
+        if auth.startswith("Bearer "):
+            token = auth.split()[1]
+            payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+            is_admin = payload.get("role") == "admin"
+    except Exception:
+        is_admin = False
+    if not is_admin:
+        for d in docs:
+            d["login_config"] = None
     return docs
 
 
@@ -437,22 +476,80 @@ async def list_prices():
 async def create_price(payload: PriceEntryIn, admin: dict = Depends(get_current_admin)):
     obj = PriceEntry(**payload.model_dump())
     await db.prices.insert_one(obj.model_dump())
+    # Log to price_history
+    if obj.price_usd > 0:
+        await db.price_history.insert_one({
+            "id": str(uuid.uuid4()),
+            "price_id": obj.id,
+            "peptide_id": obj.peptide_id,
+            "vendor_id": obj.vendor_id,
+            "size_mg": obj.size_mg,
+            "price_usd": obj.price_usd,
+            "recorded_at": datetime.now(timezone.utc).isoformat(),
+        })
     return obj
 
 
 @api_router.put("/prices/{pid}")
 async def update_price(pid: str, payload: PriceEntryIn, admin: dict = Depends(get_current_admin)):
+    old = await db.prices.find_one({"id": pid}, {"_id": 0})
     updates = payload.model_dump()
     updates["updated_at"] = datetime.now(timezone.utc).isoformat()
     result = await db.prices.update_one({"id": pid}, {"$set": updates})
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Not found")
+    # Log price change to history when price changed
+    if old and old.get("price_usd") != updates.get("price_usd"):
+        await db.price_history.insert_one({
+            "id": str(uuid.uuid4()),
+            "price_id": pid,
+            "peptide_id": updates["peptide_id"],
+            "vendor_id": updates["vendor_id"],
+            "size_mg": updates["size_mg"],
+            "price_usd": updates["price_usd"],
+            "recorded_at": datetime.now(timezone.utc).isoformat(),
+        })
     return await db.prices.find_one({"id": pid}, {"_id": 0})
 
 
 @api_router.delete("/prices/{pid}")
 async def delete_price(pid: str, admin: dict = Depends(get_current_admin)):
     await db.prices.delete_one({"id": pid})
+    return {"ok": True}
+
+
+@api_router.get("/prices/{pid}/history")
+async def price_history(pid: str):
+    docs = await db.price_history.find({"price_id": pid}, {"_id": 0}).sort("recorded_at", -1).to_list(500)
+    return docs
+
+
+# ---------------- Promotions ----------------
+@api_router.get("/promotions")
+async def list_promotions():
+    """Public — returns all promotions (frontend filters active ones)."""
+    docs = await db.promotions.find({}, {"_id": 0}).to_list(500)
+    return docs
+
+
+@api_router.post("/promotions", response_model=Promotion)
+async def create_promotion(payload: PromotionIn, admin: dict = Depends(get_current_admin)):
+    obj = Promotion(**payload.model_dump())
+    await db.promotions.insert_one(obj.model_dump())
+    return obj
+
+
+@api_router.put("/promotions/{pid}")
+async def update_promotion(pid: str, payload: PromotionIn, admin: dict = Depends(get_current_admin)):
+    result = await db.promotions.update_one({"id": pid}, {"$set": payload.model_dump()})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return await db.promotions.find_one({"id": pid}, {"_id": 0})
+
+
+@api_router.delete("/promotions/{pid}")
+async def delete_promotion(pid: str, admin: dict = Depends(get_current_admin)):
+    await db.promotions.delete_one({"id": pid})
     return {"ok": True}
 
 
@@ -551,13 +648,34 @@ async def comparison():
                  {"comparison_enabled": {"$exists": False}}]},
         {"_id": 0}
     ).to_list(500)
+    # Strip sensitive login_config from public payload
+    for v in vendors:
+        if "login_config" in v:
+            v["login_config"] = None
     vendor_ids = {v["id"] for v in vendors}
     all_prices = await db.prices.find({}, {"_id": 0}).to_list(5000)
     prices = [p for p in all_prices if p["vendor_id"] in vendor_ids]
     # Only return peptides that actually have at least one price across enabled vendors
     used_pep_ids = {p["peptide_id"] for p in prices}
     peptides = [p for p in peptides if p["id"] in used_pep_ids]
-    return {"peptides": peptides, "vendors": vendors, "prices": prices}
+
+    # Active promotions (filtered by end_date and active flag)
+    now_iso = datetime.now(timezone.utc).isoformat()
+    all_promos = await db.promotions.find({}, {"_id": 0}).to_list(500)
+    active_promos = [
+        p for p in all_promos
+        if p.get("active", True)
+        and (not p.get("end_date") or p["end_date"] > now_iso)
+        and (not p.get("start_date") or p["start_date"] <= now_iso)
+        and p.get("vendor_id") in vendor_ids
+    ]
+
+    return {
+        "peptides": peptides,
+        "vendors": vendors,
+        "prices": prices,
+        "promotions": active_promos,
+    }
 
 
 # ---------------- AI Bulk Import ----------------

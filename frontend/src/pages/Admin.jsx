@@ -30,7 +30,7 @@ export default function Admin() {
       </div>
       <Tabs defaultValue="vendors">
         <TabsList className="rounded-none bg-white border border-[#0A0A0A] p-0 h-auto">
-          {["vendors", "peptides", "prices", "resources", "socials"].map((t) => (
+          {["vendors", "peptides", "prices", "promotions", "resources", "socials"].map((t) => (
             <TabsTrigger
               key={t}
               value={t}
@@ -44,6 +44,7 @@ export default function Admin() {
         <TabsContent value="vendors" className="mt-8"><VendorsPanel /></TabsContent>
         <TabsContent value="peptides" className="mt-8"><PeptidesPanel /></TabsContent>
         <TabsContent value="prices" className="mt-8"><PricesPanel /></TabsContent>
+        <TabsContent value="promotions" className="mt-8"><PromotionsPanel /></TabsContent>
         <TabsContent value="resources" className="mt-8"><ResourcesPanel /></TabsContent>
         <TabsContent value="socials" className="mt-8"><SocialsPanel /></TabsContent>
       </Tabs>
@@ -1372,6 +1373,110 @@ function Field({ label, value, onChange, type = "text", testId }) {
         data-testid={testId}
         className="rounded-none border-[#0A0A0A] mt-2 font-mono text-sm h-11"
       />
+    </div>
+  );
+}
+
+/* ----------------- PROMOTIONS ----------------- */
+function PromotionsPanel() {
+  const [items, setItems] = useState([]);
+  const [vendors, setVendors] = useState([]);
+  const [form, setForm] = useState({ vendor_id: "", promo_code: "", discount_percent: 10, description: "", end_date: "", active: true });
+
+  const load = () => Promise.all([
+    api.get("/promotions").then(r => setItems(r.data)),
+    api.get("/vendors").then(r => setVendors(r.data)),
+  ]);
+  useEffect(() => { load(); }, []);
+
+  const save = async () => {
+    if (!form.vendor_id) { toast.error("Pick a vendor"); return; }
+    if (!form.promo_code.trim()) { toast.error("Promo code required"); return; }
+    try {
+      await api.post("/promotions", {
+        ...form,
+        discount_percent: Number(form.discount_percent) || 0,
+        end_date: form.end_date || null,
+      });
+      toast.success("Promotion added");
+      setForm({ vendor_id: "", promo_code: "", discount_percent: 10, description: "", end_date: "", active: true });
+      load();
+    } catch (e) { toast.error(fmtErr(e.response?.data?.detail)); }
+  };
+
+  const toggleActive = async (promo) => {
+    await api.put(`/promotions/${promo.id}`, { ...promo, active: !promo.active, end_date: promo.end_date || null });
+    load();
+  };
+
+  const del = async (id) => {
+    if (!confirm("Delete promotion?")) return;
+    await api.delete(`/promotions/${id}`);
+    load();
+  };
+
+  const vname = (id) => vendors.find(v => v.id === id)?.name || "?";
+  const now = new Date().toISOString();
+
+  return (
+    <div className="grid lg:grid-cols-12 gap-8">
+      <div className="lg:col-span-5 border border-[#0A0A0A] p-6 h-fit">
+        <SectionHeader title="New promotion" />
+        <div className="space-y-4">
+          <div>
+            <Label className="eyebrow text-[#5C5C5C]">Vendor</Label>
+            <select
+              value={form.vendor_id}
+              onChange={(e) => setForm({ ...form, vendor_id: e.target.value })}
+              className="w-full rounded-none border border-[#0A0A0A] h-11 mt-2 font-mono text-sm px-3"
+              data-testid="promo-vendor"
+            >
+              <option value="">— pick —</option>
+              {vendors.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+            </select>
+          </div>
+          <Field label="Promo code" value={form.promo_code} onChange={(v) => setForm({ ...form, promo_code: v.toUpperCase() })} testId="promo-code" />
+          <Field label="Discount %" type="number" value={form.discount_percent} onChange={(v) => setForm({ ...form, discount_percent: v })} testId="promo-discount" />
+          <div>
+            <Label className="eyebrow text-[#5C5C5C]">Description</Label>
+            <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="e.g. 10% off site-wide" className="rounded-none border-[#0A0A0A] mt-2 font-mono text-sm h-11" />
+          </div>
+          <Field label="End date (optional, YYYY-MM-DD)" value={form.end_date} onChange={(v) => setForm({ ...form, end_date: v })} />
+          <Button onClick={save} data-testid="promo-save" className="w-full rounded-none bg-[#B87A6A] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">Add promotion</Button>
+        </div>
+      </div>
+
+      <div className="lg:col-span-7">
+        <SectionHeader title={`Promotions (${items.length})`} />
+        <div className="border border-[#E5E5E5]">
+          {items.length === 0 && (
+            <div className="p-6 text-sm font-mono text-[#A0A0A0]">No promotions yet.</div>
+          )}
+          {items.map(p => {
+            const expired = p.end_date && p.end_date < now;
+            return (
+              <div key={p.id} className={`border-b border-[#E5E5E5] p-4 flex items-start justify-between gap-4 ${expired ? "opacity-60" : ""}`}>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold">{vname(p.vendor_id)}</span>
+                    <span className="px-2 py-0.5 bg-[#F5DED4] text-[#B87A6A] text-[10px] font-mono font-bold rounded tracking-widest">
+                      {p.promo_code} · {p.discount_percent}%
+                    </span>
+                    {!p.active && <span className="text-[10px] font-mono uppercase tracking-widest text-[#5C5C5C]">paused</span>}
+                    {expired && <span className="text-[10px] font-mono uppercase tracking-widest text-red-600">expired</span>}
+                  </div>
+                  {p.description && <div className="text-xs text-[#5C5C5C] mt-1">{p.description}</div>}
+                  {p.end_date && <div className="text-[10px] font-mono text-[#5C5C5C] mt-0.5">Ends: {p.end_date.slice(0, 10)}</div>}
+                </div>
+                <div className="flex gap-2 items-center">
+                  <Switch checked={p.active} onCheckedChange={() => toggleActive(p)} data-testid={`promo-toggle-${p.id}`} />
+                  <Button variant="ghost" size="icon" onClick={() => del(p.id)} className="rounded-none hover:bg-[#E60000] hover:text-white h-8 w-8"><Trash2 size={14} /></Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
