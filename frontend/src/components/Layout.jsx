@@ -111,7 +111,7 @@ export default function Layout({ children }) {
           <div>
             <LogoText />
             <p className="text-sm text-[#FFB8D8] mt-6 leading-relaxed">
-              Peptides · Confidence · You. Built by the girls, for the girls.
+              Optimize Your Health. Elevate Your Life. Curated by Erica.
             </p>
           </div>
           <div>
@@ -133,7 +133,7 @@ export default function Layout({ children }) {
               on qualifying purchases at no extra cost to you.
             </p>
             <p className="mt-6 text-[10px] font-mono uppercase tracking-[0.3em] text-[#C99786]">
-              © PEPGIRL.COM {new Date().getFullYear()}
+              © THE OPTIMIZED SOCIETY {new Date().getFullYear()}
             </p>
           </div>
         </div>
