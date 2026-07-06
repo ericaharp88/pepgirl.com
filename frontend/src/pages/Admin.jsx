@@ -10,7 +10,7 @@ import { Textarea } from "../components/ui/textarea";
 import { Switch } from "../components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { toast } from "sonner";
-import { RefreshCw, Trash2, RotateCw, Pencil, Check, X, Star } from "lucide-react";
+import { RefreshCw, Trash2, RotateCw, Pencil, Check, X, Star, KeyRound } from "lucide-react";
 
 const blankVendor = { name: "", slug: "", description: "", affiliate_url: "", logo_url: "", rating: 4.5, tags: [], discount_code: "", promo_badge: "", nickname_notes: "", featured: false, comparison_enabled: true };
 const blankResource = { title: "", category: "Guide", summary: "", url: "", content: "" };
@@ -149,6 +149,11 @@ function VendorRow({ vendor, onChanged, onDelete }) {
   const [notes, setNotes] = useState(vendor.nickname_notes || "");
   const [busy, setBusy] = useState(false);
   const [togglingFeat, setTogglingFeat] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const initialLogin = vendor.login_config || { login_url: "", username: "", password: "", username_selector: "", password_selector: "", submit_selector: "" };
+  const [loginCfg, setLoginCfg] = useState(initialLogin);
+  const [testResult, setTestResult] = useState(null); // { ok, message, screenshot_b64 }
+  const [testingLogin, setTestingLogin] = useState(false);
 
   const putVendor = (patch) =>
     api.put(`/vendors/${vendor.id}`, {
@@ -162,6 +167,7 @@ function VendorRow({ vendor, onChanged, onDelete }) {
       discount_code: vendor.discount_code || "",
       promo_badge: vendor.promo_badge || "",
       nickname_notes: vendor.nickname_notes || "",
+      login_config: vendor.login_config || null,
       featured: vendor.featured || false,
       comparison_enabled: vendor.comparison_enabled !== false,
       ...patch,
@@ -194,6 +200,39 @@ function VendorRow({ vendor, onChanged, onDelete }) {
       setTogglingFeat(false);
     }
   };
+
+  const saveLogin = async () => {
+    // If all key fields empty, save null to clear
+    const empty = !loginCfg.login_url && !loginCfg.username && !loginCfg.password;
+    try {
+      await putVendor({ login_config: empty ? null : loginCfg });
+      toast.success(empty ? "Login config removed" : "Login config saved");
+      onChanged();
+    } catch (e) {
+      toast.error(fmtErr(e.response?.data?.detail));
+    }
+  };
+
+  const testLogin = async () => {
+    setTestingLogin(true);
+    setTestResult(null);
+    try {
+      // First save current values
+      await putVendor({ login_config: loginCfg });
+      const { data } = await api.post(`/vendors/${vendor.id}/test-login`);
+      setTestResult(data);
+      if (data.ok) toast.success("Login test passed ✓");
+      else toast.error("Login test inconclusive — check screenshot");
+    } catch (e) {
+      const detail = e.response?.data?.detail || String(e);
+      setTestResult({ ok: false, message: detail });
+      toast.error(fmtErr(detail));
+    } finally {
+      setTestingLogin(false);
+    }
+  };
+
+  const hasLogin = !!(vendor.login_config && vendor.login_config.login_url);
 
   return (
     <div className="border-b border-[#E5E5E5] p-4">
@@ -232,10 +271,23 @@ function VendorRow({ vendor, onChanged, onDelete }) {
               strokeWidth={2}
             />
           </button>
+          <button
+            type="button"
+            onClick={() => { setLoginOpen((o) => !o); setEditing(false); }}
+            title={hasLogin ? "Login credentials saved — click to edit / test" : "Add login credentials for scraper"}
+            data-testid={`v-login-${vendor.slug}`}
+            className={`h-9 w-9 inline-flex items-center justify-center rounded-none transition ${
+              hasLogin
+                ? "bg-[#E8CDBF] text-[#0A0A0A] hover:bg-[#B87A6A] hover:text-white"
+                : "bg-white text-[#C0C0C0] border border-[#E5E5E5] hover:text-[#B87A6A] hover:border-[#B87A6A]"
+            }`}
+          >
+            <KeyRound size={16} />
+          </button>
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => { setEditing((e) => !e); setNotes(vendor.nickname_notes || ""); }}
+            onClick={() => { setEditing((e) => !e); setLoginOpen(false); setNotes(vendor.nickname_notes || ""); }}
             className="rounded-none hover:bg-[#B87A6A] hover:text-white"
             title="Edit peptide nickname guide"
             data-testid={`v-edit-${vendor.slug}`}
@@ -287,6 +339,124 @@ function VendorRow({ vendor, onChanged, onDelete }) {
               {busy ? "Saving…" : "Save guide"}
             </Button>
           </div>
+        </div>
+      )}
+
+      {loginOpen && (
+        <div className="mt-3 bg-[#FDF9F5] border border-[#B87A6A] p-3 space-y-2">
+          <div className="flex items-center justify-between mb-1">
+            <Label className="eyebrow text-[#B87A6A]">
+              Vendor Login (Scraper Only)
+            </Label>
+            <span className="text-[9px] font-mono uppercase tracking-widest text-[#5C5C5C]">
+              🔒 Stored server-side, never shown publicly
+            </span>
+          </div>
+          <p className="text-[10px] font-mono text-[#5C5C5C] leading-relaxed">
+            Use a <b>dedicated research account</b> — not your personal shopping login. Password will be sent to the scraper and stored in your admin DB.
+          </p>
+
+          <div className="grid grid-cols-1 gap-2">
+            <Input
+              value={loginCfg.login_url}
+              onChange={(e) => setLoginCfg({ ...loginCfg, login_url: e.target.value })}
+              placeholder="Login URL (e.g. https://aminowellusa.com/account/login)"
+              className="rounded-none border-[#0A0A0A] h-9 font-mono text-xs bg-white"
+              data-testid={`v-login-url-${vendor.slug}`}
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                value={loginCfg.username}
+                onChange={(e) => setLoginCfg({ ...loginCfg, username: e.target.value })}
+                placeholder="Email / username"
+                className="rounded-none border-[#0A0A0A] h-9 font-mono text-xs bg-white"
+                data-testid={`v-login-user-${vendor.slug}`}
+              />
+              <Input
+                type="password"
+                value={loginCfg.password}
+                onChange={(e) => setLoginCfg({ ...loginCfg, password: e.target.value })}
+                placeholder="Password"
+                className="rounded-none border-[#0A0A0A] h-9 font-mono text-xs bg-white"
+                data-testid={`v-login-pass-${vendor.slug}`}
+              />
+            </div>
+            <details className="text-[10px] font-mono">
+              <summary className="cursor-pointer text-[#5C5C5C] hover:text-[#B87A6A]">
+                Advanced (custom CSS selectors)
+              </summary>
+              <div className="grid grid-cols-1 gap-2 mt-2">
+                <Input
+                  value={loginCfg.username_selector}
+                  onChange={(e) => setLoginCfg({ ...loginCfg, username_selector: e.target.value })}
+                  placeholder='Username selector (blank = auto)  e.g. input[name="email"]'
+                  className="rounded-none border-[#E5E5E5] h-9 font-mono text-xs bg-white"
+                />
+                <Input
+                  value={loginCfg.password_selector}
+                  onChange={(e) => setLoginCfg({ ...loginCfg, password_selector: e.target.value })}
+                  placeholder='Password selector (blank = auto)  e.g. input[type="password"]'
+                  className="rounded-none border-[#E5E5E5] h-9 font-mono text-xs bg-white"
+                />
+                <Input
+                  value={loginCfg.submit_selector}
+                  onChange={(e) => setLoginCfg({ ...loginCfg, submit_selector: e.target.value })}
+                  placeholder='Submit button selector (blank = auto)'
+                  className="rounded-none border-[#E5E5E5] h-9 font-mono text-xs bg-white"
+                />
+              </div>
+            </details>
+          </div>
+
+          <div className="flex gap-2 justify-end pt-2">
+            <Button
+              variant="ghost"
+              onClick={() => { setLoginOpen(false); setTestResult(null); }}
+              className="rounded-none h-9 font-mono text-xs"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={saveLogin}
+              className="rounded-none bg-[#0A0A0A] hover:bg-[#B87A6A] text-white h-9 font-mono uppercase tracking-widest text-xs"
+              data-testid={`v-login-save-${vendor.slug}`}
+            >
+              Save
+            </Button>
+            <Button
+              onClick={testLogin}
+              disabled={testingLogin || !loginCfg.login_url || !loginCfg.username || !loginCfg.password}
+              className="rounded-none bg-[#B87A6A] hover:bg-[#0A0A0A] text-white h-9 font-mono uppercase tracking-widest text-xs"
+              data-testid={`v-login-test-${vendor.slug}`}
+            >
+              {testingLogin ? "Testing…" : "Test login"}
+            </Button>
+          </div>
+
+          {testResult && (
+            <div className={`mt-2 border p-3 text-xs font-mono ${testResult.ok ? "border-green-600 bg-green-50" : "border-[#E60000] bg-red-50"}`}>
+              <div className="font-bold mb-1">
+                {testResult.ok ? "✓ Login test passed" : "✗ Login test failed / inconclusive"}
+              </div>
+              <div className="text-[11px]">{testResult.message}</div>
+              {testResult.final_url && (
+                <div className="mt-1 text-[10px] text-[#5C5C5C] truncate">
+                  landed on: {testResult.final_url}
+                </div>
+              )}
+              {testResult.screenshot_b64 && (
+                <div className="mt-2">
+                  <div className="text-[10px] text-[#5C5C5C] mb-1">Screenshot after login attempt:</div>
+                  <img
+                    alt="login test result"
+                    src={`data:image/jpeg;base64,${testResult.screenshot_b64}`}
+                    className="max-w-full border border-[#E5E5E5]"
+                    style={{ maxHeight: "300px" }}
+                  />
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -34,8 +34,12 @@ async def _get_browser():
     return _PW_BROWSER
 
 
-async def playwright_fetch_html(url: str, timeout: int = 30000) -> Optional[str]:
-    """Fetch a JS-rendered page using a headless Chromium browser."""
+async def playwright_fetch_html(url: str, timeout: int = 30000, login_config: Optional[dict] = None) -> Optional[str]:
+    """Fetch a JS-rendered page using a headless Chromium browser.
+
+    If ``login_config`` is provided with a login_url + username + password,
+    the browser first logs in, then navigates to ``url``.
+    """
     try:
         browser = await _get_browser()
         context = await browser.new_context(
@@ -46,6 +50,15 @@ async def playwright_fetch_html(url: str, timeout: int = 30000) -> Optional[str]
             viewport={"width": 1440, "height": 900},
         )
         page = await context.new_page()
+
+        # ----- Optional login step -----
+        if login_config and login_config.get("login_url") and login_config.get("username") and login_config.get("password"):
+            try:
+                await _perform_login(page, login_config)
+                logger.info("login OK -> %s", login_config.get("login_url"))
+            except Exception as e:
+                logger.warning("login FAILED for %s: %s", login_config.get("login_url"), e)
+
         await page.goto(url, wait_until="domcontentloaded", timeout=timeout)
         # Let lazy-loaded products render
         try:
@@ -68,6 +81,109 @@ async def playwright_fetch_html(url: str, timeout: int = 30000) -> Optional[str]
     except Exception as e:
         logger.warning("playwright_fetch_html %s error: %s", url, e)
         return None
+
+
+async def _perform_login(page, login_config: dict):
+    """Fills a standard login form and submits it."""
+    await page.goto(login_config["login_url"], wait_until="domcontentloaded", timeout=30000)
+    try:
+        await page.wait_for_load_state("networkidle", timeout=6000)
+    except Exception:
+        pass
+
+    # Username / email
+    user_sel = login_config.get("username_selector") or (
+        'input[type="email"], input[name*="email" i], input[name*="user" i], '
+        'input[id*="email" i], input[id*="user" i]'
+    )
+    await page.wait_for_selector(user_sel, timeout=8000)
+    await page.fill(user_sel, login_config["username"])
+
+    # Password
+    pass_sel = login_config.get("password_selector") or 'input[type="password"]'
+    await page.wait_for_selector(pass_sel, timeout=6000)
+    await page.fill(pass_sel, login_config["password"])
+
+    # Submit
+    submit_sel = login_config.get("submit_selector")
+    if submit_sel:
+        await page.click(submit_sel)
+    else:
+        # Try common submit variants; fall back to keyboard Enter
+        for sel in [
+            'button[type="submit"]',
+            'input[type="submit"]',
+            'button:has-text("Log in")',
+            'button:has-text("Login")',
+            'button:has-text("Sign in")',
+            'button:has-text("Sign In")',
+        ]:
+            try:
+                await page.click(sel, timeout=1200)
+                break
+            except Exception:
+                continue
+        else:
+            await page.keyboard.press("Enter")
+
+    # Wait for post-login navigation
+    try:
+        await page.wait_for_load_state("networkidle", timeout=10000)
+    except Exception:
+        pass
+
+
+async def playwright_test_login(login_config: dict) -> dict:
+    """Try to log in and report back whether it looks like it worked.
+
+    Returns dict: {ok: bool, message: str, screenshot_b64?: str}
+    """
+    import base64
+    if not (login_config.get("login_url") and login_config.get("username") and login_config.get("password")):
+        return {"ok": False, "message": "Missing login_url, username, or password"}
+    try:
+        browser = await _get_browser()
+        context = await browser.new_context(
+            user_agent=(
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
+            ),
+            viewport={"width": 1440, "height": 900},
+        )
+        page = await context.new_page()
+        try:
+            await _perform_login(page, login_config)
+        except Exception as e:
+            shot = await page.screenshot(type="jpeg", quality=40)
+            await context.close()
+            return {"ok": False, "message": f"Login step failed: {e}",
+                    "screenshot_b64": base64.b64encode(shot).decode("ascii")}
+
+        # Heuristic: after login, look for signs of an authenticated session
+        cur_url = page.url
+        body = ""
+        try:
+            body = (await page.inner_text("body")).lower()[:5000]
+        except Exception:
+            pass
+        signals = {
+            "signout": any(k in body for k in ["log out", "logout", "sign out", "signout", "my account", "dashboard", "orders"]),
+            "no_login_form": "password" not in body[:2000],
+            "url_changed": cur_url and cur_url != login_config["login_url"],
+        }
+        ok = signals["signout"] or (signals["no_login_form"] and signals["url_changed"])
+        shot = await page.screenshot(type="jpeg", quality=40)
+        await context.close()
+        return {
+            "ok": bool(ok),
+            "message": "Logged in ✓" if ok else "No clear signal of a successful login. Double-check credentials or set explicit selectors.",
+            "final_url": cur_url,
+            "signals": signals,
+            "screenshot_b64": base64.b64encode(shot).decode("ascii"),
+        }
+    except Exception as e:
+        logger.exception("playwright_test_login error")
+        return {"ok": False, "message": f"Error: {e}"}
 
 BROWSER_HEADERS = {
     "User-Agent": (
@@ -298,31 +414,36 @@ async def scrape_vendor(vendor: dict, llm_key: str) -> dict:
     """Returns {'vendor_slug', 'shop_url', 'products', 'error'}.
 
     Pipeline:
-      1. Try fast HTTP fetch + LLM extract.
-      2. If blocked / empty / no products found, fall back to headless Playwright.
+      1. If vendor has login_config, skip the fast HTTP path and go straight
+         to Playwright with the login step (login-walled sites will 401 the fast path).
+      2. Otherwise, try fast HTTP fetch + LLM extract.
+      3. If blocked / empty / no products found, fall back to headless Playwright.
     """
     name = vendor["name"]
     affiliate_url = vendor["affiliate_url"]
+    login_config = vendor.get("login_config") or None
     logger.info("Scraping %s ...", name)
 
-    # ---- Phase 1: fast HTTP path ----
-    disc = discover_shop_html(affiliate_url)
     shop_url = None
     cleaned = ""
     products = []
 
-    if disc:
-        shop_url, html = disc
-        cleaned = clean_html_for_llm(html, base_url=shop_url)
-        if cleaned.strip():
-            products = await extract_products_llm(cleaned, name, shop_url, llm_key)
+    # ---- Phase 1: fast HTTP path (skipped for login-walled vendors) ----
+    if not login_config:
+        disc = discover_shop_html(affiliate_url)
+        if disc:
+            shop_url, html = disc
+            cleaned = clean_html_for_llm(html, base_url=shop_url)
+            if cleaned.strip():
+                products = await extract_products_llm(cleaned, name, shop_url, llm_key)
 
-    # ---- Phase 2: Playwright fallback ----
-    needs_browser = (
-        not disc or not cleaned.strip() or len(products) == 0
-    )
+    # ---- Phase 2: Playwright (with optional login) ----
+    needs_browser = login_config is not None or not cleaned.strip() or len(products) == 0
     if needs_browser:
-        logger.info("  %s -> falling back to Playwright (headless browser)", name)
+        if login_config:
+            logger.info("  %s -> using login-enabled Playwright scraper", name)
+        else:
+            logger.info("  %s -> falling back to Playwright (headless browser)", name)
         candidate_urls = [affiliate_url]
         parsed = urlparse(affiliate_url)
         root = f"{parsed.scheme}://{parsed.netloc}"
@@ -330,7 +451,7 @@ async def scrape_vendor(vendor: dict, llm_key: str) -> dict:
             candidate_urls.append(root + path)
 
         for cu in candidate_urls:
-            html = await playwright_fetch_html(cu)
+            html = await playwright_fetch_html(cu, login_config=login_config)
             if not html:
                 continue
             new_cleaned = clean_html_for_llm(html, base_url=cu)
@@ -344,7 +465,7 @@ async def scrape_vendor(vendor: dict, llm_key: str) -> dict:
                             name, len(new_products), cu)
                 break
 
-    if not products and not disc:
+    if not products and not shop_url:
         return {"vendor_slug": vendor["slug"], "shop_url": None, "products": [],
                 "error": "could not fetch catalog via HTTP or Playwright"}
     if not products:

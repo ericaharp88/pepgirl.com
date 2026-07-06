@@ -88,6 +88,15 @@ class LoginIn(BaseModel):
     password: str
 
 
+class VendorLoginConfig(BaseModel):
+    login_url: str = ""
+    username: str = ""
+    password: str = ""
+    username_selector: str = ""  # optional CSS selector; blank = auto-detect
+    password_selector: str = ""
+    submit_selector: str = ""
+
+
 class Vendor(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
@@ -100,6 +109,7 @@ class Vendor(BaseModel):
     discount_code: str = ""
     promo_badge: str = ""  # short deal flag e.g. "BOGO", "FREE BAC water"
     nickname_notes: str = ""  # peptide nickname/codex guide — visible to visitors
+    login_config: Optional[VendorLoginConfig] = None  # optional scraper login
     featured: bool = False
     comparison_enabled: bool = True
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
@@ -116,6 +126,7 @@ class VendorIn(BaseModel):
     discount_code: str = ""
     promo_badge: str = ""
     nickname_notes: str = ""
+    login_config: Optional[VendorLoginConfig] = None
     featured: bool = False
     comparison_enabled: bool = True
 
@@ -252,6 +263,23 @@ async def delete_vendor(vendor_id: str, admin: dict = Depends(get_current_admin)
     await db.vendors.delete_one({"id": vendor_id})
     await db.prices.delete_many({"vendor_id": vendor_id})
     return {"ok": True}
+
+
+@api_router.post("/vendors/{vendor_id}/test-login")
+async def test_vendor_login(vendor_id: str, admin: dict = Depends(get_current_admin)):
+    """Attempt to log in to this vendor's site with the stored credentials.
+    Returns a success flag + short message + base64 screenshot for debugging.
+    """
+    doc = await db.vendors.find_one({"id": vendor_id}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Vendor not found")
+    lc = doc.get("login_config") or {}
+    if not (lc.get("login_url") and lc.get("username") and lc.get("password")):
+        raise HTTPException(status_code=400,
+                            detail="This vendor has no login config yet — add login_url + username + password first.")
+    from scraper import playwright_test_login
+    result = await playwright_test_login(lc)
+    return result
 
 
 # ---------------- Resources ----------------
