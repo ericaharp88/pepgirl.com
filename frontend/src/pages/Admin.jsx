@@ -149,6 +149,7 @@ function VendorsPanel() {
 function VendorRow({ vendor, onChanged, onDelete }) {
   const [editing, setEditing] = useState(false);
   const [notes, setNotes] = useState(vendor.nickname_notes || "");
+  const [logoUrl, setLogoUrl] = useState(vendor.logo_url || "");
   const [busy, setBusy] = useState(false);
   const [togglingFeat, setTogglingFeat] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
@@ -178,8 +179,8 @@ function VendorRow({ vendor, onChanged, onDelete }) {
   const save = async () => {
     setBusy(true);
     try {
-      await putVendor({ nickname_notes: notes });
-      toast.success("Nickname guide saved");
+      await putVendor({ nickname_notes: notes, logo_url: logoUrl.trim() });
+      toast.success("Saved");
       setEditing(false);
       onChanged();
     } catch (e) {
@@ -289,7 +290,7 @@ function VendorRow({ vendor, onChanged, onDelete }) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => { setEditing((e) => !e); setLoginOpen(false); setNotes(vendor.nickname_notes || ""); }}
+            onClick={() => { setEditing((e) => !e); setLoginOpen(false); setNotes(vendor.nickname_notes || ""); setLogoUrl(vendor.logo_url || ""); }}
             className="rounded-none hover:bg-[#B87A6A] hover:text-white"
             title="Edit peptide nickname guide"
             data-testid={`v-edit-${vendor.slug}`}
@@ -309,7 +310,29 @@ function VendorRow({ vendor, onChanged, onDelete }) {
       </div>
 
       {editing && (
-        <div className="mt-3 bg-[#FDF9F5] border border-[#B87A6A] p-3">
+        <div className="mt-3 bg-[#FDF9F5] border border-[#B87A6A] p-3 space-y-3">
+          <div>
+            <Label className="eyebrow text-[#B87A6A]">Logo URL</Label>
+            <div className="flex items-center gap-3 mt-2">
+              {logoUrl && (
+                <img
+                  src={logoUrl}
+                  alt="logo preview"
+                  className="h-12 w-12 rounded-full object-contain border border-[#E8CDBF] bg-white flex-shrink-0"
+                  onError={(e) => { e.currentTarget.style.opacity = "0.3"; }}
+                />
+              )}
+              <Input
+                value={logoUrl}
+                onChange={(e) => setLogoUrl(e.target.value)}
+                placeholder="https://... paste image URL"
+                className="rounded-none border-[#0A0A0A] font-mono text-xs h-9 bg-white flex-1"
+                data-testid={`v-logo-input-${vendor.slug}`}
+              />
+            </div>
+          </div>
+
+          <div>
           <Label className="eyebrow text-[#B87A6A]">
             Peptide Nickname Guide{" "}
             <span className="text-[#5C5C5C] normal-case tracking-normal font-mono text-[10px]">
@@ -324,6 +347,7 @@ function VendorRow({ vendor, onChanged, onDelete }) {
             className="rounded-none border-[#0A0A0A] mt-2 font-mono text-xs bg-white"
             data-testid={`v-notes-input-${vendor.slug}`}
           />
+          </div>
           <div className="flex gap-2 mt-2 justify-end">
             <Button
               variant="ghost"
@@ -338,7 +362,7 @@ function VendorRow({ vendor, onChanged, onDelete }) {
               className="rounded-none bg-[#B87A6A] hover:bg-[#0A0A0A] text-white h-9 font-mono uppercase tracking-widest text-xs"
               data-testid={`v-notes-save-${vendor.slug}`}
             >
-              {busy ? "Saving…" : "Save guide"}
+              {busy ? "Saving…" : "Save"}
             </Button>
           </div>
         </div>

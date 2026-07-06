@@ -1002,6 +1002,12 @@ async def seed_sample_data():
          "logo_url": "https://customer-assets.emergentagent.com/job_peptide-dosing-1/artifacts/5g7jm9be_Logo-Design_page-0001-scaled-e1776484349549.webp",
          "rating": 4.4, "tags": ["Peptides", "7x Tested", "USA", "COA"],
          "discount_code": "ERICA", "featured": True},
+        {"name": "Celmade", "slug": "celmade",
+         "description": "Peptide skin-care & wellness formulations.",
+         "affiliate_url": "https://celmade.com/",
+         "logo_url": "https://customer-assets.emergentagent.com/job_peptide-dosing-1/artifacts/kye8uuoj_fgqdxddx.jpeg",
+         "rating": 4.6, "tags": ["Skin Care", "Peptides"],
+         "discount_code": "ERICA", "featured": True},
 
         # ───── Skin Care ─────
         {"name": "Scantifix", "slug": "scantifix",
