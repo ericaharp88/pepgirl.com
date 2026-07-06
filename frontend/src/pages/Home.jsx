@@ -73,6 +73,29 @@ export default function Home() {
       {/* HERO — new brand banner + welcome */}
       <section className="border-b border-[#E5E5E5] bg-[#FBF3EC]">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-12 lg:py-16">
+          {/* Community bar */}
+          <a
+            href="https://www.skool.com/ericas-elevated-life-9005"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="community-bar"
+            className="group block mb-8 lg:mb-10 border-2 border-[#B87A6A] bg-gradient-to-r from-[#F5DED4] via-white to-[#F5DED4] hover:from-[#B87A6A] hover:to-[#B87A6A] hover:text-white transition-colors"
+          >
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 px-6 py-4 text-center">
+              <Sparkles size={18} className="text-[#B87A6A] group-hover:text-white transition-colors flex-shrink-0" />
+              <span className="text-sm sm:text-base font-bold text-[#0A0A0A] group-hover:text-white transition-colors">
+                Join <span className="font-serif-glam italic pink-text group-hover:!text-white transition-colors">The Optimized Society</span> community
+              </span>
+              <span className="hidden sm:inline text-[#B87A6A] group-hover:text-white/60 transition-colors">·</span>
+              <span className="inline-flex items-center gap-1 px-3 py-1 bg-[#B87A6A] group-hover:bg-white group-hover:text-[#B87A6A] text-white text-xs font-mono font-bold uppercase tracking-widest rounded-full transition-colors">
+                $15 one-time
+              </span>
+              <span className="text-xs font-mono uppercase tracking-widest text-[#B87A6A] group-hover:text-white transition-colors inline-flex items-center gap-1">
+                Join now <ArrowRight size={12} />
+              </span>
+            </div>
+          </a>
+
           {/* Brand banner image */}
           <div className="mb-10 lg:mb-14">
             <img
