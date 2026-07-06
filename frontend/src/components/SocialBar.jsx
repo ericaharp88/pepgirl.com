@@ -39,10 +39,10 @@ export default function SocialBar() {
   return (
     <div
       data-testid="social-bar"
-      className="border-b border-[#F0CFE0] bg-white/60"
+      className="border-b border-[#E8CDBF] bg-white/60"
     >
       <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-3 flex flex-wrap items-center gap-3">
-        <span className="eyebrow text-[#5C5C5C] mr-2">Follow Pep Girl</span>
+        <span className="eyebrow text-[#5C5C5C] mr-2">Follow The Optimized Society</span>
         {links.map((s) => {
           const meta = PLATFORMS[(s.platform || "").toLowerCase()] || PLATFORMS.other;
           const Icon = meta.Icon;
@@ -56,7 +56,7 @@ export default function SocialBar() {
               target={href.startsWith("mailto:") ? undefined : "_blank"}
               rel="noopener noreferrer"
               data-testid={`social-${s.platform}`}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-[#FFF0F7] hover:bg-[#FF2D87] hover:text-white text-[#0A0A0A] text-xs font-mono uppercase tracking-wider transition"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-[#FBF3EC] hover:bg-[#B87A6A] hover:text-white text-[#0A0A0A] text-xs font-mono uppercase tracking-wider transition"
               title={s.label || meta.label}
             >
               <Icon size={14} />

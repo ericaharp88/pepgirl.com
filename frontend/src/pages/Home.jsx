@@ -43,8 +43,8 @@ const tiles = [
 
 export default function Home() {
   useSeo({
-    title: "Peptide Vendors, Price Comparison & Education",
-    description: "Pep Girl — compare trusted peptide vendors, find discount codes, calculate doses, and track pricing all in one place. Built by Erica after losing 90 lbs with GLP-1 peptides.",
+    title: "Optimize Your Health. Elevate Your Life.",
+    description: "The Optimized Society by Erica — Trusted peptide vendors, price comparisons, dosage calculators, and wellness education. Built after losing 90 lbs with GLP-1 peptides.",
     path: "/",
   });
   const [counts, setCounts] = useState({});
@@ -64,24 +64,40 @@ export default function Home() {
   return (
     <div>
       <SocialBar />
-      {/* HERO */}
-      <section className="border-b border-[#E5E5E5]">
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-16 lg:py-24">
-          <div className="eyebrow text-[#FF2D87] mb-6" data-testid="hero-eyebrow">
-            Peptide Resources and Education · for the girls · est. 2026
+
+      {/* HERO — new brand banner + welcome */}
+      <section className="border-b border-[#E5E5E5] bg-[#FBF3EC]">
+        <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-12 lg:py-16">
+          {/* Brand banner image */}
+          <div className="mb-10 lg:mb-14">
+            <img
+              src="https://customer-assets.emergentagent.com/job_peptide-dosing-1/artifacts/um8tthw6_f0d6925a-f717-444d-8fb2-c7c19d4a9882.png"
+              alt="The Optimized Society by Erica — Optimize Your Health. Elevate Your Life."
+              className="w-full h-auto rounded-none block mx-auto"
+              style={{ maxHeight: "560px", objectFit: "contain" }}
+              data-testid="hero-banner"
+            />
           </div>
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-[-0.04em] leading-[0.95] mb-12">
-            Glow up using peptides{" "}
-            <span className="font-serif-glam italic font-normal pink-text">with Erica</span>
+
+          <div className="eyebrow text-[#B87A6A] mb-6 text-center" data-testid="hero-eyebrow">
+            Optimize Your Health · Elevate Your Life · est. 2026
+          </div>
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-[-0.04em] leading-[0.95] mb-10 text-center">
+            The{" "}
+            <span className="font-serif-glam italic font-normal pink-text">
+              Optimized Society
+            </span>
           </h1>
 
           <div className="flex flex-col gap-12 items-stretch lg:items-center">
             {/* Paragraph (top on desktop, below image on mobile) */}
             <div className="order-2 lg:order-1 lg:max-w-3xl lg:text-center lg:mx-auto">
               <p className="text-lg lg:text-xl text-[#0A0A0A] leading-relaxed">
-                Welcome to <span className="font-bold">Pepgirl.com</span> — a wellness
-                and peptide education hub for peptide researchers. Explore trusted vendors,
-                science-backed protocols, and tools designed to help you thrive in your research lab.
+                Welcome to{" "}
+                <span className="font-bold">The Optimized Society</span> — a wellness
+                and peptide education hub curated by Erica. Explore trusted vendors,
+                science-backed protocols, and tools designed to help you optimize your
+                health and elevate your life.
               </p>
             </div>
 
@@ -91,7 +107,7 @@ export default function Home() {
                 {/* "-90 LBS" headline */}
                 <div className="text-center mb-4 px-4 overflow-visible">
                   <div className="eyebrow text-[#5C5C5C]">My peptide journey</div>
-                  <div className="mt-2 text-4xl sm:text-5xl font-black tracking-tighter leading-[1.2] pb-2 text-[#FF2D87]">
+                  <div className="mt-2 text-4xl sm:text-5xl font-black tracking-tighter leading-[1.2] pb-2 text-[#B87A6A]">
                     −90 lbs
                   </div>
                 </div>
@@ -99,7 +115,7 @@ export default function Home() {
                 <div className="grid grid-cols-2 gap-3">
                   {/* BEFORE */}
                   <div className="relative">
-                    <div className="overflow-hidden rounded-2xl border-4 border-white shadow-[0_0_0_2px_#F0CFE0,0_8px_24px_rgba(255,45,135,0.12)] aspect-[3/4] bg-[#FFF0F7]">
+                    <div className="overflow-hidden rounded-2xl border-4 border-white shadow-[0_0_0_2px_#E8CDBF,0_8px_24px_rgba(255,45,135,0.12)] aspect-[3/4] bg-[#FBF3EC]">
                       <img
                         src="https://customer-assets.emergentagent.com/job_peptide-dosing-1/artifacts/dbdnfsu5_IMG_0986.jpg"
                         alt="Erica — before peptides"
@@ -107,14 +123,14 @@ export default function Home() {
                         loading="lazy"
                       />
                     </div>
-                    <div className="absolute -top-2 -left-2 bg-white border border-[#F0CFE0] px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-[0.18em] text-[#5C5C5C] shadow-sm">
+                    <div className="absolute -top-2 -left-2 bg-white border border-[#E8CDBF] px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-[0.18em] text-[#5C5C5C] shadow-sm">
                       Before
                     </div>
                   </div>
 
                   {/* AFTER */}
                   <div className="relative">
-                    <div className="overflow-hidden rounded-2xl border-4 border-white shadow-[0_0_0_2px_#FF2D87,0_8px_24px_rgba(255,45,135,0.25)] aspect-[3/4] bg-[#FFF0F7]">
+                    <div className="overflow-hidden rounded-2xl border-4 border-white shadow-[0_0_0_2px_#B87A6A,0_8px_24px_rgba(255,45,135,0.25)] aspect-[3/4] bg-[#FBF3EC]">
                       <img
                         src="https://customer-assets.emergentagent.com/job_peptide-dosing-1/artifacts/p90s5a8i_IMG_0603.JPG"
                         alt="Erica — after peptides"
@@ -122,7 +138,7 @@ export default function Home() {
                         loading="lazy"
                       />
                     </div>
-                    <div className="absolute -top-2 -right-2 bg-[#FF2D87] text-white px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-[0.18em] shadow-[0_4px_14px_rgba(255,45,135,0.35)]">
+                    <div className="absolute -top-2 -right-2 bg-[#B87A6A] text-white px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-[0.18em] shadow-[0_4px_14px_rgba(255,45,135,0.35)]">
                       After
                     </div>
                   </div>
@@ -136,9 +152,9 @@ export default function Home() {
               {/* My Story bio */}
               <div
                 data-testid="my-story"
-                className="mt-10 w-full max-w-md bg-white rounded-[24px] border border-[#F0CFE0] p-6 lg:p-7 shadow-[0_2px_20px_rgba(255,45,135,0.06)]"
+                className="mt-10 w-full max-w-md bg-white rounded-[24px] border border-[#E8CDBF] p-6 lg:p-7 shadow-[0_2px_20px_rgba(255,45,135,0.06)]"
               >
-                <div className="eyebrow text-[#FF2D87] mb-3">My Story</div>
+                <div className="eyebrow text-[#B87A6A] mb-3">My Story</div>
                 <p className="text-sm text-[#0A0A0A] leading-relaxed">
                   Eleven years ago, I made one of the biggest decisions of my life
                   &mdash; weight loss surgery. It gave me a fresh start, but over time
@@ -148,12 +164,12 @@ export default function Home() {
                 </p>
                 <p className="text-sm text-[#0A0A0A] leading-relaxed mt-4">
                   Then on{" "}
-                  <span className="font-bold text-[#FF2D87]">June 1st, 2025</span>,
+                  <span className="font-bold text-[#B87A6A]">June 1st, 2025</span>,
                   everything changed.
                 </p>
                 <p className="text-sm text-[#0A0A0A] leading-relaxed mt-4">
                   I discovered GLP-1 peptides and within a year I lost{" "}
-                  <span className="font-bold text-[#FF2D87]">90 pounds</span>. Not just
+                  <span className="font-bold text-[#B87A6A]">90 pounds</span>. Not just
                   the weight &mdash; I got my confidence back, my energy back, my life
                   back. What started as my own desperate search for answers turned into
                   a full-on passion for research. I started digging into peptides,
@@ -167,9 +183,9 @@ export default function Home() {
                 <Link
                   to="/compare"
                   data-testid="hero-cta-price-tool"
-                  className="bg-[#FF2D87] text-white px-6 py-4 text-sm font-mono uppercase tracking-[0.2em] hover:bg-[#0A0A0A] inline-flex items-center justify-center gap-3"
+                  className="bg-[#B87A6A] text-white px-6 py-4 text-sm font-mono uppercase tracking-[0.2em] hover:bg-[#0A0A0A] inline-flex items-center justify-center gap-3"
                 >
-                  Pep Girl Price Tool <ArrowRight size={16} />
+                  The Optimized Society Price Tool <ArrowRight size={16} />
                 </Link>
                 <div className="grid grid-cols-2 gap-3">
                   <a
@@ -196,12 +212,12 @@ export default function Home() {
       </section>
 
       {/* TILES */}
-      <section className="border-b border-[#E5E5E5] bg-gradient-to-b from-[#FFF5FA] to-white">
+      <section className="border-b border-[#E5E5E5] bg-gradient-to-b from-[#FDF8F3] to-white">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-20">
           <div className="text-center mb-12">
-            <div className="eyebrow text-[#FF2D87] mb-3">Explore the toolkit</div>
+            <div className="eyebrow text-[#B87A6A] mb-3">Explore the toolkit</div>
             <h2 className="text-4xl lg:text-5xl font-black tracking-tight font-serif-glam">
-              Everything a Pep Girl needs
+              Everything a The Optimized Society needs
             </h2>
           </div>
 
@@ -213,7 +229,7 @@ export default function Home() {
                   key={to}
                   to={to}
                   data-testid={`tile-${to.slice(1)}`}
-                  className="group relative bg-white rounded-[28px] p-8 lg:p-10 border border-[#F0CFE0] shadow-[0_2px_20px_rgba(255,45,135,0.06)] hover:shadow-[0_12px_40px_rgba(255,45,135,0.18)] hover:-translate-y-1 transition-all duration-300 overflow-hidden"
+                  className="group relative bg-white rounded-[28px] p-8 lg:p-10 border border-[#E8CDBF] shadow-[0_2px_20px_rgba(255,45,135,0.06)] hover:shadow-[0_12px_40px_rgba(255,45,135,0.18)] hover:-translate-y-1 transition-all duration-300 overflow-hidden"
                 >
                   {/* Decorative pink gradient corner */}
                   <div
@@ -225,12 +241,12 @@ export default function Home() {
                   />
                   <Sparkles
                     size={14}
-                    className="absolute top-5 right-5 text-[#FF2D87] opacity-50 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-5 right-5 text-[#B87A6A] opacity-50 group-hover:opacity-100 transition-opacity"
                     aria-hidden
                   />
 
                   <div className="flex items-center gap-3 mb-5">
-                    <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-[#FF2D87] text-white text-[11px] font-mono font-bold tracking-wider">
+                    <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-[#B87A6A] text-white text-[11px] font-mono font-bold tracking-wider">
                       {label}
                     </span>
                     {count !== null && count !== undefined && (
@@ -240,14 +256,14 @@ export default function Home() {
                     )}
                   </div>
 
-                  <h3 className="text-2xl lg:text-3xl font-black tracking-tight mb-3 group-hover:text-[#FF2D87] transition-colors">
+                  <h3 className="text-2xl lg:text-3xl font-black tracking-tight mb-3 group-hover:text-[#B87A6A] transition-colors">
                     {title}
                   </h3>
                   <p className="text-sm text-[#5C5C5C] leading-relaxed max-w-md">
                     {desc}
                   </p>
 
-                  <div className="mt-7 inline-flex items-center gap-2 text-xs font-mono uppercase tracking-[0.22em] text-[#0A0A0A] group-hover:text-[#FF2D87] transition-colors">
+                  <div className="mt-7 inline-flex items-center gap-2 text-xs font-mono uppercase tracking-[0.22em] text-[#0A0A0A] group-hover:text-[#B87A6A] transition-colors">
                     Enter
                     <ArrowRight
                       size={14}

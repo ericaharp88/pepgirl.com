@@ -15,9 +15,9 @@ export default function Layout({ children }) {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FFF5FA] text-[#0A0A0A]">
+    <div className="min-h-screen flex flex-col bg-[#FDF8F3] text-[#0A0A0A]">
       <div className="glitter-strip h-2 w-full" aria-hidden />
-      <header className="border-b-2 border-[#0A0A0A] sticky top-0 bg-[#FFF5FA]/95 backdrop-blur z-40">
+      <header className="border-b-2 border-[#0A0A0A] sticky top-0 bg-[#FDF8F3]/95 backdrop-blur z-40">
         <div className="max-w-[1400px] mx-auto flex items-center justify-between px-6 lg:px-12 h-28">
           <Link to="/" data-testid="logo-link">
             <Logo size={96} />
@@ -29,8 +29,8 @@ export default function Layout({ children }) {
                 to={n.to}
                 data-testid={`nav-${n.to.slice(1)}`}
                 className={({ isActive }) =>
-                  `px-4 py-2 text-sm font-semibold border border-transparent hover:border-[#FF2D87] hover:text-[#FF2D87] ${
-                    isActive ? "bg-[#FF2D87] text-white border-[#FF2D87]" : ""
+                  `px-4 py-2 text-sm font-semibold border border-transparent hover:border-[#B87A6A] hover:text-[#B87A6A] ${
+                    isActive ? "bg-[#B87A6A] text-white border-[#B87A6A]" : ""
                   }`
                 }
               >
@@ -43,7 +43,7 @@ export default function Layout({ children }) {
               <>
                 <Button
                   variant="outline"
-                  className="rounded-none border-[#0A0A0A] hover:bg-[#FF2D87] hover:text-white hover:border-[#FF2D87]"
+                  className="rounded-none border-[#0A0A0A] hover:bg-[#B87A6A] hover:text-white hover:border-[#B87A6A]"
                   onClick={() => nav("/admin")}
                   data-testid="admin-btn"
                 >
@@ -61,7 +61,7 @@ export default function Layout({ children }) {
             ) : (
               <Button
                 variant="outline"
-                className="rounded-none border-[#0A0A0A] hover:bg-[#FF2D87] hover:text-white hover:border-[#FF2D87]"
+                className="rounded-none border-[#0A0A0A] hover:bg-[#B87A6A] hover:text-white hover:border-[#B87A6A]"
                 onClick={() => nav("/login")}
                 data-testid="login-btn"
               >
@@ -70,14 +70,14 @@ export default function Layout({ children }) {
             )}
           </div>
         </div>
-        <div className="md:hidden border-t border-[#F0CFE0] flex overflow-x-auto bg-white">
+        <div className="md:hidden border-t border-[#E8CDBF] flex overflow-x-auto bg-white">
           {navItems.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
               className={({ isActive }) =>
-                `px-4 py-3 text-xs font-mono uppercase tracking-widest border-r border-[#F0CFE0] flex-shrink-0 ${
-                  isActive ? "bg-[#FF2D87] text-white" : ""
+                `px-4 py-3 text-xs font-mono uppercase tracking-widest border-r border-[#E8CDBF] flex-shrink-0 ${
+                  isActive ? "bg-[#B87A6A] text-white" : ""
                 }`
               }
             >
@@ -90,12 +90,12 @@ export default function Layout({ children }) {
       {/* Persistent compliance banner — visible on every page */}
       <div
         data-testid="disclaimer-banner"
-        className="bg-[#FFF0F7] border-b border-[#F0CFE0] text-[#0A0A0A]"
+        className="bg-[#FBF3EC] border-b border-[#E8CDBF] text-[#0A0A0A]"
         role="note"
         aria-label="Site disclaimer"
       >
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-2 text-[11px] sm:text-xs font-mono tracking-wide text-center">
-          <span className="font-bold text-[#FF2D87] uppercase tracking-[0.18em] mr-2">Notice</span>
+          <span className="font-bold text-[#B87A6A] uppercase tracking-[0.18em] mr-2">Notice</span>
           For research and educational purposes only. Content on this site is{" "}
           <span className="font-semibold">not medical advice</span> and is not intended
           to diagnose, treat, cure, or prevent any disease. Always consult a qualified
@@ -117,7 +117,7 @@ export default function Layout({ children }) {
           <div>
             <div className="font-mono text-xs uppercase tracking-[0.25em] chrome-text mb-3">Disclaimer</div>
             <p className="text-sm leading-relaxed text-[#E0E0E0]">
-              The information provided on Pep Girl is for{" "}
+              The information provided on The Optimized Society is for{" "}
               <span className="font-semibold text-white">research and educational purposes only</span>{" "}
               and does not constitute medical advice. Statements have not been evaluated
               by the FDA. Products referenced are intended strictly for laboratory and
@@ -132,7 +132,7 @@ export default function Layout({ children }) {
               Links to vendors on this site may be affiliate links. We may earn a commission
               on qualifying purchases at no extra cost to you.
             </p>
-            <p className="mt-6 text-[10px] font-mono uppercase tracking-[0.3em] text-[#FF6FB5]">
+            <p className="mt-6 text-[10px] font-mono uppercase tracking-[0.3em] text-[#C99786]">
               © PEPGIRL.COM {new Date().getFullYear()}
             </p>
           </div>

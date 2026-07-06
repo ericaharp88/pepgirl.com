@@ -5,8 +5,8 @@ const TdeePill = ({ active, onClick, children, testId }) => (
   <button onClick={onClick} data-testid={testId}
     className={`px-3 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition ${
       active
-        ? "bg-[#FF2D87] text-white shadow-[0_2px_8px_rgba(255,45,135,0.35)]"
-        : "bg-[#FFF0F7] text-[#5C5C5C] hover:bg-[#FFE4F1]"
+        ? "bg-[#B87A6A] text-white shadow-[0_2px_8px_rgba(255,45,135,0.35)]"
+        : "bg-[#FBF3EC] text-[#5C5C5C] hover:bg-[#F5DED4]"
     }`}>{children}</button>
 );
 
@@ -60,8 +60,8 @@ function TdeeCalc() {
 
   return (
     <div data-testid="tdee-calculator"
-      className="mt-10 bg-white rounded-[28px] shadow-[0_2px_20px_rgba(255,45,135,0.08)] border border-[#F0CFE0] p-8 lg:p-12">
-      <div className="inline-flex p-1.5 bg-[#FFF0F7] rounded-full border border-[#F0CFE0] mb-5">
+      className="mt-10 bg-white rounded-[28px] shadow-[0_2px_20px_rgba(255,45,135,0.08)] border border-[#E8CDBF] p-8 lg:p-12">
+      <div className="inline-flex p-1.5 bg-[#FBF3EC] rounded-full border border-[#E8CDBF] mb-5">
         <span className="px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#0A0A0A] text-white shadow">
           Energy
         </span>
@@ -79,7 +79,7 @@ function TdeeCalc() {
           <div className="text-[11px] font-mono uppercase tracking-wider text-[#5C5C5C] w-20">Sex</div>
           <Pill active={sex === "female"} onClick={() => setSex("female")} testId="tdee-female">Female</Pill>
           <Pill active={sex === "male"} onClick={() => setSex("male")} testId="tdee-male">Male</Pill>
-          <div className="ml-auto inline-flex bg-[#FFF0F7] rounded-full p-1">
+          <div className="ml-auto inline-flex bg-[#FBF3EC] rounded-full p-1">
             <button onClick={() => setUnits("imperial")} data-testid="tdee-imperial"
               className={`px-3 py-1 rounded-full text-[11px] font-mono uppercase tracking-wider ${units === "imperial" ? "bg-[#0A0A0A] text-white" : "text-[#5C5C5C]"}`}>Imperial</button>
             <button onClick={() => setUnits("metric")} data-testid="tdee-metric"
@@ -93,7 +93,7 @@ function TdeeCalc() {
             <label className="text-[11px] font-mono uppercase tracking-wider text-[#5C5C5C]">Age (years)</label>
             <input type="number" value={age} onChange={(e) => setAge(e.target.value)}
               data-testid="tdee-age"
-              className="mt-1 w-full rounded-xl border border-[#F0CFE0] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#FF2D87]" />
+              className="mt-1 w-full rounded-xl border border-[#E8CDBF] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#B87A6A]" />
           </div>
           {units === "imperial" ? (
             <div>
@@ -101,10 +101,10 @@ function TdeeCalc() {
               <div className="mt-1 flex gap-2">
                 <input type="number" placeholder="ft" value={heightFt} onChange={(e) => setHeightFt(e.target.value)}
                   data-testid="tdee-height-ft"
-                  className="w-1/2 rounded-xl border border-[#F0CFE0] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#FF2D87]" />
+                  className="w-1/2 rounded-xl border border-[#E8CDBF] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#B87A6A]" />
                 <input type="number" placeholder="in" value={heightIn} onChange={(e) => setHeightIn(e.target.value)}
                   data-testid="tdee-height-in"
-                  className="w-1/2 rounded-xl border border-[#F0CFE0] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#FF2D87]" />
+                  className="w-1/2 rounded-xl border border-[#E8CDBF] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#B87A6A]" />
               </div>
             </div>
           ) : (
@@ -112,7 +112,7 @@ function TdeeCalc() {
               <label className="text-[11px] font-mono uppercase tracking-wider text-[#5C5C5C]">Height (cm)</label>
               <input type="number" value={heightCm} onChange={(e) => setHeightCm(e.target.value)}
                 data-testid="tdee-height-cm"
-                className="mt-1 w-full rounded-xl border border-[#F0CFE0] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#FF2D87]" />
+                className="mt-1 w-full rounded-xl border border-[#E8CDBF] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#B87A6A]" />
             </div>
           )}
           <div>
@@ -121,7 +121,7 @@ function TdeeCalc() {
             </label>
             <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)}
               data-testid="tdee-weight"
-              className="mt-1 w-full rounded-xl border border-[#F0CFE0] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#FF2D87]" />
+              className="mt-1 w-full rounded-xl border border-[#E8CDBF] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#B87A6A]" />
           </div>
         </div>
 
@@ -134,8 +134,8 @@ function TdeeCalc() {
                 data-testid={`tdee-act-${a.label.toLowerCase().replace(/\s+/g, "-")}`}
                 className={`p-2 rounded-xl text-left transition ${
                   activity.label === a.label
-                    ? "bg-[#FF2D87] text-white shadow-[0_2px_8px_rgba(255,45,135,0.35)]"
-                    : "bg-[#FFF0F7] hover:bg-[#FFE4F1] text-[#0A0A0A]"
+                    ? "bg-[#B87A6A] text-white shadow-[0_2px_8px_rgba(255,45,135,0.35)]"
+                    : "bg-[#FBF3EC] hover:bg-[#F5DED4] text-[#0A0A0A]"
                 }`}>
                 <div className="text-xs font-bold uppercase">{a.label}</div>
                 <div className="text-[9px] font-mono opacity-80">{a.sub}</div>
@@ -160,21 +160,21 @@ function TdeeCalc() {
 
       {/* Result */}
       <div className="mt-8 grid sm:grid-cols-3 gap-3" data-testid="tdee-result">
-        <div className="bg-[#FFF0F7] rounded-2xl p-4 border border-[#F0CFE0] text-center">
+        <div className="bg-[#FBF3EC] rounded-2xl p-4 border border-[#E8CDBF] text-center">
           <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#5C5C5C]">BMR</div>
           <div className="text-2xl font-black font-mono mt-1 text-[#0A0A0A]">
             {result ? Math.round(result.bmr) : "—"}
           </div>
           <div className="text-[10px] text-[#5C5C5C] mt-1">kcal at rest</div>
         </div>
-        <div className="bg-[#FFF0F7] rounded-2xl p-4 border border-[#F0CFE0] text-center">
+        <div className="bg-[#FBF3EC] rounded-2xl p-4 border border-[#E8CDBF] text-center">
           <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#5C5C5C]">TDEE</div>
           <div className="text-2xl font-black font-mono mt-1 text-[#0A0A0A]">
             {result ? Math.round(result.tdee) : "—"}
           </div>
           <div className="text-[10px] text-[#5C5C5C] mt-1">maintenance kcal</div>
         </div>
-        <div className="bg-[#FF2D87] rounded-2xl p-4 text-center text-white shadow-[0_2px_20px_rgba(255,45,135,0.18)]">
+        <div className="bg-[#B87A6A] rounded-2xl p-4 text-center text-white shadow-[0_2px_20px_rgba(255,45,135,0.18)]">
           <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/85">Target</div>
           <div className="text-2xl font-black font-mono mt-1">
             {result ? Math.round(result.target) : "—"}
@@ -220,8 +220,8 @@ function BmiCalc() {
 
   return (
     <div data-testid="bmi-calculator"
-      className="mt-10 bg-white rounded-[28px] shadow-[0_2px_20px_rgba(255,45,135,0.08)] border border-[#F0CFE0] p-8 lg:p-12">
-      <div className="inline-flex p-1.5 bg-[#FFF0F7] rounded-full border border-[#F0CFE0] mb-5">
+      className="mt-10 bg-white rounded-[28px] shadow-[0_2px_20px_rgba(255,45,135,0.08)] border border-[#E8CDBF] p-8 lg:p-12">
+      <div className="inline-flex p-1.5 bg-[#FBF3EC] rounded-full border border-[#E8CDBF] mb-5">
         <span className="px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#0A0A0A] text-white shadow">
           Body Mass
         </span>
@@ -234,7 +234,7 @@ function BmiCalc() {
       </p>
 
       <div className="mt-8 flex justify-end">
-        <div className="inline-flex bg-[#FFF0F7] rounded-full p-1">
+        <div className="inline-flex bg-[#FBF3EC] rounded-full p-1">
           <button onClick={() => setUnits("imperial")} data-testid="bmi-imperial"
             className={`px-3 py-1 rounded-full text-[11px] font-mono uppercase tracking-wider ${units === "imperial" ? "bg-[#0A0A0A] text-white" : "text-[#5C5C5C]"}`}>Imperial</button>
           <button onClick={() => setUnits("metric")} data-testid="bmi-metric"
@@ -249,10 +249,10 @@ function BmiCalc() {
             <div className="mt-1 flex gap-2">
               <input type="number" placeholder="ft" value={heightFt} onChange={(e) => setHeightFt(e.target.value)}
                 data-testid="bmi-height-ft"
-                className="w-1/2 rounded-xl border border-[#F0CFE0] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#FF2D87]" />
+                className="w-1/2 rounded-xl border border-[#E8CDBF] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#B87A6A]" />
               <input type="number" placeholder="in" value={heightIn} onChange={(e) => setHeightIn(e.target.value)}
                 data-testid="bmi-height-in"
-                className="w-1/2 rounded-xl border border-[#F0CFE0] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#FF2D87]" />
+                className="w-1/2 rounded-xl border border-[#E8CDBF] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#B87A6A]" />
             </div>
           </div>
         ) : (
@@ -260,7 +260,7 @@ function BmiCalc() {
             <label className="text-[11px] font-mono uppercase tracking-wider text-[#5C5C5C]">Height (cm)</label>
             <input type="number" value={heightCm} onChange={(e) => setHeightCm(e.target.value)}
               data-testid="bmi-height-cm"
-              className="mt-1 w-full rounded-xl border border-[#F0CFE0] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#FF2D87]" />
+              className="mt-1 w-full rounded-xl border border-[#E8CDBF] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#B87A6A]" />
           </div>
         )}
         <div>
@@ -269,12 +269,12 @@ function BmiCalc() {
           </label>
           <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)}
             data-testid="bmi-weight"
-            className="mt-1 w-full rounded-xl border border-[#F0CFE0] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#FF2D87]" />
+            className="mt-1 w-full rounded-xl border border-[#E8CDBF] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#B87A6A]" />
         </div>
       </div>
 
       {/* Result */}
-      <div className="mt-8 bg-[#FFF0F7] rounded-2xl p-6 border border-[#F0CFE0] text-center" data-testid="bmi-result">
+      <div className="mt-8 bg-[#FBF3EC] rounded-2xl p-6 border border-[#E8CDBF] text-center" data-testid="bmi-result">
         <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#5C5C5C]">Your BMI</div>
         <div className="text-5xl font-black font-mono mt-2 text-[#0A0A0A]">
           {bmi ? bmi.toFixed(1) : "—"}
@@ -290,19 +290,19 @@ function BmiCalc() {
 
       {/* Reference */}
       <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] font-mono">
-        <div className="rounded-xl border border-[#F0CFE0] p-2 text-center">
+        <div className="rounded-xl border border-[#E8CDBF] p-2 text-center">
           <div className="font-bold text-[#3b82f6]">&lt; 18.5</div>
           <div className="text-[#5C5C5C]">Underweight</div>
         </div>
-        <div className="rounded-xl border border-[#F0CFE0] p-2 text-center">
+        <div className="rounded-xl border border-[#E8CDBF] p-2 text-center">
           <div className="font-bold text-[#22c55e]">18.5 &ndash; 24.9</div>
           <div className="text-[#5C5C5C]">Normal</div>
         </div>
-        <div className="rounded-xl border border-[#F0CFE0] p-2 text-center">
+        <div className="rounded-xl border border-[#E8CDBF] p-2 text-center">
           <div className="font-bold text-[#f59e0b]">25 &ndash; 29.9</div>
           <div className="text-[#5C5C5C]">Overweight</div>
         </div>
-        <div className="rounded-xl border border-[#F0CFE0] p-2 text-center">
+        <div className="rounded-xl border border-[#E8CDBF] p-2 text-center">
           <div className="font-bold text-[#ef4444]">&ge; 30</div>
           <div className="text-[#5C5C5C]">Obese</div>
         </div>
@@ -317,7 +317,7 @@ function BmiCalc() {
 export default function Calculator() {
   useSeo({
     title: "Peptide Calculator Suite",
-    description: "Free peptide reconstitution calculator, TDEE energy needs, and BMI — all in one place on Pep Girl.",
+    description: "Free peptide reconstitution calculator, TDEE energy needs, and BMI — all in one place on The Optimized Society.",
     path: "/calculator",
   });
   const [peptideMg, setPeptideMg] = useState("");
@@ -380,8 +380,8 @@ export default function Calculator() {
             data-testid={`calc-tab-${t.id}`}
             className={`px-5 py-2.5 rounded-full text-xs font-mono uppercase tracking-[0.18em] transition border ${
               tab === t.id
-                ? "bg-[#FF2D87] text-white border-[#FF2D87] shadow-[0_4px_14px_rgba(255,45,135,0.35)]"
-                : "bg-white text-[#0A0A0A] border-[#F0CFE0] hover:bg-[#FFF0F7]"
+                ? "bg-[#B87A6A] text-white border-[#B87A6A] shadow-[0_4px_14px_rgba(255,45,135,0.35)]"
+                : "bg-white text-[#0A0A0A] border-[#E8CDBF] hover:bg-[#FBF3EC]"
             }`}
           >
             {t.label}
@@ -395,7 +395,7 @@ export default function Calculator() {
       {tab === "reconstitute" && (
       <>
       {/* Title card */}
-      <div className="bg-white rounded-[28px] shadow-[0_2px_20px_rgba(255,45,135,0.08)] border border-[#F0CFE0] p-8 lg:p-12">
+      <div className="bg-white rounded-[28px] shadow-[0_2px_20px_rgba(255,45,135,0.08)] border border-[#E8CDBF] p-8 lg:p-12">
         <h1 className="text-4xl lg:text-5xl font-black tracking-tight font-serif-glam">
           Calculator
         </h1>
@@ -404,7 +404,7 @@ export default function Calculator() {
         </p>
 
         {/* Single tab label */}
-        <div className="mt-6 inline-flex p-1.5 bg-[#FFF0F7] rounded-full border border-[#F0CFE0]">
+        <div className="mt-6 inline-flex p-1.5 bg-[#FBF3EC] rounded-full border border-[#E8CDBF]">
           <span className="px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#0A0A0A] text-white shadow">
             Reconstitution Calculator
           </span>
@@ -432,8 +432,8 @@ export default function Calculator() {
                     data-testid={`vial-${ml}`}
                     className={`py-3 rounded-full border text-sm font-semibold transition ${
                       Number(vialSize) === ml
-                        ? "bg-[#FF2D87] text-white border-[#FF2D87] shadow-[0_4px_14px_rgba(255,45,135,0.35)]"
-                        : "bg-white border-[#E5C8DC] text-[#0A0A0A] hover:border-[#FF2D87]"
+                        ? "bg-[#B87A6A] text-white border-[#B87A6A] shadow-[0_4px_14px_rgba(255,45,135,0.35)]"
+                        : "bg-white border-[#DCC5BC] text-[#0A0A0A] hover:border-[#B87A6A]"
                     }`}
                   >
                     {ml} mL
@@ -461,7 +461,7 @@ export default function Calculator() {
             <label className="text-xs font-semibold uppercase tracking-wider text-[#5C5C5C]">
               Your dose
             </label>
-            <div className="mt-3 flex items-center gap-3 border border-[#E5C8DC] rounded-full pl-6 pr-2 py-1.5 focus-within:border-[#FF2D87]">
+            <div className="mt-3 flex items-center gap-3 border border-[#DCC5BC] rounded-full pl-6 pr-2 py-1.5 focus-within:border-[#B87A6A]">
               <input
                 type="number"
                 min={0}
@@ -471,7 +471,7 @@ export default function Calculator() {
                 data-testid="calc-dose-value"
                 className="flex-1 outline-none bg-transparent text-2xl font-bold font-mono py-2"
               />
-              <div className="flex gap-1 bg-[#FFF0F7] rounded-full p-1">
+              <div className="flex gap-1 bg-[#FBF3EC] rounded-full p-1">
                 {["mg", "mcg"].map((u) => (
                   <button
                     key={u}
@@ -479,8 +479,8 @@ export default function Calculator() {
                     data-testid={`unit-${u}`}
                     className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase transition ${
                       doseUnit === u
-                        ? "bg-[#FF2D87] text-white shadow"
-                        : "text-[#5C5C5C] hover:text-[#FF2D87]"
+                        ? "bg-[#B87A6A] text-white shadow"
+                        : "text-[#5C5C5C] hover:text-[#B87A6A]"
                     }`}
                   >
                     {u}
@@ -503,8 +503,8 @@ export default function Calculator() {
                   data-testid={`freq-${f.label.toLowerCase()}`}
                   className={`py-4 rounded-2xl border text-center transition ${
                     active
-                      ? "bg-[#FF2D87] text-white border-[#FF2D87] shadow-[0_4px_14px_rgba(255,45,135,0.35)]"
-                      : "bg-white border-[#E5C8DC] hover:border-[#FF2D87]"
+                      ? "bg-[#B87A6A] text-white border-[#B87A6A] shadow-[0_4px_14px_rgba(255,45,135,0.35)]"
+                      : "bg-white border-[#DCC5BC] hover:border-[#B87A6A]"
                   }`}
                 >
                   <div className="text-base font-bold">{f.label}</div>
@@ -518,16 +518,16 @@ export default function Calculator() {
         </Step>
 
         {/* ── YOUR RECIPE ── */}
-        <div className="mt-12 pt-10 border-t border-[#F0CFE0]">
-          <h2 className="text-2xl font-bold font-serif-glam italic text-[#FF2D87]">Your Recipe</h2>
+        <div className="mt-12 pt-10 border-t border-[#E8CDBF]">
+          <h2 className="text-2xl font-bold font-serif-glam italic text-[#B87A6A]">Your Recipe</h2>
 
           <div className="mt-6 space-y-4">
             <RecipeStep n="1">
-              Add <strong className="text-[#FF2D87] font-mono">{fmt(bacWaterMl, 1)} mL</strong> of BAC water
+              Add <strong className="text-[#B87A6A] font-mono">{fmt(bacWaterMl, 1)} mL</strong> of BAC water
               to your <strong className="font-mono">{fmt(peptideMg, 1)} mg</strong> vial.
             </RecipeStep>
             <RecipeStep n="2">
-              Draw <strong className="text-[#FF2D87] font-mono text-xl" data-testid="calc-draw-units">{fmt(result.drawUnits, 1)} units</strong>
+              Draw <strong className="text-[#B87A6A] font-mono text-xl" data-testid="calc-draw-units">{fmt(result.drawUnits, 1)} units</strong>
               {" "}({fmt(result.doseMl, 3)} mL) on a U-100 insulin syringe per injection.
             </RecipeStep>
             <RecipeStep n="3">
@@ -549,7 +549,7 @@ export default function Calculator() {
           </div>
 
           {result.error && (
-            <div className="mt-6 bg-[#FFE3F0] border-2 border-[#FF2D87] rounded-2xl p-4 text-sm text-[#FF2D87] font-semibold" data-testid="calc-error">
+            <div className="mt-6 bg-[#F5DED4] border-2 border-[#B87A6A] rounded-2xl p-4 text-sm text-[#B87A6A] font-semibold" data-testid="calc-error">
               ⚠ {result.error}
             </div>
           )}
@@ -565,9 +565,9 @@ export default function Calculator() {
       {/* ───── HOW TO USE A PEPTIDE CALCULATOR (educational) ───── */}
       <div
         data-testid="how-to-use-section"
-        className="mt-10 bg-white rounded-[28px] shadow-[0_2px_20px_rgba(255,45,135,0.08)] border border-[#F0CFE0] p-8 lg:p-12"
+        className="mt-10 bg-white rounded-[28px] shadow-[0_2px_20px_rgba(255,45,135,0.08)] border border-[#E8CDBF] p-8 lg:p-12"
       >
-        <div className="inline-flex p-1.5 bg-[#FFF0F7] rounded-full border border-[#F0CFE0] mb-5">
+        <div className="inline-flex p-1.5 bg-[#FBF3EC] rounded-full border border-[#E8CDBF] mb-5">
           <span className="px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#0A0A0A] text-white shadow">
             Learn
           </span>
@@ -582,7 +582,7 @@ export default function Calculator() {
         {/* What is a peptide calculator */}
         <div data-testid="howto-what-is" className="mt-10">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-9 h-9 rounded-full bg-[#FF2D87] text-white flex items-center justify-center text-sm font-bold shadow-[0_4px_14px_rgba(255,45,135,0.35)]">
+            <div className="w-9 h-9 rounded-full bg-[#B87A6A] text-white flex items-center justify-center text-sm font-bold shadow-[0_4px_14px_rgba(255,45,135,0.35)]">
               ?
             </div>
             <h3 className="text-xl font-bold">What is a peptide calculator?</h3>
@@ -593,7 +593,7 @@ export default function Calculator() {
               <strong>vial size</strong>, the amount of <strong>BAC water</strong> you
               added, and your <strong>desired dose</strong> &mdash; and it tells you
               exactly how many{" "}
-              <strong className="text-[#FF2D87]">syringe units</strong> to draw on a
+              <strong className="text-[#B87A6A]">syringe units</strong> to draw on a
               U-100 insulin syringe. No mental math, no guessing.
             </p>
           </div>
@@ -602,7 +602,7 @@ export default function Calculator() {
         {/* How much BAC water */}
         <div data-testid="howto-bac-water" className="mt-10">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-9 h-9 rounded-full bg-[#FF2D87] text-white flex items-center justify-center text-sm font-bold shadow-[0_4px_14px_rgba(255,45,135,0.35)]">
+            <div className="w-9 h-9 rounded-full bg-[#B87A6A] text-white flex items-center justify-center text-sm font-bold shadow-[0_4px_14px_rgba(255,45,135,0.35)]">
               ~
             </div>
             <h3 className="text-xl font-bold">How much BAC water should I use?</h3>
@@ -616,7 +616,7 @@ export default function Calculator() {
             </p>
 
             <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="bg-[#FFF0F7] rounded-2xl p-4 border border-[#F0CFE0] text-center">
+              <div className="bg-[#FBF3EC] rounded-2xl p-4 border border-[#E8CDBF] text-center">
                 <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#5C5C5C]">
                   More dilute
                 </div>
@@ -625,8 +625,8 @@ export default function Calculator() {
                   Best for very small doses &amp; fine-tuning.
                 </div>
               </div>
-              <div className="bg-white rounded-2xl p-4 border-2 border-[#FF2D87] text-center shadow-[0_4px_14px_rgba(255,45,135,0.18)]">
-                <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#FF2D87]">
+              <div className="bg-white rounded-2xl p-4 border-2 border-[#B87A6A] text-center shadow-[0_4px_14px_rgba(255,45,135,0.18)]">
+                <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#B87A6A]">
                   Common
                 </div>
                 <div className="text-2xl font-black font-mono mt-1 text-[#0A0A0A]">2 mL</div>
@@ -634,7 +634,7 @@ export default function Calculator() {
                   The everyday sweet spot for most peptides.
                 </div>
               </div>
-              <div className="bg-[#FFF0F7] rounded-2xl p-4 border border-[#F0CFE0] text-center">
+              <div className="bg-[#FBF3EC] rounded-2xl p-4 border border-[#E8CDBF] text-center">
                 <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#5C5C5C]">
                   More concentrated
                 </div>
@@ -655,7 +655,7 @@ export default function Calculator() {
         {/* Reconstitution Instructions */}
         <div data-testid="howto-instructions" className="mt-10">
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-9 h-9 rounded-full bg-[#FF2D87] text-white flex items-center justify-center text-sm font-bold shadow-[0_4px_14px_rgba(255,45,135,0.35)]">
+            <div className="w-9 h-9 rounded-full bg-[#B87A6A] text-white flex items-center justify-center text-sm font-bold shadow-[0_4px_14px_rgba(255,45,135,0.35)]">
               ★
             </div>
             <h3 className="text-xl font-bold">Reconstitution Instructions</h3>
@@ -701,7 +701,7 @@ function Step({ n, title, children }) {
   return (
     <div className="mt-10">
       <div className="flex items-center gap-3 mb-5">
-        <div className="w-9 h-9 rounded-full bg-[#FF2D87] text-white flex items-center justify-center text-sm font-bold shadow-[0_4px_14px_rgba(255,45,135,0.35)]">
+        <div className="w-9 h-9 rounded-full bg-[#B87A6A] text-white flex items-center justify-center text-sm font-bold shadow-[0_4px_14px_rgba(255,45,135,0.35)]">
           {n}
         </div>
         <h3 className="text-xl font-bold">{title}</h3>
@@ -717,7 +717,7 @@ function PillInput({ label, suffix, value, onChange, testId }) {
       <label className="text-xs font-semibold uppercase tracking-wider text-[#5C5C5C]">
         {label}
       </label>
-      <div className="mt-3 flex items-center border border-[#E5C8DC] rounded-full pl-6 pr-6 py-1.5 focus-within:border-[#FF2D87] focus-within:shadow-[0_4px_14px_rgba(255,45,135,0.12)] transition">
+      <div className="mt-3 flex items-center border border-[#DCC5BC] rounded-full pl-6 pr-6 py-1.5 focus-within:border-[#B87A6A] focus-within:shadow-[0_4px_14px_rgba(255,45,135,0.12)] transition">
         <input
           type="number"
           min={0}
@@ -738,10 +738,10 @@ function PillInput({ label, suffix, value, onChange, testId }) {
 function RecipeStep({ n, children, testId }) {
   return (
     <div className="flex items-start gap-4" data-testid={testId}>
-      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#FF6FB5] to-[#FF2D87] text-white flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-[0_4px_14px_rgba(255,45,135,0.35)]">
+      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#C99786] to-[#B87A6A] text-white flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-[0_4px_14px_rgba(255,45,135,0.35)]">
         {n}
       </div>
-      <div className="flex-1 bg-[#FFF0F7] rounded-2xl px-5 py-3 text-sm leading-relaxed">
+      <div className="flex-1 bg-[#FBF3EC] rounded-2xl px-5 py-3 text-sm leading-relaxed">
         {children}
       </div>
     </div>
@@ -750,7 +750,7 @@ function RecipeStep({ n, children, testId }) {
 
 function SupplyStat({ value, label, testId }) {
   return (
-    <div className="bg-[#FFF0F7] rounded-2xl p-4 text-center border border-[#F0CFE0]">
+    <div className="bg-[#FBF3EC] rounded-2xl p-4 text-center border border-[#E8CDBF]">
       <div className="text-2xl font-black font-mono text-[#0A0A0A]" data-testid={testId}>{value}</div>
       <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#5C5C5C] mt-1">{label}</div>
     </div>
@@ -769,8 +769,8 @@ function SyringeVisual({ draw, capacity }) {
       <svg viewBox="0 0 500 110" className="w-full h-auto">
         <defs>
           <linearGradient id="pinkfill" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#FF2D87" />
-            <stop offset="100%" stopColor="#FF6FB5" />
+            <stop offset="0%" stopColor="#B87A6A" />
+            <stop offset="100%" stopColor="#C99786" />
           </linearGradient>
         </defs>
         {/* plunger handle */}
@@ -778,7 +778,7 @@ function SyringeVisual({ draw, capacity }) {
         <rect x="22" y="48" width="8" height="20" fill="#FFFFFF" />
         <rect x="30" y="54" width={40} height="8" fill="#666" />
         {/* stopper */}
-        <rect x={barrelX + fillW - 8} y={barrelY - 2} width="8" height={barrelH + 4} fill="#FF2D87" />
+        <rect x={barrelX + fillW - 8} y={barrelY - 2} width="8" height={barrelH + 4} fill="#B87A6A" />
         {/* fill */}
         <rect x={barrelX} y={barrelY} width={fillW} height={barrelH} fill="url(#pinkfill)" />
         {/* barrel */}

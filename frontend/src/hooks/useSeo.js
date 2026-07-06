@@ -19,8 +19,8 @@ const JSONLD_ATTR = "data-seo-jsonld";
 export default function useSeo({ title, description, path = "", keywords, jsonLd }) {
   useEffect(() => {
     const fullTitle = title
-      ? `${title} · Pep Girl`
-      : "Pep Girl — Peptide Vendors, Price Comparison & Education";
+      ? `${title} · The Optimized Society`
+      : "The Optimized Society — Peptide Vendors, Price Comparison & Education";
     document.title = fullTitle;
 
     const setMeta = (selector, value) => {

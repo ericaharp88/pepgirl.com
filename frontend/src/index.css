@@ -9,7 +9,7 @@ body {
     font-family: 'IBM Plex Sans', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background: #FFF5FA;
+    background: #FDF8F3;
     color: #0A0A0A;
 }
 
@@ -27,31 +27,31 @@ h1, h2, h3, h4, h5 {
 }
 
 ::selection {
-    background: #FF2D87;
+    background: #B87A6A;
     color: #fff;
 }
 
 @layer base {
     :root {
-        --background: 340 100% 98%;
+        --background: 30 44% 96%;
         --foreground: 0 0% 4%;
         --card: 0 0% 100%;
         --card-foreground: 0 0% 4%;
         --popover: 0 0% 100%;
         --popover-foreground: 0 0% 4%;
-        --primary: 333 100% 59%;
+        --primary: 15 34% 57%;
         --primary-foreground: 0 0% 100%;
-        --secondary: 340 100% 96%;
+        --secondary: 20 55% 92%;
         --secondary-foreground: 0 0% 4%;
-        --muted: 340 30% 94%;
+        --muted: 20 30% 90%;
         --muted-foreground: 0 0% 36%;
-        --accent: 340 100% 94%;
+        --accent: 20 60% 90%;
         --accent-foreground: 0 0% 4%;
         --destructive: 0 100% 45%;
         --destructive-foreground: 0 0% 100%;
-        --border: 340 40% 88%;
-        --input: 340 40% 88%;
-        --ring: 333 100% 59%;
+        --border: 20 40% 84%;
+        --input: 20 40% 84%;
+        --ring: 15 34% 57%;
         --radius: 0rem;
     }
 }
@@ -63,16 +63,16 @@ h1, h2, h3, h4, h5 {
 
 /* Grid-border decorations */
 .grid-borders > * {
-    border-right: 1px solid #F0CFE0;
-    border-bottom: 1px solid #F0CFE0;
+    border-right: 1px solid #E8CDBF;
+    border-bottom: 1px solid #E8CDBF;
 }
 
-/* Inverted (black) panel — used for calculator output */
+/* Inverted (dark) panel — used for calculator output */
 .invert-panel {
     background:
       radial-gradient(circle at 20% 30%, rgba(255,255,255,0.08) 1px, transparent 1.5px) 0 0 / 60px 60px,
       radial-gradient(circle at 70% 60%, rgba(255,255,255,0.06) 1px, transparent 1.5px) 0 0 / 80px 80px,
-      radial-gradient(circle at 40% 80%, rgba(255,45,135,0.18) 1px, transparent 1.5px) 0 0 / 100px 100px,
+      radial-gradient(circle at 40% 80%, rgba(184,122,106,0.20) 1px, transparent 1.5px) 0 0 / 100px 100px,
       #0A0A0A;
     color: #FFFFFF;
 }
@@ -99,7 +99,7 @@ h1, h2, h3, h4, h5 {
 
 /* Pink gradient text */
 .pink-text {
-    background: linear-gradient(90deg, #FF2D87 0%, #FF6FB5 50%, #FF2D87 100%);
+    background: linear-gradient(90deg, #B87A6A 0%, #C99786 50%, #B87A6A 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -117,10 +117,10 @@ h1, h2, h3, h4, h5 {
     pointer-events: none;
     background-image:
       radial-gradient(1px 1px at 12% 20%, rgba(255,255,255,0.9), transparent 50%),
-      radial-gradient(1px 1px at 80% 14%, rgba(255,45,135,0.7), transparent 50%),
-      radial-gradient(1px 1px at 25% 70%, rgba(192,192,192,0.8), transparent 50%),
+      radial-gradient(1px 1px at 80% 14%, rgba(184,122,106,0.7), transparent 50%),
+      radial-gradient(1px 1px at 25% 70%, rgba(212,184,150,0.8), transparent 50%),
       radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.7), transparent 50%),
-      radial-gradient(1px 1px at 55% 35%, rgba(255,111,181,0.7), transparent 50%),
+      radial-gradient(1px 1px at 55% 35%, rgba(201,151,134,0.7), transparent 50%),
       radial-gradient(1px 1px at 90% 55%, rgba(255,255,255,0.8), transparent 50%);
     background-size: 220px 220px, 260px 260px, 180px 180px, 240px 240px, 200px 200px, 280px 280px;
     mix-blend-mode: screen;
@@ -128,10 +128,10 @@ h1, h2, h3, h4, h5 {
 }
 
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: #FFF5FA; }
-::-webkit-scrollbar-thumb { background: #FF2D87; }
+::-webkit-scrollbar-track { background: #FDF8F3; }
+::-webkit-scrollbar-thumb { background: #B87A6A; }
 
-.row-hover:hover { background: #FFE3F0; }
+.row-hover:hover { background: #F5DED4; }
 
 button, a {
     transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;

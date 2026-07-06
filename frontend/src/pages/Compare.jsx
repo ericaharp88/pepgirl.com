@@ -65,7 +65,7 @@ function VendorStrip() {
         {withCodes.map((v) => (
           <div
             key={v.id}
-            className="bg-white border border-[#F0CFE0] rounded-xl p-3 flex items-center gap-2 hover:border-[#FF2D87] transition"
+            className="bg-white border border-[#E8CDBF] rounded-xl p-3 flex items-center gap-2 hover:border-[#B87A6A] transition"
             data-testid={`strip-vendor-${v.slug}`}
           >
             <div className="w-9 h-9 flex-shrink-0 rounded-md bg-white border border-[#F0F0F0] flex items-center justify-center overflow-hidden">
@@ -83,16 +83,16 @@ function VendorStrip() {
                 href={v.affiliate_url}
                 target="_blank"
                 rel="noopener noreferrer sponsored"
-                className="text-xs font-bold text-[#0A0A0A] truncate hover:text-[#FF2D87] flex items-center gap-1"
+                className="text-xs font-bold text-[#0A0A0A] truncate hover:text-[#B87A6A] flex items-center gap-1"
               >
                 {v.name}
-                {v.featured && <CheckCircle2 size={10} className="text-[#FF2D87] flex-shrink-0" />}
+                {v.featured && <CheckCircle2 size={10} className="text-[#B87A6A] flex-shrink-0" />}
               </a>
               <div className="mt-0.5 flex flex-wrap items-center gap-1">
                 <button
                   onClick={() => copy(v.discount_code)}
                   data-testid={`strip-code-${v.slug}`}
-                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#FFE4F1] hover:bg-[#FF2D87] hover:text-white text-[10px] font-mono font-bold text-[#FF2D87] tracking-wider transition"
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#F5DED4] hover:bg-[#B87A6A] hover:text-white text-[10px] font-mono font-bold text-[#B87A6A] tracking-wider transition"
                   title="Click to copy code"
                 >
                   {copied === v.discount_code ? <Check size={10} /> : <Copy size={10} />}
@@ -171,10 +171,10 @@ function PeptideCard({ peptide, prices, vendors }) {
   return (
     <div
       data-testid={`peptide-card-${peptide.slug}`}
-      className="bg-white border border-[#F0CFE0] rounded-[20px] p-6 hover:shadow-[0_8px_24px_rgba(255,45,135,0.12)] transition-shadow flex flex-col"
+      className="bg-white border border-[#E8CDBF] rounded-[20px] p-6 hover:shadow-[0_8px_24px_rgba(255,45,135,0.12)] transition-shadow flex flex-col"
     >
       {/* Header */}
-      <h3 className="text-xl font-black tracking-tight mb-3 pb-3 border-b border-[#FFE4F1]">
+      <h3 className="text-xl font-black tracking-tight mb-3 pb-3 border-b border-[#F5DED4]">
         {peptide.name}
       </h3>
 
@@ -190,8 +190,8 @@ function PeptideCard({ peptide, prices, vendors }) {
                 data-testid={`size-${peptide.slug}-${s}`}
                 className={`px-3 py-1 text-xs font-mono uppercase tracking-wider rounded-full transition ${
                   active
-                    ? "bg-[#FF2D87] text-white shadow-[0_2px_8px_rgba(255,45,135,0.35)]"
-                    : "bg-[#FFF0F7] text-[#5C5C5C] hover:bg-[#FFE4F1]"
+                    ? "bg-[#B87A6A] text-white shadow-[0_2px_8px_rgba(255,45,135,0.35)]"
+                    : "bg-[#FBF3EC] text-[#5C5C5C] hover:bg-[#F5DED4]"
                 }`}
               >
                 {formatSize(s)}
@@ -216,8 +216,8 @@ function PeptideCard({ peptide, prices, vendors }) {
               data-testid={`row-${peptide.slug}-${price.size_mg}-${vendor.slug}`}
               className={`flex items-center gap-3 p-2.5 rounded-xl border transition ${
                 isBest
-                  ? "border-[#FF2D87] bg-[#FFF0F7]"
-                  : "border-[#F0F0F0] hover:border-[#F0CFE0]"
+                  ? "border-[#B87A6A] bg-[#FBF3EC]"
+                  : "border-[#F0F0F0] hover:border-[#E8CDBF]"
               }`}
             >
               {/* Logo */}
@@ -243,13 +243,13 @@ function PeptideCard({ peptide, prices, vendors }) {
                     {vendor.name}
                   </span>
                   {vendor.featured && (
-                    <CheckCircle2 size={12} className="text-[#FF2D87] flex-shrink-0" />
+                    <CheckCircle2 size={12} className="text-[#B87A6A] flex-shrink-0" />
                   )}
                 </div>
                 {price.display_label && (
                   <div
                     data-testid={`row-label-${peptide.slug}-${price.size_mg}-${vendor.slug}`}
-                    className="text-[10px] font-mono uppercase tracking-wider text-[#FF2D87] font-bold truncate"
+                    className="text-[10px] font-mono uppercase tracking-wider text-[#B87A6A] font-bold truncate"
                     title={`Vendor name for ${peptide.name}: ${price.display_label}`}
                   >
                     “{price.display_label}”
@@ -262,7 +262,7 @@ function PeptideCard({ peptide, prices, vendors }) {
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); copyCode(vendor.discount_code); }}
                       data-testid={`row-code-${peptide.slug}-${price.size_mg}-${vendor.slug}`}
                       title="Click to copy code"
-                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#FFE4F1] hover:bg-[#FF2D87] hover:text-white text-[10px] font-mono font-bold text-[#FF2D87] tracking-wider transition cursor-pointer"
+                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#F5DED4] hover:bg-[#B87A6A] hover:text-white text-[10px] font-mono font-bold text-[#B87A6A] tracking-wider transition cursor-pointer"
                     >
                       {copiedCode === vendor.discount_code ? <Check size={10} /> : <Copy size={10} />}
                       {vendor.discount_code}
@@ -281,7 +281,7 @@ function PeptideCard({ peptide, prices, vendors }) {
 
               {/* Price */}
               <div className="text-right flex-shrink-0">
-                <div className={`font-bold tracking-tight ${isBest ? "text-[#FF2D87]" : "text-[#0A0A0A]"}`}>
+                <div className={`font-bold tracking-tight ${isBest ? "text-[#B87A6A]" : "text-[#0A0A0A]"}`}>
                   ${price.price_usd.toFixed(2)}
                 </div>
                 {price.size_mg > 0 && (
@@ -299,8 +299,8 @@ function PeptideCard({ peptide, prices, vendors }) {
                 data-testid={`shop-${peptide.slug}-${price.size_mg}-${vendor.slug}`}
                 className={`flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-mono uppercase tracking-wider font-bold transition ${
                   isBest
-                    ? "bg-[#FF2D87] text-white hover:bg-[#0A0A0A]"
-                    : "bg-[#0A0A0A] text-white hover:bg-[#FF2D87]"
+                    ? "bg-[#B87A6A] text-white hover:bg-[#0A0A0A]"
+                    : "bg-[#0A0A0A] text-white hover:bg-[#B87A6A]"
                 }`}
               >
                 Shop <ExternalLink size={10} />
@@ -312,9 +312,9 @@ function PeptideCard({ peptide, prices, vendors }) {
 
       {/* Best Value footer */}
       {rows.length > 0 && (
-        <div className="mt-4 pt-3 border-t border-[#FFE4F1] flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#5C5C5C]">
-          <Trophy size={12} className="text-[#FF2D87]" />
-          <span className="font-bold text-[#FF2D87]">Best Value:</span>
+        <div className="mt-4 pt-3 border-t border-[#F5DED4] flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#5C5C5C]">
+          <Trophy size={12} className="text-[#B87A6A]" />
+          <span className="font-bold text-[#B87A6A]">Best Value:</span>
           <span className="truncate">
             {rows[0].vendor.name} · ${rows[0].price.price_usd.toFixed(2)}
             {rows[0].price.size_mg > 0 &&
@@ -420,7 +420,7 @@ export default function Compare() {
       const hi = prs.length ? Math.max(...prs.map((p) => p.price_usd)) : 0;
       return {
         seoTitle: `${focusedPeptide.name} Price Comparison — Cheapest Vendors`,
-        seoDescription: `Compare ${focusedPeptide.name} prices across ${prs.length} listings from trusted research peptide vendors. Prices from $${lo.toFixed(2)}–$${hi.toFixed(2)}. Updated regularly on Pep Girl.`,
+        seoDescription: `Compare ${focusedPeptide.name} prices across ${prs.length} listings from trusted research peptide vendors. Prices from $${lo.toFixed(2)}–$${hi.toFixed(2)}. Updated regularly on The Optimized Society.`,
       };
     }
     const n = data?.peptides?.length || 0;
@@ -458,7 +458,7 @@ export default function Compare() {
         item: {
           "@type": "Product",
           name: p.name,
-          description: `Compare ${p.name} prices across trusted peptide vendors on Pep Girl.`,
+          description: `Compare ${p.name} prices across trusted peptide vendors on The Optimized Society.`,
           url: `${SITE}/compare?peptide=${slugify(p.name)}`,
           category: "Research peptide",
           offers: {
@@ -509,7 +509,7 @@ export default function Compare() {
           acceptedAnswer: {
             "@type": "Answer",
             text:
-              "Pep Girl's Peptide Price Tool compares live prices across every trusted research peptide vendor, sorted cheapest first, with discount codes and links to each product page.",
+              "The Optimized Society's Peptide Price Tool compares live prices across every trusted research peptide vendor, sorted cheapest first, with discount codes and links to each product page.",
           },
         },
         {
@@ -523,11 +523,11 @@ export default function Compare() {
         },
         {
           "@type": "Question",
-          name: "Which peptides does Pep Girl compare?",
+          name: "Which peptides does The Optimized Society compare?",
           acceptedAnswer: {
             "@type": "Answer",
             text:
-              "Pep Girl tracks GLP-1 peptides (semaglutide, tirzepatide, retatrutide, cagrilintide), healing peptides (BPC-157, TB-500), skin peptides (GHK-Cu, GHK, melanotan), nootropic peptides, and many more across multiple vendors.",
+              "The Optimized Society tracks GLP-1 peptides (semaglutide, tirzepatide, retatrutide, cagrilintide), healing peptides (BPC-157, TB-500), skin peptides (GHK-Cu, GHK, melanotan), nootropic peptides, and many more across multiple vendors.",
           },
         },
         {
@@ -536,7 +536,7 @@ export default function Compare() {
           acceptedAnswer: {
             "@type": "Answer",
             text:
-              "Yes — Pep Girl maintains an up-to-date list of vendor discount codes that you can tap to copy directly from the price-comparison page.",
+              "Yes — The Optimized Society maintains an up-to-date list of vendor discount codes that you can tap to copy directly from the price-comparison page.",
           },
         },
       ],
@@ -550,7 +550,7 @@ export default function Compare() {
     description: seoDescription,
     path: seoPath,
     keywords:
-      "peptide price comparison, cheapest peptide vendor, semaglutide price, tirzepatide price, retatrutide price, BPC-157 price, TB-500 price, GHK-Cu price, peptide discount codes, research peptides, peptide vendor comparison, Pep Girl",
+      "peptide price comparison, cheapest peptide vendor, semaglutide price, tirzepatide price, retatrutide price, BPC-157 price, TB-500 price, GHK-Cu price, peptide discount codes, research peptides, peptide vendor comparison, The Optimized Society",
     jsonLd,
   });
 
@@ -569,7 +569,7 @@ export default function Compare() {
     <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12">
       {/* Header */}
       <div className="border-b border-[#0A0A0A] pb-6 mb-10">
-        <div className="eyebrow text-[#FF2D87] mb-3">Tool · 03</div>
+        <div className="eyebrow text-[#B87A6A] mb-3">Tool · 03</div>
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <h1 className="text-5xl lg:text-6xl font-black tracking-tighter">
@@ -577,7 +577,7 @@ export default function Compare() {
             </h1>
             <p className="text-sm text-[#5C5C5C] mt-3 max-w-2xl">
               Compare trusted vendors, discover hidden deals, and track pricing
-              across the industry &mdash; all in one place. Pep Girl Price Tool
+              across the industry &mdash; all in one place. The Optimized Society Price Tool
               helps you spend less time searching and more time saving.
             </p>
           </div>
@@ -603,14 +603,14 @@ export default function Compare() {
               disabled={n === 0 && c !== "All"}
               className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition border ${
                 active
-                  ? "bg-[#FF2D87] text-white border-[#FF2D87] shadow-[0_4px_14px_rgba(255,45,135,0.35)]"
+                  ? "bg-[#B87A6A] text-white border-[#B87A6A] shadow-[0_4px_14px_rgba(255,45,135,0.35)]"
                   : n === 0
                   ? "bg-[#F8F8F8] text-[#C0C0C0] border-[#F0F0F0] cursor-not-allowed"
-                  : "bg-white text-[#0A0A0A] border-[#F0CFE0] hover:bg-[#FFF0F7]"
+                  : "bg-white text-[#0A0A0A] border-[#E8CDBF] hover:bg-[#FBF3EC]"
               }`}
             >
               {c}
-              <span className={`text-[10px] font-bold ${active ? "text-white/80" : "text-[#FF2D87]"}`}>
+              <span className={`text-[10px] font-bold ${active ? "text-white/80" : "text-[#B87A6A]"}`}>
                 {n}
               </span>
             </button>
@@ -630,7 +630,7 @@ export default function Compare() {
         <button
           onClick={() => setSortDir(sortDir === "asc" ? "desc" : "asc")}
           data-testid="sort-toggle"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0A0A0A] text-white text-xs font-mono uppercase tracking-wider hover:bg-[#FF2D87] transition w-fit"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0A0A0A] text-white text-xs font-mono uppercase tracking-wider hover:bg-[#B87A6A] transition w-fit"
         >
           Name {sortDir === "asc" ? "A→Z" : "Z→A"}{" "}
           {sortDir === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
@@ -647,7 +647,7 @@ export default function Compare() {
             key={p.id}
             id={`peptide-${slugify(p.name)}`}
             ref={(el) => { if (el) cardRefs.current[p.id] = el; }}
-            className={focusedPeptide && focusedPeptide.id === p.id ? "ring-2 ring-[#FF2D87] rounded-[22px]" : ""}
+            className={focusedPeptide && focusedPeptide.id === p.id ? "ring-2 ring-[#B87A6A] rounded-[22px]" : ""}
           >
             <PeptideCard
               peptide={p}
@@ -666,15 +666,15 @@ export default function Compare() {
       {/* ---------------- SEO CONTENT BLOCK ---------------- */}
       <section
         data-testid="seo-content"
-        className="mt-20 border-t border-[#F0CFE0] pt-12 grid lg:grid-cols-3 gap-10"
+        className="mt-20 border-t border-[#E8CDBF] pt-12 grid lg:grid-cols-3 gap-10"
       >
         <div className="lg:col-span-2 space-y-6 text-[#0A0A0A]">
           <div>
             <h2 className="text-2xl lg:text-3xl font-black tracking-tight mb-3">
-              About the Pep Girl Peptide Price Comparison Tool
+              About the The Optimized Society Peptide Price Comparison Tool
             </h2>
             <p className="text-sm leading-relaxed text-[#3A3A3A]">
-              Pep Girl is the easiest way to compare research peptide prices side-by-side across
+              The Optimized Society is the easiest way to compare research peptide prices side-by-side across
               every trusted vendor. We track prices for popular research peptides including
               <strong> semaglutide</strong>, <strong>tirzepatide</strong>, <strong>retatrutide</strong>,
               <strong> cagrilintide</strong>, <strong>BPC-157</strong>, <strong>TB-500</strong>,
@@ -710,22 +710,22 @@ export default function Compare() {
               <div>
                 <div className="font-bold text-[#0A0A0A]">Are these peptides for research only?</div>
                 Yes. All products listed are research peptides, sold for laboratory research use only.
-                Pep Girl is an educational resource and does not provide medical advice.
+                The Optimized Society is an educational resource and does not provide medical advice.
               </div>
             </div>
           </div>
         </div>
 
         {/* Peptide directory for crawlers (and humans) */}
-        <aside className="bg-[#FFF0F7] border border-[#F0CFE0] rounded-2xl p-6">
-          <div className="eyebrow text-[#FF2D87] mb-3">All Peptides ({allPeptidesWithPrices.length})</div>
+        <aside className="bg-[#FBF3EC] border border-[#E8CDBF] rounded-2xl p-6">
+          <div className="eyebrow text-[#B87A6A] mb-3">All Peptides ({allPeptidesWithPrices.length})</div>
           <ul className="flex flex-wrap gap-1.5" data-testid="seo-peptide-list">
             {allPeptidesWithPrices.map((p) => (
               <li key={p.id}>
                 <a
                   href={`/compare?peptide=${slugify(p.name)}`}
                   data-testid={`seo-pep-link-${slugify(p.name)}`}
-                  className="inline-block px-2.5 py-1 rounded-full text-[11px] font-mono bg-white border border-[#F0CFE0] text-[#0A0A0A] hover:bg-[#FF2D87] hover:text-white hover:border-[#FF2D87] transition"
+                  className="inline-block px-2.5 py-1 rounded-full text-[11px] font-mono bg-white border border-[#E8CDBF] text-[#0A0A0A] hover:bg-[#B87A6A] hover:text-white hover:border-[#B87A6A] transition"
                 >
                   {p.name}
                 </a>

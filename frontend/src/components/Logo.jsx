@@ -1,12 +1,12 @@
-const LOGO_URL = "https://customer-assets.emergentagent.com/job_peptide-dosing-1/artifacts/tbcplspn_7886a451-cc7a-4efd-bb03-768e2c2476b7.png";
+const LOGO_URL = "https://customer-assets.emergentagent.com/job_peptide-dosing-1/artifacts/hp3qibf3_18abd5da-99d4-4288-8622-3b83137b62d9.png";
 
 export function Logo({ className = "", size = 56 }) {
   return (
     <img
       src={LOGO_URL}
-      alt="Pepgirl.com"
+      alt="The Optimized Society by Erica"
       className={`block ${className}`}
-      style={{ height: size, width: "auto", objectFit: "contain" }}
+      style={{ height: size, width: size, objectFit: "contain", borderRadius: "50%" }}
       data-testid="logo-img"
     />
   );
@@ -16,18 +16,20 @@ export function Logo({ className = "", size = 56 }) {
 export function LogoText({ className = "" }) {
   return (
     <div className={`flex flex-col leading-none ${className}`}>
-      <div
-        className="font-serif-glam text-4xl tracking-tight"
-        style={{
-          background: "linear-gradient(90deg, #FF2D87 0%, #FF6FB5 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-        }}
-      >
-        Pepgirl<span className="text-base align-top">.com</span>
+      <div className="font-serif-glam text-3xl tracking-tight text-white">
+        The{" "}
+        <span
+          style={{
+            background: "linear-gradient(90deg, #B87A6A 0%, #C99786 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
+          Optimized Society
+        </span>
       </div>
-      <div className="font-mono text-[10px] tracking-[0.35em] uppercase mt-2 font-bold text-[#FF6FB5]">
-        Peptides · Confidence · You
+      <div className="font-mono text-[10px] tracking-[0.35em] uppercase mt-2 font-bold text-[#C99786]">
+        By Erica · Optimize · Elevate
       </div>
     </div>
   );

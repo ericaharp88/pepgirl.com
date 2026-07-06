@@ -25,7 +25,7 @@ export default function Admin() {
   return (
     <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-12">
       <div className="border-b border-[#0A0A0A] pb-4 mb-8">
-        <div className="eyebrow text-[#FF2D87] mb-2">Control Room</div>
+        <div className="eyebrow text-[#B87A6A] mb-2">Control Room</div>
         <h1 className="text-4xl lg:text-6xl font-black tracking-tighter">Admin Dashboard</h1>
       </div>
       <Tabs defaultValue="vendors">
@@ -109,7 +109,7 @@ function VendorsPanel() {
           <Field label="Discount code" value={form.discount_code} onChange={(v) => setForm({ ...form, discount_code: v })} testId="v-code" />
           <Field label="Promo badge (e.g. BOGO, FREE BAC)" value={form.promo_badge} onChange={(v) => setForm({ ...form, promo_badge: v })} testId="v-promo" />
           <div>
-            <Label className="eyebrow text-[#FF2D87]">
+            <Label className="eyebrow text-[#B87A6A]">
               Peptide Nickname Guide{" "}
               <span className="text-[#5C5C5C] normal-case tracking-normal font-mono text-[10px]">
                 (one per line · shows publicly on vendor card)
@@ -120,7 +120,7 @@ function VendorsPanel() {
               onChange={(e) => setForm({ ...form, nickname_notes: e.target.value })}
               placeholder={`Tirzepatide = GLP2, Peptide T\nSemaglutide = GLP-SG\nRetatrutide = GLP3`}
               rows={4}
-              className="rounded-none border-[#FF2D87] mt-2 font-mono text-xs"
+              className="rounded-none border-[#B87A6A] mt-2 font-mono text-xs"
               data-testid="v-nickname-notes"
             />
           </div>
@@ -129,7 +129,7 @@ function VendorsPanel() {
             <Label className="eyebrow">Featured</Label>
             <Switch checked={form.featured} onCheckedChange={(v) => setForm({ ...form, featured: v })} />
           </div>
-          <Button onClick={save} data-testid="v-save" className="w-full rounded-none bg-[#FF2D87] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">Add vendor</Button>
+          <Button onClick={save} data-testid="v-save" className="w-full rounded-none bg-[#B87A6A] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">Add vendor</Button>
         </div>
       </div>
       <div className="lg:col-span-7">
@@ -207,7 +207,7 @@ function VendorRow({ vendor, onChanged, onDelete }) {
           {!editing && vendor.nickname_notes && (
             <pre
               data-testid={`v-notes-preview-${vendor.slug}`}
-              className="mt-2 whitespace-pre-wrap text-[11px] font-mono text-[#0A0A0A] bg-[#FFF0F7] border border-[#F0CFE0] px-3 py-2 max-w-[420px]"
+              className="mt-2 whitespace-pre-wrap text-[11px] font-mono text-[#0A0A0A] bg-[#FBF3EC] border border-[#E8CDBF] px-3 py-2 max-w-[420px]"
             >
               {vendor.nickname_notes}
             </pre>
@@ -222,8 +222,8 @@ function VendorRow({ vendor, onChanged, onDelete }) {
             data-testid={`v-fav-${vendor.slug}`}
             className={`h-9 w-9 inline-flex items-center justify-center rounded-none transition ${
               vendor.featured
-                ? "bg-[#FF2D87] text-white hover:bg-[#0A0A0A]"
-                : "bg-white text-[#C0C0C0] border border-[#E5E5E5] hover:text-[#FF2D87] hover:border-[#FF2D87]"
+                ? "bg-[#B87A6A] text-white hover:bg-[#0A0A0A]"
+                : "bg-white text-[#C0C0C0] border border-[#E5E5E5] hover:text-[#B87A6A] hover:border-[#B87A6A]"
             } ${togglingFeat ? "opacity-50" : ""}`}
           >
             <Star
@@ -236,7 +236,7 @@ function VendorRow({ vendor, onChanged, onDelete }) {
             variant="ghost"
             size="icon"
             onClick={() => { setEditing((e) => !e); setNotes(vendor.nickname_notes || ""); }}
-            className="rounded-none hover:bg-[#FF2D87] hover:text-white"
+            className="rounded-none hover:bg-[#B87A6A] hover:text-white"
             title="Edit peptide nickname guide"
             data-testid={`v-edit-${vendor.slug}`}
           >
@@ -255,8 +255,8 @@ function VendorRow({ vendor, onChanged, onDelete }) {
       </div>
 
       {editing && (
-        <div className="mt-3 bg-[#FFF8FC] border border-[#FF2D87] p-3">
-          <Label className="eyebrow text-[#FF2D87]">
+        <div className="mt-3 bg-[#FDF9F5] border border-[#B87A6A] p-3">
+          <Label className="eyebrow text-[#B87A6A]">
             Peptide Nickname Guide{" "}
             <span className="text-[#5C5C5C] normal-case tracking-normal font-mono text-[10px]">
               · one per line · shows publicly under this vendor
@@ -281,7 +281,7 @@ function VendorRow({ vendor, onChanged, onDelete }) {
             <Button
               onClick={save}
               disabled={busy}
-              className="rounded-none bg-[#FF2D87] hover:bg-[#0A0A0A] text-white h-9 font-mono uppercase tracking-widest text-xs"
+              className="rounded-none bg-[#B87A6A] hover:bg-[#0A0A0A] text-white h-9 font-mono uppercase tracking-widest text-xs"
               data-testid={`v-notes-save-${vendor.slug}`}
             >
               {busy ? "Saving…" : "Save guide"}
@@ -321,7 +321,7 @@ function PeptidesPanel() {
             <Label className="eyebrow text-[#5C5C5C]">Description</Label>
             <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="rounded-none border-[#0A0A0A] mt-2 font-mono text-sm" />
           </div>
-          <Button onClick={save} data-testid="p-save" className="w-full rounded-none bg-[#FF2D87] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">Add peptide</Button>
+          <Button onClick={save} data-testid="p-save" className="w-full rounded-none bg-[#B87A6A] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">Add peptide</Button>
         </div>
       </div>
       <div className="lg:col-span-7">
@@ -383,7 +383,7 @@ function PriceRow({ pr, peptides, vendors, onChanged }) {
 
   if (editing) {
     return (
-      <div className="border-b border-[#E5E5E5] p-3 bg-[#FFF8FC] space-y-2 text-sm"
+      <div className="border-b border-[#E5E5E5] p-3 bg-[#FDF9F5] space-y-2 text-sm"
            data-testid={`pr-edit-${pr.id}`}>
         <div className="font-bold">{lookup(peptides, pr.peptide_id)} · {lookup(vendors, pr.vendor_id)}</div>
         <div className="grid grid-cols-12 gap-2 items-center">
@@ -401,7 +401,7 @@ function PriceRow({ pr, peptides, vendors, onChanged }) {
             data-testid={`pr-edit-url-${pr.id}`} />
           <div className="col-span-2 flex gap-1 justify-end">
             <Button size="icon" onClick={save} disabled={busy}
-              className="h-9 w-9 rounded-none bg-[#FF2D87] hover:bg-[#0A0A0A] text-white"
+              className="h-9 w-9 rounded-none bg-[#B87A6A] hover:bg-[#0A0A0A] text-white"
               data-testid={`pr-edit-save-${pr.id}`}>
               <Check size={14} />
             </Button>
@@ -413,7 +413,7 @@ function PriceRow({ pr, peptides, vendors, onChanged }) {
         </div>
         <Input value={label} onChange={(e) => setLabel(e.target.value)}
           placeholder={`Vendor nickname (optional) — e.g. "GLP-SG", "Sema-Glow"`}
-          className="rounded-none border-[#FF2D87] h-9 font-mono text-xs bg-white"
+          className="rounded-none border-[#B87A6A] h-9 font-mono text-xs bg-white"
           data-testid={`pr-edit-label-${pr.id}`} />
       </div>
     );
@@ -424,27 +424,27 @@ function PriceRow({ pr, peptides, vendors, onChanged }) {
       <div className="col-span-4">
         <div className="font-bold">{lookup(peptides, pr.peptide_id)}</div>
         {pr.display_label && (
-          <div className="text-[10px] font-mono text-[#FF2D87] font-bold uppercase tracking-wider">
+          <div className="text-[10px] font-mono text-[#B87A6A] font-bold uppercase tracking-wider">
             “{pr.display_label}”
           </div>
         )}
         <div className="text-[10px] font-mono text-[#5C5C5C]">{lookup(vendors, pr.vendor_id)}</div>
         {pr.product_url && (
           <a href={pr.product_url} target="_blank" rel="noopener noreferrer"
-             className="text-[10px] font-mono text-[#FF2D87] hover:underline truncate block max-w-[260px]"
+             className="text-[10px] font-mono text-[#B87A6A] hover:underline truncate block max-w-[260px]"
              title={pr.product_url}>
             ↗ {pr.product_url.replace(/^https?:\/\//, "").slice(0, 36)}…
           </a>
         )}
       </div>
-      <div className="col-span-2 font-mono text-[#FF2D87] font-bold">{pr.size_mg} mg</div>
+      <div className="col-span-2 font-mono text-[#B87A6A] font-bold">{pr.size_mg} mg</div>
       <div className="col-span-2 font-mono font-bold">${Number(pr.price_usd).toFixed(2)}</div>
       <div className="col-span-2 text-[10px] font-mono text-[#5C5C5C] truncate">
         {pr.last_status || "manual"}
       </div>
       <div className="col-span-2 flex gap-1 justify-end">
         <Button variant="ghost" size="icon" onClick={() => setEditing(true)}
-          className="rounded-none hover:bg-[#FF2D87] hover:text-white h-8 w-8"
+          className="rounded-none hover:bg-[#B87A6A] hover:text-white h-8 w-8"
           data-testid={`pr-edit-btn-${pr.id}`}>
           <Pencil size={14} />
         </Button>
@@ -680,7 +680,7 @@ function PricesPanel() {
                     key={p.id}
                     type="button"
                     onClick={() => { setPeptideQuery(p.name); setPeptideId(p.id); }}
-                    className="w-full text-left px-3 py-2 text-sm font-mono hover:bg-[#FFF0F7] border-b border-[#F0F0F0]"
+                    className="w-full text-left px-3 py-2 text-sm font-mono hover:bg-[#FBF3EC] border-b border-[#F0F0F0]"
                     data-testid={`pr-pep-match-${p.slug}`}
                   >
                     {p.name}
@@ -689,7 +689,7 @@ function PricesPanel() {
               </div>
             )}
             {peptideQuery.trim() && !exactMatch && !peptideMatches.length && (
-              <div className="mt-1 px-3 py-2 text-xs font-mono text-[#FF2D87] bg-[#FFF0F7] border border-[#F0CFE0]">
+              <div className="mt-1 px-3 py-2 text-xs font-mono text-[#B87A6A] bg-[#FBF3EC] border border-[#E8CDBF]">
                 + New peptide will be created: <b>{peptideQuery.trim()}</b>
               </div>
             )}
@@ -723,17 +723,17 @@ function PricesPanel() {
           </div>
 
           <div className="mb-4">
-            <Label className="eyebrow text-[#FF2D87]">6 · Vendor nickname (optional)</Label>
+            <Label className="eyebrow text-[#B87A6A]">6 · Vendor nickname (optional)</Label>
             <Input value={displayLabel}
               onChange={(e) => setDisplayLabel(e.target.value)}
               placeholder={`e.g. "GLP-SG", "Sema-Glow" — overrides peptide name on this row only`}
-              className="rounded-none border-[#FF2D87] mt-2 font-mono"
+              className="rounded-none border-[#B87A6A] mt-2 font-mono"
               data-testid="pr-label" />
           </div>
 
           <Button onClick={saveOne} disabled={busy === "save"}
             data-testid="pr-save"
-            className="w-full rounded-none bg-[#FF2D87] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">
+            className="w-full rounded-none bg-[#B87A6A] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">
             {busy === "save" ? "Saving…" : "+ Add price (vendor stays)"}
           </Button>
         </div>
@@ -752,7 +752,7 @@ function PricesPanel() {
             data-testid="pr-bulk-text" />
           <Button onClick={runBulk} disabled={busy === "bulk"}
             data-testid="pr-bulk-go"
-            className="w-full mt-3 rounded-none bg-[#0A0A0A] text-white hover:bg-[#FF2D87] h-10 font-mono uppercase tracking-widest text-xs">
+            className="w-full mt-3 rounded-none bg-[#0A0A0A] text-white hover:bg-[#B87A6A] h-10 font-mono uppercase tracking-widest text-xs">
             {busy === "bulk" ? "Importing…" : "Import all rows"}
           </Button>
         </div>
@@ -762,10 +762,10 @@ function PricesPanel() {
       <div className="lg:col-span-7">
         <SectionHeader title={vendorId ? `Recent — ${lookup(vendors, vendorId)}` : "Recent prices"} action={
           <div className="flex gap-2">
-            <Button onClick={aiBulkImport} disabled={busy === "ai"} className="rounded-none bg-[#FF2D87] text-white hover:bg-[#0A0A0A] font-mono uppercase tracking-widest text-xs" data-testid="ai-bulk-import">
+            <Button onClick={aiBulkImport} disabled={busy === "ai"} className="rounded-none bg-[#B87A6A] text-white hover:bg-[#0A0A0A] font-mono uppercase tracking-widest text-xs" data-testid="ai-bulk-import">
               <RefreshCw size={14} className={`mr-2 ${busy === "ai" ? "animate-spin" : ""}`} /> AI bulk import
             </Button>
-            <Button onClick={scrapeAll} disabled={busy === "all"} className="rounded-none bg-[#0A0A0A] text-white hover:bg-[#FF2D87] font-mono uppercase tracking-widest text-xs" data-testid="scrape-all">
+            <Button onClick={scrapeAll} disabled={busy === "all"} className="rounded-none bg-[#0A0A0A] text-white hover:bg-[#B87A6A] font-mono uppercase tracking-widest text-xs" data-testid="scrape-all">
               <RefreshCw size={14} className={`mr-2 ${busy === "all" ? "animate-spin" : ""}`} /> Scrape all
             </Button>
           </div>
@@ -840,7 +840,7 @@ function ResourcesPanel() {
             <Label className="eyebrow text-[#5C5C5C]">Content (if internal)</Label>
             <Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={5} className="rounded-none border-[#0A0A0A] mt-2 font-mono text-sm" />
           </div>
-          <Button onClick={save} data-testid="r-save" className="w-full rounded-none bg-[#FF2D87] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">Add resource</Button>
+          <Button onClick={save} data-testid="r-save" className="w-full rounded-none bg-[#B87A6A] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">Add resource</Button>
         </div>
       </div>
       <div className="lg:col-span-7">
@@ -849,7 +849,7 @@ function ResourcesPanel() {
           {items.map((r) => (
             <div key={r.id} className="border-b border-[#E5E5E5] p-4 flex items-start justify-between gap-4">
               <div>
-                <div className="text-[10px] font-mono uppercase tracking-widest text-[#FF2D87]">{r.category}</div>
+                <div className="text-[10px] font-mono uppercase tracking-widest text-[#B87A6A]">{r.category}</div>
                 <div className="font-bold">{r.title}</div>
                 <div className="text-xs text-[#5C5C5C]">{r.summary}</div>
               </div>
@@ -931,7 +931,7 @@ function SocialsPanel() {
           <Field label="Order (lower = first)" type="number" value={form.order}
             onChange={(v) => setForm({ ...form, order: v })} />
           <Button onClick={save} data-testid="s-save"
-            className="w-full rounded-none bg-[#FF2D87] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">
+            className="w-full rounded-none bg-[#B87A6A] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">
             + Add social link
           </Button>
           <p className="text-[11px] font-mono text-[#5C5C5C] leading-relaxed">

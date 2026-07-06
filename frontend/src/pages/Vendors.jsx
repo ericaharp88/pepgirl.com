@@ -8,7 +8,7 @@ import useSeo from "../hooks/useSeo";
 export default function Vendors() {
   useSeo({
     title: "Vendor Directory",
-    description: "Trusted research peptide vendors, COA-verified, with exclusive Pep Girl discount codes and live promo badges.",
+    description: "Trusted research peptide vendors, COA-verified, with exclusive The Optimized Society discount codes and live promo badges.",
     path: "/vendors",
   });
   const [vendors, setVendors] = useState(null);
@@ -39,7 +39,7 @@ export default function Vendors() {
     <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-16">
       <div className="flex items-end justify-between border-b border-[#0A0A0A] pb-6 mb-12">
         <div>
-          <div className="eyebrow text-[#FF2D87] mb-3">Directory · 01</div>
+          <div className="eyebrow text-[#B87A6A] mb-3">Directory · 01</div>
           <h1 className="text-5xl lg:text-7xl font-black tracking-tighter">Vendors</h1>
         </div>
         <div className="hidden md:block text-right">
@@ -58,7 +58,7 @@ export default function Vendors() {
             onClick={() => setFilter(t)}
             data-testid={`filter-${t.toLowerCase().replace(/\s+/g, "-")}`}
             className={`px-5 py-2 text-xs font-mono uppercase tracking-[0.25em] border-r border-[#0A0A0A] last:border-r-0 ${
-              filter === t ? "bg-[#FF2D87] text-white" : "bg-white hover:bg-[#FFE3F0]"
+              filter === t ? "bg-[#B87A6A] text-white" : "bg-white hover:bg-[#F5DED4]"
             }`}
           >
             {t}
@@ -120,11 +120,11 @@ export default function Vendors() {
                   data-testid={`vendor-code-${v.slug}`}
                   className="mb-4 flex flex-wrap items-center gap-2"
                 >
-                  <div className="inline-flex items-center gap-2 bg-[#FFF0F7] border border-[#F0CFE0] px-3 py-2 rounded-sm">
+                  <div className="inline-flex items-center gap-2 bg-[#FBF3EC] border border-[#E8CDBF] px-3 py-2 rounded-sm">
                     <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#5C5C5C]">
                       Code
                     </span>
-                    <span className="font-mono font-bold text-sm text-[#FF2D87] tracking-wider">
+                    <span className="font-mono font-bold text-sm text-[#B87A6A] tracking-wider">
                       {v.discount_code}
                     </span>
                   </div>
@@ -165,11 +165,11 @@ export default function Vendors() {
 
               {v.nickname_notes && (
                 <details
-                  className="mb-6 border border-[#F0CFE0] bg-[#FFF0F7]"
+                  className="mb-6 border border-[#E8CDBF] bg-[#FBF3EC]"
                   data-testid={`vendor-nickname-guide-${v.slug}`}
                 >
-                  <summary className="cursor-pointer select-none px-3 py-2 flex items-center justify-between gap-2 hover:bg-[#FFE3F0]">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#FF2D87] font-bold">
+                  <summary className="cursor-pointer select-none px-3 py-2 flex items-center justify-between gap-2 hover:bg-[#F5DED4]">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#B87A6A] font-bold">
                       Peptide Nickname Guide
                     </span>
                     <span className="font-mono text-[10px] text-[#5C5C5C]">
@@ -187,7 +187,7 @@ export default function Vendors() {
                 target="_blank"
                 rel="noopener noreferrer sponsored"
                 data-testid={`vendor-visit-${v.slug}`}
-                className="bg-[#0A0A0A] text-white px-4 py-3 inline-flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-[0.25em] hover:bg-[#FF2D87]"
+                className="bg-[#0A0A0A] text-white px-4 py-3 inline-flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-[0.25em] hover:bg-[#B87A6A]"
               >
                 Visit Vendor <ExternalLink size={14} />
               </a>
