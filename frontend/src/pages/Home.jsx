@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles } from "lucide-react";
 import api from "../lib/api";
+import { useSettings } from "../lib/settings";
 import SocialBar from "../components/SocialBar";
 import useSeo from "../hooks/useSeo";
 
@@ -48,6 +49,10 @@ export default function Home() {
     path: "/",
   });
   const [counts, setCounts] = useState({});
+  const { settings } = useSettings();
+  const priceToolOn = settings?.price_tool_enabled !== false;
+
+  const visibleTiles = tiles.filter(t => priceToolOn || t.to !== "/compare");
 
   useEffect(() => {
     Promise.allSettled([
@@ -180,13 +185,23 @@ export default function Home() {
 
               {/* CTAs below pic */}
               <div className="mt-10 flex flex-col gap-3 w-full max-w-sm">
-                <Link
-                  to="/compare"
-                  data-testid="hero-cta-price-tool"
-                  className="bg-[#B87A6A] text-white px-6 py-4 text-sm font-mono uppercase tracking-[0.2em] hover:bg-[#0A0A0A] inline-flex items-center justify-center gap-3"
-                >
-                  The Optimized Society Price Tool <ArrowRight size={16} />
-                </Link>
+                {priceToolOn ? (
+                  <Link
+                    to="/compare"
+                    data-testid="hero-cta-price-tool"
+                    className="bg-[#B87A6A] text-white px-6 py-4 text-sm font-mono uppercase tracking-[0.2em] hover:bg-[#0A0A0A] inline-flex items-center justify-center gap-3"
+                  >
+                    The Optimized Society Price Tool <ArrowRight size={16} />
+                  </Link>
+                ) : (
+                  <Link
+                    to="/vendors"
+                    data-testid="hero-cta-vendors"
+                    className="bg-[#B87A6A] text-white px-6 py-4 text-sm font-mono uppercase tracking-[0.2em] hover:bg-[#0A0A0A] inline-flex items-center justify-center gap-3"
+                  >
+                    Browse Vendors <ArrowRight size={16} />
+                  </Link>
+                )}
                 <div className="grid grid-cols-2 gap-3">
                   <a
                     href="https://www.skool.com/ericas-elevated-life-9005"
@@ -222,7 +237,7 @@ export default function Home() {
           </div>
 
           <div className="grid sm:grid-cols-2 gap-5 lg:gap-6" data-testid="home-tiles">
-            {tiles.map(({ to, title, desc, label, teaser, countFrom, staticCount }) => {
+            {visibleTiles.map(({ to, title, desc, label, teaser, countFrom, staticCount }) => {
               const count = staticCount ?? (countFrom ? counts[countFrom] : null);
               return (
                 <Link

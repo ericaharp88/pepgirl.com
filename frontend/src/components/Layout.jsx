@@ -1,16 +1,20 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth";
+import { useSettings } from "../lib/settings";
 import { Button } from "./ui/button";
 import { Logo, LogoText } from "./Logo";
 
 export default function Layout({ children }) {
   const { user, logout } = useAuth();
+  const { settings } = useSettings();
   const nav = useNavigate();
 
   const navItems = [
     { to: "/vendors", label: "Vendors" },
     { to: "/calculator", label: "Calculator" },
-    { to: "/compare", label: "Peptide Price Tool" },
+    ...(settings?.price_tool_enabled !== false
+      ? [{ to: "/compare", label: "Peptide Price Tool" }]
+      : []),
     { to: "/resources", label: "Resources" },
   ];
 

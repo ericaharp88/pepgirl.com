@@ -29,8 +29,8 @@ export default function Admin() {
         <h1 className="text-4xl lg:text-6xl font-black tracking-tighter">Admin Dashboard</h1>
       </div>
       <Tabs defaultValue="vendors">
-        <TabsList className="rounded-none bg-white border border-[#0A0A0A] p-0 h-auto">
-          {["vendors", "peptides", "prices", "promotions", "resources", "socials"].map((t) => (
+        <TabsList className="rounded-none bg-white border border-[#0A0A0A] p-0 h-auto flex-wrap">
+          {["vendors", "peptides", "prices", "promotions", "resources", "socials", "settings"].map((t) => (
             <TabsTrigger
               key={t}
               value={t}
@@ -47,6 +47,7 @@ export default function Admin() {
         <TabsContent value="promotions" className="mt-8"><PromotionsPanel /></TabsContent>
         <TabsContent value="resources" className="mt-8"><ResourcesPanel /></TabsContent>
         <TabsContent value="socials" className="mt-8"><SocialsPanel /></TabsContent>
+        <TabsContent value="settings" className="mt-8"><SettingsPanel /></TabsContent>
       </Tabs>
     </div>
   );
@@ -1524,6 +1525,63 @@ function PromotionsPanel() {
               </div>
             );
           })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ----------------- SITE SETTINGS ----------------- */
+function SettingsPanel() {
+  const [settings, setSettings] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  const load = () => api.get("/settings").then(r => setSettings(r.data));
+  useEffect(() => { load(); }, []);
+
+  const toggle = async (key, value) => {
+    setSaving(true);
+    try {
+      const next = { ...settings, [key]: value };
+      await api.put("/settings", { price_tool_enabled: next.price_tool_enabled });
+      setSettings(next);
+      toast.success(value ? "Turned ON — page will refresh" : "Turned OFF — page will refresh");
+      setTimeout(() => window.location.reload(), 900);
+    } catch (e) {
+      toast.error(fmtErr(e.response?.data?.detail));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!settings) return <div className="font-mono text-sm text-[#5C5C5C]">Loading…</div>;
+
+  return (
+    <div className="max-w-3xl">
+      <SectionHeader title="Site settings" />
+      <div className="border border-[#0A0A0A] divide-y divide-[#E5E5E5]">
+        <div className="p-6 flex items-start justify-between gap-6">
+          <div className="flex-1">
+            <div className="font-bold text-lg text-[#0A0A0A]">Peptide Price Tool</div>
+            <div className="text-xs font-mono text-[#5C5C5C] mt-1 leading-relaxed">
+              When <b>OFF</b> the tool disappears from the top nav, the homepage tile, the hero CTA, and the /compare URL redirects to home. Admin & data stay intact — just hidden from visitors.
+            </div>
+            <div className="text-[10px] font-mono uppercase tracking-widest text-[#5C5C5C] mt-2">
+              Currently: {settings.price_tool_enabled ? "🟢 LIVE — visible to everyone" : "🔴 HIDDEN — visitors can't see it"}
+            </div>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <Switch
+              checked={!!settings.price_tool_enabled}
+              onCheckedChange={(v) => toggle("price_tool_enabled", v)}
+              disabled={saving}
+              data-testid="toggle-price-tool"
+              className="scale-125"
+            />
+            <span className="text-[10px] font-mono uppercase tracking-widest text-[#5C5C5C]">
+              {settings.price_tool_enabled ? "ON" : "OFF"}
+            </span>
+          </div>
         </div>
       </div>
     </div>
