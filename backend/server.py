@@ -342,6 +342,62 @@ async def delete_peptide(pid: str, admin: dict = Depends(get_current_admin)):
     return {"ok": True}
 
 
+class PeptideMergeRequest(BaseModel):
+    keep_id: str
+    merge_ids: List[str]
+
+
+@api_router.post("/peptides/merge")
+async def merge_peptides(payload: PeptideMergeRequest, admin: dict = Depends(get_current_admin)):
+    """Merge one or more peptides INTO the keep_id peptide.
+    - Moves all prices from merge_ids to keep_id.
+    - Absorbs aliases + name of merged peptides into keep_id's aliases (deduped).
+    - Deletes the merged peptides.
+    """
+    keep_id = payload.keep_id
+    merge_ids = [m for m in payload.merge_ids if m and m != keep_id]
+    if not merge_ids:
+        raise HTTPException(status_code=400, detail="No peptides to merge")
+
+    keep = await db.peptides.find_one({"id": keep_id}, {"_id": 0})
+    if not keep:
+        raise HTTPException(status_code=404, detail="Keep peptide not found")
+
+    absorbed_docs = await db.peptides.find({"id": {"$in": merge_ids}}, {"_id": 0}).to_list(500)
+    if not absorbed_docs:
+        raise HTTPException(status_code=404, detail="Merge peptides not found")
+
+    # Absorb aliases + name
+    aliases = set(keep.get("aliases") or [])
+    for d in absorbed_docs:
+        if d.get("name") and d["name"].lower() != (keep.get("name") or "").lower():
+            aliases.add(d["name"])
+        for a in (d.get("aliases") or []):
+            if a and a.lower() != (keep.get("name") or "").lower():
+                aliases.add(a)
+
+    # Move all prices from merged peptides → keep
+    move_result = await db.prices.update_many(
+        {"peptide_id": {"$in": merge_ids}},
+        {"$set": {"peptide_id": keep_id}},
+    )
+
+    # Update keep with new aliases
+    await db.peptides.update_one({"id": keep_id}, {"$set": {"aliases": sorted(aliases)}})
+
+    # Delete merged peptides
+    del_result = await db.peptides.delete_many({"id": {"$in": merge_ids}})
+
+    return {
+        "ok": True,
+        "kept": keep.get("name"),
+        "merged": [d.get("name") for d in absorbed_docs],
+        "prices_moved": move_result.modified_count,
+        "peptides_removed": del_result.deleted_count,
+        "aliases": sorted(aliases),
+    }
+
+
 # ---------------- Prices ----------------
 @api_router.get("/prices")
 async def list_prices():

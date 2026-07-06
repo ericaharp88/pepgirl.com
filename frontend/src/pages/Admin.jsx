@@ -297,7 +297,20 @@ function VendorRow({ vendor, onChanged, onDelete }) {
 function PeptidesPanel() {
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(blankPeptide);
-  const load = () => api.get("/peptides").then(({ data }) => setItems(data));
+  const [selected, setSelected] = useState(new Set()); // ids selected for merge
+  const [keepId, setKeepId] = useState("");
+  const [search, setSearch] = useState("");
+  const [merging, setMerging] = useState(false);
+
+  const load = () =>
+    api.get("/peptides").then(({ data }) => {
+      setItems(data);
+      // drop stale ids
+      setSelected((prev) => {
+        const alive = new Set(data.map((p) => p.id));
+        return new Set([...prev].filter((id) => alive.has(id)));
+      });
+    });
   useEffect(() => { load(); }, []);
 
   const save = async () => {
@@ -306,11 +319,60 @@ function PeptidesPanel() {
       toast.success("Peptide added"); setForm(blankPeptide); load();
     } catch (e) { toast.error(fmtErr(e.response?.data?.detail)); }
   };
-  const del = async (id) => { if (!confirm("Delete peptide & its prices?")) return; await api.delete(`/peptides/${id}`); load(); toast.success("Deleted"); };
+  const del = async (id) => {
+    if (!confirm("Delete peptide & its prices?")) return;
+    await api.delete(`/peptides/${id}`);
+    load();
+    toast.success("Deleted");
+  };
+
+  const toggleSel = (id) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      // if we removed the current keep target, clear it
+      if (id === keepId && !next.has(id)) setKeepId("");
+      // if only 1 selected and none set as keep, auto-pick
+      if (next.size === 1 && !keepId) setKeepId([...next][0]);
+      return next;
+    });
+
+  const clearSelection = () => { setSelected(new Set()); setKeepId(""); };
+
+  const runMerge = async () => {
+    if (selected.size < 2) { toast.error("Select at least 2 peptides"); return; }
+    if (!keepId || !selected.has(keepId)) { toast.error("Pick which one to keep"); return; }
+    const mergeIds = [...selected].filter((id) => id !== keepId);
+    const keepName = items.find((p) => p.id === keepId)?.name || "?";
+    const merged = mergeIds.map((id) => items.find((p) => p.id === id)?.name || "?").join(", ");
+    if (!confirm(`Merge ${merged} INTO "${keepName}"?\n\nAll prices from the merged peptides will move to "${keepName}" and the duplicates will be deleted. Aliases will be preserved.`)) return;
+    setMerging(true);
+    try {
+      const { data } = await api.post("/peptides/merge", { keep_id: keepId, merge_ids: mergeIds });
+      toast.success(`Merged into ${data.kept} · ${data.prices_moved} prices moved`);
+      clearSelection();
+      load();
+    } catch (e) {
+      toast.error(fmtErr(e.response?.data?.detail));
+    } finally {
+      setMerging(false);
+    }
+  };
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter((p) => {
+      const inName = p.name?.toLowerCase().includes(q);
+      const inAlias = (p.aliases || []).some((a) => a.toLowerCase().includes(q));
+      const inSlug = p.slug?.toLowerCase().includes(q);
+      return inName || inAlias || inSlug;
+    });
+  }, [items, search]);
 
   return (
     <div className="grid lg:grid-cols-12 gap-8">
-      <div className="lg:col-span-5 border border-[#0A0A0A] p-6">
+      <div className="lg:col-span-5 border border-[#0A0A0A] p-6 h-fit">
         <SectionHeader title="New peptide" />
         <div className="space-y-4">
           <Field label="Name" value={form.name} onChange={(v) => setForm({ ...form, name: v, slug: v.toLowerCase().replace(/[^a-z0-9]+/g, "-") })} testId="p-name" />
@@ -323,19 +385,160 @@ function PeptidesPanel() {
           </div>
           <Button onClick={save} data-testid="p-save" className="w-full rounded-none bg-[#B87A6A] text-white hover:bg-[#0A0A0A] h-11 font-mono uppercase tracking-widest text-xs">Add peptide</Button>
         </div>
+
+        {/* Merge helper card */}
+        <div className="mt-8 border-t border-[#E5E5E5] pt-6">
+          <div className="eyebrow text-[#B87A6A] mb-2">Merge duplicates</div>
+          <p className="text-xs font-mono text-[#5C5C5C] leading-relaxed">
+            Tick boxes on the right to select peptides that are the same
+            (e.g. <b>Semaglutide</b> + <b>GLP-SG</b>). Pick which one to keep
+            as canonical — all prices move there, and the duplicates are absorbed
+            as aliases and deleted.
+          </p>
+        </div>
       </div>
+
       <div className="lg:col-span-7">
-        <SectionHeader title={`Peptides (${items.length})`} />
-        <div className="border border-[#E5E5E5]">
-          {items.map((p) => (
-            <div key={p.id} className="border-b border-[#E5E5E5] p-4 flex items-start justify-between gap-4">
-              <div>
-                <div className="font-bold">{p.name}</div>
-                <div className="text-xs font-mono text-[#5C5C5C]">{p.category} · {p.typical_dose_mcg} mcg typical</div>
+        <SectionHeader
+          title={`Peptides (${items.length})`}
+          action={
+            selected.size > 0 ? (
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-[#5C5C5C]">
+                  {selected.size} selected
+                </span>
+                <Button
+                  onClick={clearSelection}
+                  variant="ghost"
+                  className="rounded-none h-9 font-mono uppercase tracking-widest text-xs"
+                  data-testid="pep-merge-clear"
+                >
+                  Clear
+                </Button>
+                <Button
+                  onClick={runMerge}
+                  disabled={merging || selected.size < 2 || !keepId}
+                  className="rounded-none bg-[#B87A6A] hover:bg-[#0A0A0A] text-white font-mono uppercase tracking-widest text-xs h-9"
+                  data-testid="pep-merge-run"
+                >
+                  {merging ? "Merging…" : "Merge selected"}
+                </Button>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => del(p.id)} className="rounded-none hover:bg-[#E60000] hover:text-white"><Trash2 size={16} /></Button>
+            ) : null
+          }
+        />
+
+        {/* Search */}
+        <div className="mb-2">
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search peptides by name, slug, or alias…"
+            className="rounded-none border-[#0A0A0A] h-9 font-mono text-xs"
+            data-testid="pep-search"
+          />
+        </div>
+
+        {/* Selection panel — shows when at least 1 selected */}
+        {selected.size > 0 && (
+          <div className="mb-3 border border-[#B87A6A] bg-[#FBF3EC] p-4">
+            <div className="eyebrow text-[#B87A6A] mb-2">Keep as canonical</div>
+            <div className="flex flex-wrap gap-2">
+              {[...selected].map((id) => {
+                const p = items.find((x) => x.id === id);
+                if (!p) return null;
+                const active = id === keepId;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setKeepId(id)}
+                    data-testid={`pep-keep-${p.slug}`}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono border transition ${
+                      active
+                        ? "bg-[#B87A6A] text-white border-[#B87A6A]"
+                        : "bg-white text-[#0A0A0A] border-[#E8CDBF] hover:border-[#B87A6A]"
+                    }`}
+                  >
+                    {active && <Check size={12} />}
+                    {p.name}
+                  </button>
+                );
+              })}
             </div>
-          ))}
+            {selected.size >= 2 && !keepId && (
+              <div className="mt-2 text-[10px] font-mono text-[#B87A6A]">
+                Click one of the pills above to choose which peptide stays.
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="border border-[#E5E5E5] max-h-[680px] overflow-y-auto">
+          {filtered.length === 0 && (
+            <div className="p-6 text-sm font-mono text-[#A0A0A0]">
+              {search ? `No peptides match "${search}".` : "No peptides yet."}
+            </div>
+          )}
+          {filtered.map((p) => {
+            const isSel = selected.has(p.id);
+            const isKeep = keepId === p.id;
+            return (
+              <div
+                key={p.id}
+                className={`border-b border-[#E5E5E5] p-3 flex items-start justify-between gap-4 ${
+                  isSel ? "bg-[#FBF3EC]" : "bg-white"
+                } ${isKeep ? "border-l-4 border-l-[#B87A6A]" : ""}`}
+              >
+                <label className="flex items-start gap-3 flex-1 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isSel}
+                    onChange={() => toggleSel(p.id)}
+                    data-testid={`pep-check-${p.slug}`}
+                    className="mt-1 h-4 w-4 accent-[#B87A6A] cursor-pointer flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-sm">
+                      {p.name}
+                      {isKeep && (
+                        <span className="ml-2 text-[10px] font-mono uppercase tracking-wider text-[#B87A6A]">
+                          keep ★
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[10px] font-mono text-[#5C5C5C]">
+                      {p.slug}
+                      {p.category ? ` · ${p.category}` : ""}
+                      {(p.typical_dose_mcg || 0) > 0 ? ` · ${p.typical_dose_mcg} mcg typical` : ""}
+                    </div>
+                    {(p.aliases && p.aliases.length > 0) && (
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {p.aliases.slice(0, 6).map((a) => (
+                          <span key={a} className="inline-block text-[9px] font-mono px-1.5 py-0.5 bg-[#F5DED4] text-[#B87A6A] rounded">
+                            {a}
+                          </span>
+                        ))}
+                        {p.aliases.length > 6 && (
+                          <span className="inline-block text-[9px] font-mono text-[#5C5C5C]">
+                            +{p.aliases.length - 6}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </label>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => del(p.id)}
+                  className="rounded-none hover:bg-[#E60000] hover:text-white h-8 w-8 flex-shrink-0"
+                >
+                  <Trash2 size={14} />
+                </Button>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
