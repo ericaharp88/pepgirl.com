@@ -272,7 +272,9 @@ async def list_vendors(request: Request):
         if auth.startswith("Bearer "):
             token = auth.split()[1]
             payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-            is_admin = payload.get("role") == "admin"
+            email = (payload.get("email") or "").lower()
+            admin_email = (os.environ.get("ADMIN_EMAIL") or "admin@peptidehub.com").lower()
+            is_admin = email == admin_email
     except Exception:
         is_admin = False
     if not is_admin:

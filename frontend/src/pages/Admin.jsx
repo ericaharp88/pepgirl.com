@@ -723,6 +723,8 @@ function PriceRow({ pr, peptides, vendors, onChanged }) {
   const [price, setPrice] = useState(pr.price_usd);
   const [url, setUrl] = useState(pr.product_url || "");
   const [label, setLabel] = useState(pr.display_label || "");
+  const [priceForm, setPriceForm] = useState(pr.form || "vial");
+  const [available, setAvailable] = useState(pr.available !== false);
   const [busy, setBusy] = useState(false);
 
   const lookup = (arr, id) => arr.find((x) => x.id === id)?.name || "—";
@@ -735,6 +737,8 @@ function PriceRow({ pr, peptides, vendors, onChanged }) {
         vendor_id: pr.vendor_id,
         size_mg: Number(size) || 0,
         price_usd: Number(price) || 0,
+        form: priceForm,
+        available,
         product_url: url.trim(),
         display_label: label.trim(),
         scrape_selector: pr.scrape_selector || "",
@@ -789,6 +793,28 @@ function PriceRow({ pr, peptides, vendors, onChanged }) {
           placeholder={`Vendor nickname (optional) — e.g. "GLP-SG", "Sema-Glow"`}
           className="rounded-none border-[#B87A6A] h-9 font-mono text-xs bg-white"
           data-testid={`pr-edit-label-${pr.id}`} />
+        <div className="flex gap-2 items-center flex-wrap">
+          <select
+            value={priceForm}
+            onChange={(e) => setPriceForm(e.target.value)}
+            className="rounded-none border border-[#0A0A0A] h-9 px-2 font-mono text-xs bg-white"
+            data-testid={`pr-edit-form-${pr.id}`}
+          >
+            {["vial", "capsule", "liquid", "skincare", "aminos"].map(f => (
+              <option key={f} value={f}>{f}</option>
+            ))}
+          </select>
+          <label className="text-[10px] font-mono uppercase tracking-widest flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={available}
+              onChange={(e) => setAvailable(e.target.checked)}
+              data-testid={`pr-edit-available-${pr.id}`}
+              className="h-4 w-4 accent-[#B87A6A]"
+            />
+            In stock (uncheck to hide from public price tool)
+          </label>
+        </div>
       </div>
     );
   }
@@ -811,7 +837,13 @@ function PriceRow({ pr, peptides, vendors, onChanged }) {
           </a>
         )}
       </div>
-      <div className="col-span-2 font-mono text-[#B87A6A] font-bold">{pr.size_mg} mg</div>
+      <div className="col-span-2 font-mono text-[#B87A6A] font-bold">
+        {pr.size_mg} mg
+        <div className="text-[9px] font-mono uppercase tracking-widest text-[#5C5C5C] font-normal">
+          {pr.form || "vial"}
+          {pr.available === false && <span className="ml-1 text-red-600">· OOS</span>}
+        </div>
+      </div>
       <div className="col-span-2 font-mono font-bold">${Number(pr.price_usd).toFixed(2)}</div>
       <div className="col-span-2 text-[10px] font-mono text-[#5C5C5C] truncate">
         {pr.last_status || "manual"}
@@ -846,6 +878,7 @@ function PricesPanel() {
   const [priceUsd, setPriceUsd] = useState("");
   const [productUrl, setProductUrl] = useState("");
   const [displayLabel, setDisplayLabel] = useState("");
+  const [quickForm, setQuickForm] = useState("vial");
 
   // Bulk paste box
   const [bulkText, setBulkText] = useState("");
@@ -896,6 +929,8 @@ function PricesPanel() {
         peptide_id: pid, vendor_id: vendorId,
         size_mg: Number(sizeMg) || 0,
         price_usd: Number(priceUsd),
+        form: quickForm,
+        available: true,
         product_url: productUrl.trim(),
         display_label: displayLabel.trim(),
         scrape_selector: "",
@@ -947,7 +982,7 @@ function PricesPanel() {
         await api.post("/prices", {
           peptide_id: pep.id, vendor_id: vendorId,
           size_mg: r.size, price_usd: r.price,
-          product_url: r.url, display_label: r.label, scrape_selector: "",
+          product_url: r.url, display_label: r.label, form: quickForm, available: true, scrape_selector: "",
         });
         added += 1;
       } catch (e) {
@@ -1088,7 +1123,21 @@ function PricesPanel() {
           </div>
 
           <div className="mb-4">
-            <Label className="eyebrow text-[#5C5C5C]">5 · Product URL (optional)</Label>
+            <Label className="eyebrow text-[#5C5C5C]">5 · Form</Label>
+            <select
+              value={quickForm}
+              onChange={(e) => setQuickForm(e.target.value)}
+              data-testid="pr-form"
+              className="w-full rounded-none border border-[#0A0A0A] h-11 mt-2 px-3 font-mono text-sm bg-white"
+            >
+              {["vial", "capsule", "liquid", "skincare", "aminos"].map(f => (
+                <option key={f} value={f}>{f}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mb-4">
+            <Label className="eyebrow text-[#5C5C5C]">6 · Product URL (optional)</Label>
             <Input value={productUrl}
               onChange={(e) => setProductUrl(e.target.value)}
               placeholder="https://vendor.com/product/..."
@@ -1097,7 +1146,7 @@ function PricesPanel() {
           </div>
 
           <div className="mb-4">
-            <Label className="eyebrow text-[#B87A6A]">6 · Vendor nickname (optional)</Label>
+            <Label className="eyebrow text-[#B87A6A]">7 · Vendor nickname (optional)</Label>
             <Input value={displayLabel}
               onChange={(e) => setDisplayLabel(e.target.value)}
               placeholder={`e.g. "GLP-SG", "Sema-Glow" — overrides peptide name on this row only`}
