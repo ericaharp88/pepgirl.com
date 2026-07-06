@@ -842,6 +842,12 @@ async def seed_sample_data():
          "logo_url": "https://www.google.com/s2/favicons?domain=modifiedaminos.shop&sz=128",
          "rating": 4.5, "tags": ["Peptides", "Capsules", "Nasal Spray", "7x Tested"],
          "discount_code": "ERICA", "featured": False},
+        {"name": "Solas Science", "slug": "solas-science",
+         "description": "Research-grade peptides — 7-parameter tested (purity, sterility, endotoxin, heavy metals, identity, net content, fentanyl). 99%+ purity, U.S. based, same/next-day shipping.",
+         "affiliate_url": "https://solasscience.shop/",
+         "logo_url": "https://www.google.com/s2/favicons?domain=solasscience.shop&sz=128",
+         "rating": 4.4, "tags": ["Peptides", "7x Tested", "USA", "COA"],
+         "discount_code": "SOLAS10", "promo_badge": "10% OFF 1st ORDER", "featured": True},
 
         # ───── Skin Care ─────
         {"name": "Scantifix", "slug": "scantifix",
