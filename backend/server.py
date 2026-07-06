@@ -845,9 +845,9 @@ async def seed_sample_data():
         {"name": "Solas Science", "slug": "solas-science",
          "description": "Research-grade peptides — 7-parameter tested (purity, sterility, endotoxin, heavy metals, identity, net content, fentanyl). 99%+ purity, U.S. based, same/next-day shipping.",
          "affiliate_url": "https://solasscience.shop/",
-         "logo_url": "https://www.google.com/s2/favicons?domain=solasscience.shop&sz=128",
+         "logo_url": "https://customer-assets.emergentagent.com/job_peptide-dosing-1/artifacts/5g7jm9be_Logo-Design_page-0001-scaled-e1776484349549.webp",
          "rating": 4.4, "tags": ["Peptides", "7x Tested", "USA", "COA"],
-         "discount_code": "SOLAS10", "promo_badge": "10% OFF 1st ORDER", "featured": True},
+         "discount_code": "ERICA", "featured": True},
 
         # ───── Skin Care ─────
         {"name": "Scantifix", "slug": "scantifix",
