@@ -316,16 +316,16 @@ function PeptideAccordion({ peptide, prices, vendorMap, promoByVendor, expanded,
       };
     }).filter(Boolean);
     if (formFilter !== "all") {
-      // Physical price forms — filter individual price rows.
-      // Category-style forms (skincare, aminos) — peptide already matched by category, keep all rows.
-      const PHYSICAL_FORMS = ["vial", "capsule", "liquid"];
-      if (PHYSICAL_FORMS.includes(formFilter)) {
+      // If the peptide itself is tagged with this category, show ALL its rows.
+      // Otherwise only show price rows whose form matches (physical form filter).
+      const categoryMatch = (peptide.category || "").toLowerCase() === formFilter;
+      if (!categoryMatch) {
         arr = arr.filter(r => (r.price.form || "vial") === formFilter);
       }
     }
     arr.sort((a, b) => a.pricePerMg - b.pricePerMg);
     return arr;
-  }, [prices, vendorMap, promoByVendor, formFilter]);
+  }, [prices, vendorMap, promoByVendor, formFilter, peptide.category]);
 
   if (rows.length === 0) return null;
   const best = rows[0];

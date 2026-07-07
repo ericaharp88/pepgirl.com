@@ -1,0 +1,28 @@
+{
+  "summary": "Verified /compare form-filter pills after generalizing category-tag override in PeptideAccordion. All 5 requested cases pass.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Compare.jsx is 576 lines — approaching split threshold; consider extracting PeptideAccordion / VendorStrip / PromotionsStrip into their own files.",
+    "In visiblePeptides sort, Math.min over empty prices array yields Infinity which is fine, but Math.min(...prs.map(...)) recomputes priceWithPromo for every render pass — minor perf; not blocking."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a", "frontend": "100%"},
+  "seed_data_creation": "None — used already-seeded DB.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Compare pill filter uses peptide.category override when formFilter matches; else falls back to per-row price.form filter. Verified via /compare on preview URL. Capsules pill -> Glutathione (3 rows), Liquid pill -> Retatrutide (2 rows), Skin Care -> GHK-Cu/Argireline/KPV, All forms -> 70 peptides, Vials -> 70 peptides (all rows are form=vial regardless).",
+  "test_results": {
+    "capsules_pill_shows_glutathione": "PASS (Showing 1 of 1; 3 price rows visible when expanded)",
+    "liquid_pill_shows_retatrutide": "PASS (Showing 1 of 1; 2 price rows visible)",
+    "skincare_regression": "PASS (Showing 3 of 3 — ghk-cu, argireline, kpv)",
+    "all_forms": "PASS (Showing 20 of 70 with pagination)",
+    "vials_pill": "PASS (Showing 20 of 70)"
+  }
+}
