@@ -39,6 +39,7 @@ Add a "How to Use a Peptide Calculator" section to the site. Scope expanded into
 - Sitemap, robots.txt, GSC verification meta, `useSeo` per-page.
 
 ## Recent changes (Feb 2026)
+- **2026-02**: Generalized `/compare` category-tag filter — now ANY peptide.category tag (vial/capsule/liquid/skincare/aminos) surfaces on its matching pill, regardless of price.form. Previously only skincare/aminos were treated as category-style.
 - **2026-02**: Fixed `/compare` category filter bug — Skin Care / Aminos pills now correctly display peptides tagged by category (was hiding all rows due to inner form filter). File: `Compare.jsx` PeptideAccordion rows useMemo.
 - **2026-02**: Restored `.gitignore` — removed re-added `.env / .env.* / *.env` lines that were blocking production deployment (readiness probe timeout because no env vars in prod pod). This is the 3rd occurrence of this recurring issue.
 
