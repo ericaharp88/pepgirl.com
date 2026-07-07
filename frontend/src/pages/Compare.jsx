@@ -113,7 +113,6 @@ export default function Compare() {
     };
     arr.sort((a, b) => priceMg(a) - priceMg(b));
     return arr;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, pricesByPeptide, form, search, exactOnly, promoByVendor, vendorMap]);
 
   // pagination
@@ -316,7 +315,14 @@ function PeptideAccordion({ peptide, prices, vendorMap, promoByVendor, expanded,
         pricePerMg: p.size_mg > 0 ? finalPrice / p.size_mg : Infinity,
       };
     }).filter(Boolean);
-    if (formFilter !== "all") arr = arr.filter(r => (r.price.form || "vial") === formFilter);
+    if (formFilter !== "all") {
+      // Physical price forms — filter individual price rows.
+      // Category-style forms (skincare, aminos) — peptide already matched by category, keep all rows.
+      const PHYSICAL_FORMS = ["vial", "capsule", "liquid"];
+      if (PHYSICAL_FORMS.includes(formFilter)) {
+        arr = arr.filter(r => (r.price.form || "vial") === formFilter);
+      }
+    }
     arr.sort((a, b) => a.pricePerMg - b.pricePerMg);
     return arr;
   }, [prices, vendorMap, promoByVendor, formFilter]);

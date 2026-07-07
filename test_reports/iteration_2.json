@@ -1,0 +1,31 @@
+{
+  "summary": "Verified /compare filter pill fix. Skin Care pill now correctly shows 3 skincare-tagged peptides (GHK-Cu, Argireline, KPV) with expandable price rows. All other pills (All, Vials, Aminos) and popular pill (Tirzepatide) work as expected.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "/compare - GHK-Cu accordion", "issues": ["Some price rows show '0mg' size resulting in '$Infinity' per-mg (Peptide Tech, Scantifix). Data-quality issue, not scope of current fix but worth flagging."]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Fix at PeptideAccordion rows filter is correct: skip physical-form filter for category pills. Consider centralizing the 'is category vs form' check (e.g., const PHYSICAL_FORMS = ['vial','capsule','liquid']) so both visiblePeptides and PeptideAccordion share the same logic to avoid future drift.",
+    "Data hygiene: some prices have size_mg=0 producing $Infinity per-mg — either hide these rows or guard against divide-by-zero in the price/mg display."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "100%"},
+  "seed_data_creation": "None - used existing preview DB (GHK-Cu, Argireline, KPV already tagged skincare).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Filter pills on /compare verified. testids: form-all/vial/capsule/liquid/skincare/aminos, card-header-<slug>, card-body-<slug>, pop-<slug>, compare-search. Backend GET /api/comparison returns peptides with category field.",
+  "test_results_detail": {
+    "all_forms": "20 cards shown",
+    "skincare": "3 cards: GHK-Cu, KPV, Argireline (matches expected)",
+    "ghk_cu_expanded": "Body visible; shows 5 vendor price rows (Solas, Felix x2, Peptide Tech, Scantifix)",
+    "vials": "20 cards shown",
+    "aminos": "0 cards (acceptable - no data)",
+    "tirzepatide_popular": "Search box populated with 'Tirzepatide', filtered to 1 card"
+  }
+}
