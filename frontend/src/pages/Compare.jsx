@@ -165,13 +165,16 @@ export default function Compare() {
   return (
     <div className="max-w-6xl mx-auto px-6 lg:px-10 py-10">
       {/* Header */}
-      <div className="border-b border-[#0A0A0A] pb-6 mb-8">
+      <div className="border-b border-[#0A0A0A] pb-6 mb-6">
         <div className="eyebrow text-[#B87A6A] mb-3">Tool · 03</div>
         <h1 className="text-4xl lg:text-5xl font-black tracking-tighter">Peptide Price Tool</h1>
         <p className="text-sm text-[#5C5C5C] mt-2 max-w-2xl">
           Live vendor pricing with active promo codes applied — sorted cheapest per mg. Click any row to expand and see every vendor.
         </p>
       </div>
+
+      {/* Vendor strip — clickable discount codes */}
+      <VendorStrip vendors={data.vendors} copyCode={copyCode} copied={copied} />
 
       {/* Form filter pills */}
       <div className="flex flex-wrap gap-2 mb-4" data-testid="form-filters">
@@ -418,6 +421,70 @@ function PeptideAccordion({ peptide, prices, vendorMap, promoByVendor, expanded,
           </table>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ---------------- Vendor strip (top of price tool) ---------------- */
+function VendorStrip({ vendors, copyCode, copied }) {
+  // Filter to comparison-enabled vendors that have a discount code
+  const rows = useMemo(() => {
+    return (vendors || [])
+      .filter(v => v && v.discount_code && v.comparison_enabled !== false)
+      .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+  }, [vendors]);
+
+  if (!rows.length) return null;
+
+  return (
+    <div className="mb-6 border border-[#E8CDBF] bg-[#FDF8F3] p-3" data-testid="vendor-strip">
+      <div className="text-[10px] font-mono uppercase tracking-widest text-[#B87A6A] mb-2 flex items-center gap-2">
+        <span className="font-bold">Vendor Codes</span>
+        <span className="text-[#5C5C5C] normal-case tracking-normal">· click to copy · tap logo to visit</span>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {rows.map(v => (
+          <div
+            key={v.id}
+            className="inline-flex items-center gap-2 bg-white border border-[#E8CDBF] hover:border-[#B87A6A] px-2 py-1.5 transition"
+            data-testid={`strip-${v.slug}`}
+          >
+            <a
+              href={v.affiliate_url}
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              title={`Visit ${v.name}`}
+              className="flex items-center gap-1.5"
+            >
+              {v.logo_url ? (
+                <img
+                  src={v.logo_url}
+                  alt={v.name}
+                  className="h-6 w-6 rounded-full object-contain bg-white flex-shrink-0"
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                />
+              ) : (
+                <div className="h-6 w-6 rounded-full bg-[#F5DED4] flex items-center justify-center text-[10px] font-bold text-[#B87A6A]">
+                  {v.name.charAt(0)}
+                </div>
+              )}
+              <span className="text-xs font-bold text-[#0A0A0A] hover:text-[#B87A6A] whitespace-nowrap">
+                {v.name}
+              </span>
+            </a>
+            <button
+              type="button"
+              onClick={() => copyCode(v.discount_code)}
+              data-testid={`strip-code-${v.slug}`}
+              title={`Copy code ${v.discount_code}`}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#F5DED4] hover:bg-[#B87A6A] hover:text-white text-[10px] font-bold text-[#B87A6A] tracking-widest transition cursor-pointer"
+            >
+              {copied === v.discount_code ? <Check size={10} /> : <Copy size={10} />}
+              {v.discount_code}
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
