@@ -179,6 +179,14 @@ export default function Compare() {
       {/* Vendor strip — clickable discount codes */}
       <VendorStrip vendors={data.vendors} copyCode={copyCode} copied={copied} />
 
+      {/* Active Promotions strip */}
+      <PromotionsStrip
+        promotions={data.promotions || []}
+        vendorMap={vendorMap}
+        copyCode={copyCode}
+        copied={copied}
+      />
+
       {/* Form filter pills */}
       <div className="flex flex-wrap gap-2 mb-4" data-testid="form-filters">
         {FORMS.map(f => (
@@ -487,6 +495,73 @@ function VendorStrip({ vendors, copyCode, copied }) {
             </button>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- Promotions strip ---------------- */
+function PromotionsStrip({ promotions, vendorMap, copyCode, copied }) {
+  const now = new Date().toISOString();
+  const active = (promotions || []).filter(
+    p => p.active
+      && (!p.end_date || p.end_date > now)
+      && (!p.start_date || p.start_date <= now)
+  );
+  if (!active.length) return null;
+
+  return (
+    <div className="mb-6 border-2 border-[#B87A6A] bg-gradient-to-r from-[#F5DED4] via-white to-[#F5DED4] p-3" data-testid="promotions-strip">
+      <div className="text-[10px] font-mono uppercase tracking-widest text-[#B87A6A] mb-2 flex items-center gap-2">
+        <span className="font-bold">🔥 Active Promotions</span>
+        <span className="text-[#5C5C5C] normal-case tracking-normal">· auto-applied at checkout · click code to copy</span>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {active.map(promo => {
+          const v = vendorMap[promo.vendor_id];
+          if (!v) return null;
+          return (
+            <div
+              key={promo.id}
+              className="inline-flex items-center gap-2 bg-white border border-[#E8CDBF] hover:border-[#B87A6A] px-3 py-2 transition"
+              data-testid={`promo-strip-${v.slug}`}
+            >
+              {v.logo_url && (
+                <img
+                  src={v.logo_url}
+                  alt={v.name}
+                  className="h-6 w-6 rounded-full object-contain bg-white flex-shrink-0"
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                />
+              )}
+              <div className="min-w-0">
+                <div className="text-xs font-bold text-[#0A0A0A] leading-tight">
+                  {v.name}
+                </div>
+                {promo.description && (
+                  <div className="text-[10px] font-mono text-[#5C5C5C] leading-tight mt-0.5">
+                    {promo.description}
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="inline-block px-1.5 py-0.5 rounded bg-green-100 text-green-800 text-[10px] font-bold tracking-wider">
+                  {promo.discount_percent}% OFF
+                </span>
+                <button
+                  type="button"
+                  onClick={() => copyCode(promo.promo_code)}
+                  data-testid={`promo-strip-code-${v.slug}`}
+                  title="Click to copy code"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#B87A6A] hover:bg-[#0A0A0A] text-white text-[10px] font-bold tracking-widest transition cursor-pointer"
+                >
+                  {copied === promo.promo_code ? <Check size={10} /> : <Copy size={10} />}
+                  {promo.promo_code}
+                </button>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
