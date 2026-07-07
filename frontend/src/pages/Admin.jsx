@@ -566,6 +566,37 @@ function PeptidesPanel() {
     });
   }, [items, search]);
 
+  const CATEGORIES = ["", "vial", "capsule", "liquid", "skincare", "aminos"];
+
+  const setPeptideCategory = async (pid, category) => {
+    const p = items.find((x) => x.id === pid);
+    if (!p) return;
+    try {
+      await api.put(`/peptides/${pid}`, {
+        name: p.name,
+        slug: p.slug,
+        description: p.description || "",
+        typical_dose_mcg: p.typical_dose_mcg || 0,
+        category,
+      });
+      toast.success(`${p.name} → ${category || "(cleared)"}`);
+      load();
+    } catch (e) { toast.error(fmtErr(e.response?.data?.detail)); }
+  };
+
+  const bulkSetCategory = async (cat) => {
+    if (selected.size === 0) return;
+    const ids = [...selected];
+    if (!confirm(`Set category to "${cat}" for ${ids.length} peptides?`)) return;
+    let ok = 0;
+    for (const id of ids) {
+      try { await setPeptideCategory(id, cat); ok++; } catch {}
+    }
+    toast.success(`Updated ${ok} peptides`);
+    clearSelection();
+    load();
+  };
+
   return (
     <div className="grid lg:grid-cols-12 gap-8">
       <div className="lg:col-span-5 border border-[#0A0A0A] p-6 h-fit">
@@ -573,7 +604,22 @@ function PeptidesPanel() {
         <div className="space-y-4">
           <Field label="Name" value={form.name} onChange={(v) => setForm({ ...form, name: v, slug: v.toLowerCase().replace(/[^a-z0-9]+/g, "-") })} testId="p-name" />
           <Field label="Slug" value={form.slug} onChange={(v) => setForm({ ...form, slug: v })} />
-          <Field label="Category" value={form.category} onChange={(v) => setForm({ ...form, category: v })} />
+          <div>
+            <Label className="eyebrow text-[#5C5C5C]">Category</Label>
+            <select
+              value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value })}
+              data-testid="p-category"
+              className="w-full rounded-none border border-[#0A0A0A] h-11 mt-2 px-3 font-mono text-sm bg-white"
+            >
+              <option value="">— none —</option>
+              <option value="vial">vial</option>
+              <option value="capsule">capsule</option>
+              <option value="liquid">liquid</option>
+              <option value="skincare">skincare</option>
+              <option value="aminos">aminos</option>
+            </select>
+          </div>
           <Field label="Typical dose (mcg)" type="number" value={form.typical_dose_mcg} onChange={(v) => setForm({ ...form, typical_dose_mcg: v })} />
           <div>
             <Label className="eyebrow text-[#5C5C5C]">Description</Label>
@@ -599,10 +645,23 @@ function PeptidesPanel() {
           title={`Peptides (${items.length})`}
           action={
             selected.size > 0 ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[10px] font-mono uppercase tracking-widest text-[#5C5C5C]">
                   {selected.size} selected
                 </span>
+                <select
+                  onChange={(e) => { if (e.target.value) { bulkSetCategory(e.target.value); e.target.value = ""; } }}
+                  data-testid="pep-bulk-category"
+                  defaultValue=""
+                  className="rounded-none border border-[#B87A6A] h-9 px-3 font-mono uppercase tracking-widest text-xs bg-white"
+                >
+                  <option value="">Set category →</option>
+                  <option value="vial">vial</option>
+                  <option value="capsule">capsule</option>
+                  <option value="liquid">liquid</option>
+                  <option value="skincare">skincare</option>
+                  <option value="aminos">aminos</option>
+                </select>
                 <Button
                   onClick={clearSelection}
                   variant="ghost"
@@ -724,6 +783,25 @@ function PeptidesPanel() {
                     )}
                   </div>
                 </label>
+                <select
+                  value={p.category || ""}
+                  onChange={(e) => setPeptideCategory(p.id, e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  data-testid={`pep-cat-${p.slug}`}
+                  className={`rounded-none h-8 px-2 font-mono text-[10px] uppercase tracking-widest border flex-shrink-0 ${
+                    p.category
+                      ? "bg-[#F5DED4] text-[#B87A6A] border-[#B87A6A]"
+                      : "bg-white text-[#5C5C5C] border-[#E5E5E5]"
+                  }`}
+                  title="Set category (auto-saves)"
+                >
+                  <option value="">— none —</option>
+                  <option value="vial">vial</option>
+                  <option value="capsule">capsule</option>
+                  <option value="liquid">liquid</option>
+                  <option value="skincare">skincare</option>
+                  <option value="aminos">aminos</option>
+                </select>
                 <Button
                   variant="ghost"
                   size="icon"

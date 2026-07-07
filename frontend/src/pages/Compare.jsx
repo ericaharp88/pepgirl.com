@@ -87,9 +87,12 @@ export default function Compare() {
   const visiblePeptides = useMemo(() => {
     if (!data) return [];
     let arr = (data.peptides || []).filter(p => (pricesByPeptide[p.id] || []).length > 0);
-    // form filter
+    // form filter — match if peptide category = form OR any price.form = form
     if (form !== "all") {
-      arr = arr.filter(p => (pricesByPeptide[p.id] || []).some(pr => (pr.form || "vial") === form));
+      arr = arr.filter(p => {
+        if ((p.category || "").toLowerCase() === form) return true;
+        return (pricesByPeptide[p.id] || []).some(pr => (pr.form || "vial") === form);
+      });
     }
     if (search.trim()) {
       const q = search.trim();
