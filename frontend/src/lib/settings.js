@@ -15,7 +15,8 @@ export function SettingsProvider({ children }) {
       .catch(() => { /* keep defaults */ });
   };
 
-  useEffect(() => { reload(); /* eslint-disable-next-line */ }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { reload(); }, []);
 
   return (
     <SettingsContext.Provider value={{ settings, reload }}>

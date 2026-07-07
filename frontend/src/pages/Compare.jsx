@@ -113,6 +113,7 @@ export default function Compare() {
     };
     arr.sort((a, b) => priceMg(a) - priceMg(b));
     return arr;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, pricesByPeptide, form, search, exactOnly, promoByVendor, vendorMap]);
 
   // pagination
