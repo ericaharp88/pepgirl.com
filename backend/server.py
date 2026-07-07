@@ -138,6 +138,7 @@ class Resource(BaseModel):
     summary: str = ""
     url: str = ""
     content: str = ""
+    order: int = 0  # ascending — lower shows first
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
@@ -147,6 +148,7 @@ class ResourceIn(BaseModel):
     summary: str = ""
     url: str = ""
     content: str = ""
+    order: int = 0
 
 
 class SocialLink(BaseModel):
@@ -332,14 +334,31 @@ async def test_vendor_login(vendor_id: str, admin: dict = Depends(get_current_ad
 # ---------------- Resources ----------------
 @api_router.get("/resources")
 async def list_resources():
-    return await db.resources.find({}, {"_id": 0}).sort("created_at", 1).to_list(500)
+    # Sort by order (asc) then created_at as tiebreaker
+    return await db.resources.find({}, {"_id": 0}).sort([("order", 1), ("created_at", 1)]).to_list(500)
 
 
 @api_router.post("/resources", response_model=Resource)
 async def create_resource(payload: ResourceIn, admin: dict = Depends(get_current_admin)):
+    # Auto-assign next order if not set
+    if not payload.order:
+        last = await db.resources.find({}, {"order": 1}).sort("order", -1).limit(1).to_list(1)
+        payload.order = ((last[0].get("order") or 0) + 10) if last else 10
     obj = Resource(**payload.model_dump())
     await db.resources.insert_one(obj.model_dump())
     return obj
+
+
+class ReorderResources(BaseModel):
+    ids: List[str]  # in the desired order
+
+
+@api_router.post("/resources/reorder")
+async def reorder_resources(payload: ReorderResources, admin: dict = Depends(get_current_admin)):
+    """Set order field on all provided ids based on their position (10, 20, 30, ...)."""
+    for idx, rid in enumerate(payload.ids):
+        await db.resources.update_one({"id": rid}, {"$set": {"order": (idx + 1) * 10}})
+    return {"ok": True, "count": len(payload.ids)}
 
 
 @api_router.put("/resources/{rid}")

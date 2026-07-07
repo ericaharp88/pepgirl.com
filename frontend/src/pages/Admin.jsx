@@ -10,7 +10,7 @@ import { Textarea } from "../components/ui/textarea";
 import { Switch } from "../components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { toast } from "sonner";
-import { RefreshCw, Trash2, RotateCw, Pencil, Check, X, Star, KeyRound } from "lucide-react";
+import { RefreshCw, Trash2, RotateCw, Pencil, Check, X, Star, KeyRound, ArrowUp, ArrowDown } from "lucide-react";
 
 const blankVendor = { name: "", slug: "", description: "", affiliate_url: "", logo_url: "", rating: 4.5, tags: [], discount_code: "", promo_badge: "", nickname_notes: "", featured: false, comparison_enabled: true };
 const blankResource = { title: "", category: "Guide", summary: "", url: "", content: "" };
@@ -1339,6 +1339,22 @@ function ResourcesPanel() {
   const load = () => api.get("/resources").then(({ data }) => setItems(data));
   useEffect(() => { load(); }, []);
 
+  const moveResource = async (index, direction) => {
+    const newItems = [...items];
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= newItems.length) return;
+    // Swap
+    [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
+    setItems(newItems);  // optimistic update
+    try {
+      await api.post("/resources/reorder", { ids: newItems.map(r => r.id) });
+    } catch (e) {
+      toast.error(fmtErr(e.response?.data?.detail));
+      load();  // revert on error
+    }
+  };
+  useEffect(() => { load(); }, []);
+
   const save = async () => {
     try { await api.post("/resources", form); toast.success("Saved"); setForm(blankResource); load(); }
     catch (e) { toast.error(fmtErr(e.response?.data?.detail)); }
@@ -1370,16 +1386,40 @@ function ResourcesPanel() {
         </div>
       </div>
       <div className="lg:col-span-7">
-        <SectionHeader title={`Resources (${items.length})`} />
+        <SectionHeader title={`Resources (${items.length}) · use ↑↓ to reorder`} />
         <div className="border border-[#E5E5E5]">
-          {items.map((r) => (
-            <div key={r.id} className="border-b border-[#E5E5E5] p-4 flex items-start justify-between gap-4">
-              <div>
-                <div className="text-[10px] font-mono uppercase tracking-widest text-[#B87A6A]">{r.category}</div>
+          {items.map((r, i) => (
+            <div key={r.id} className="border-b border-[#E5E5E5] p-4 flex items-start justify-between gap-3">
+              <div className="flex flex-col gap-0.5 flex-shrink-0 pt-1">
+                <button
+                  type="button"
+                  onClick={() => moveResource(i, -1)}
+                  disabled={i === 0}
+                  data-testid={`r-up-${r.id}`}
+                  title="Move up"
+                  className="h-6 w-6 border border-[#E5E5E5] bg-white hover:bg-[#B87A6A] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed inline-flex items-center justify-center transition"
+                >
+                  <ArrowUp size={12} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => moveResource(i, +1)}
+                  disabled={i === items.length - 1}
+                  data-testid={`r-down-${r.id}`}
+                  title="Move down"
+                  className="h-6 w-6 border border-[#E5E5E5] bg-white hover:bg-[#B87A6A] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed inline-flex items-center justify-center transition"
+                >
+                  <ArrowDown size={12} />
+                </button>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[10px] font-mono uppercase tracking-widest text-[#B87A6A]">
+                  #{i + 1} · {r.category}
+                </div>
                 <div className="font-bold">{r.title}</div>
                 <div className="text-xs text-[#5C5C5C]">{r.summary}</div>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => del(r.id)} className="rounded-none hover:bg-[#E60000] hover:text-white"><Trash2 size={16} /></Button>
+              <Button variant="ghost" size="icon" onClick={() => del(r.id)} className="rounded-none hover:bg-[#E60000] hover:text-white flex-shrink-0"><Trash2 size={16} /></Button>
             </div>
           ))}
         </div>
