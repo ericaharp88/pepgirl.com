@@ -842,7 +842,7 @@ async def root():
 
 
 # ---------------- SEO (mounted on main app, NOT /api) ----------------
-SITE_URL = os.environ.get("SITE_URL", "https://pepgirl.com")
+SITE_URL = os.environ.get("SITE_URL", "https://optimizedsociety.com")
 SEO_ROUTES = ["", "/vendors", "/calculator", "/compare", "/resources"]
 
 

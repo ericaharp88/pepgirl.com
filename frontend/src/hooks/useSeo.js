@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-const SITE = "https://pepgirl.com";
+const SITE = "https://optimizedsociety.com";
 const JSONLD_ATTR = "data-seo-jsonld";
 
 /**

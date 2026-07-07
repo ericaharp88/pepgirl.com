@@ -4,4 +4,4 @@ Disallow: /admin
 Disallow: /login
 Disallow: /api/
 
-Sitemap: https://pepgirl.com/sitemap.xml
+Sitemap: https://optimizedsociety.com/sitemap.xml
