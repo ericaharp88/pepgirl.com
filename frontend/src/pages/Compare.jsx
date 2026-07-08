@@ -16,6 +16,7 @@ const FORMS = [
   { key: "vial", label: "Vials" },
   { key: "capsule", label: "Capsules" },
   { key: "liquid", label: "Liquid" },
+  { key: "nasal", label: "Nasal Spray" },
   { key: "skincare", label: "Skin Care" },
   { key: "aminos", label: "Aminos" },
 ];

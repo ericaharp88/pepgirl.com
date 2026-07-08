@@ -566,7 +566,7 @@ function PeptidesPanel() {
     });
   }, [items, search]);
 
-  const CATEGORIES = ["", "vial", "capsule", "liquid", "skincare", "aminos"];
+  const CATEGORIES = ["", "vial", "capsule", "liquid", "nasal", "skincare", "aminos"];
 
   const setPeptideCategory = async (pid, category) => {
     const p = items.find((x) => x.id === pid);
@@ -590,7 +590,7 @@ function PeptidesPanel() {
     if (!confirm(`Set category to "${cat}" for ${ids.length} peptides?`)) return;
     let ok = 0;
     for (const id of ids) {
-      try { await setPeptideCategory(id, cat); ok++; } catch {}
+      try { await setPeptideCategory(id, cat); ok++; } catch (e) { /* skip failed */ }
     }
     toast.success(`Updated ${ok} peptides`);
     clearSelection();
@@ -616,6 +616,7 @@ function PeptidesPanel() {
               <option value="vial">vial</option>
               <option value="capsule">capsule</option>
               <option value="liquid">liquid</option>
+              <option value="nasal">nasal spray</option>
               <option value="skincare">skincare</option>
               <option value="aminos">aminos</option>
             </select>
@@ -659,6 +660,7 @@ function PeptidesPanel() {
                   <option value="vial">vial</option>
                   <option value="capsule">capsule</option>
                   <option value="liquid">liquid</option>
+                  <option value="nasal">nasal spray</option>
                   <option value="skincare">skincare</option>
                   <option value="aminos">aminos</option>
                 </select>
@@ -799,6 +801,7 @@ function PeptidesPanel() {
                   <option value="vial">vial</option>
                   <option value="capsule">capsule</option>
                   <option value="liquid">liquid</option>
+                  <option value="nasal">nasal spray</option>
                   <option value="skincare">skincare</option>
                   <option value="aminos">aminos</option>
                 </select>
