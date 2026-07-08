@@ -906,7 +906,7 @@ function PriceRow({ pr, peptides, vendors, onChanged }) {
             className="rounded-none border border-[#0A0A0A] h-9 px-2 font-mono text-xs bg-white"
             data-testid={`pr-edit-form-${pr.id}`}
           >
-            {["vial", "capsule", "liquid", "skincare", "aminos"].map(f => (
+            {["vial", "capsule", "liquid", "nasal", "skincare", "aminos"].map(f => (
               <option key={f} value={f}>{f}</option>
             ))}
           </select>
@@ -1236,7 +1236,7 @@ function PricesPanel() {
               data-testid="pr-form"
               className="w-full rounded-none border border-[#0A0A0A] h-11 mt-2 px-3 font-mono text-sm bg-white"
             >
-              {["vial", "capsule", "liquid", "skincare", "aminos"].map(f => (
+              {["vial", "capsule", "liquid", "nasal", "skincare", "aminos"].map(f => (
                 <option key={f} value={f}>{f}</option>
               ))}
             </select>

@@ -1,0 +1,23 @@
+{
+  "summary": "Verified 'nasal' form option is now available in both admin Prices dropdowns (Quick-Add and inline row edit), persists after save/reload, and public /compare Nasal Spray pill correctly filters and shows the tagged peptide.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Form option list is duplicated across two select components in Admin.jsx (lines 909, 1239) and also FORMS array in Compare.jsx — consider extracting to a shared constants module to avoid future drift."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (frontend-only test)", "frontend": "100%"},
+  "test_credentials": "admin@peptidehub.com / admin123 (from backend/.env; /app/memory/test_credentials.md is missing — flagging)",
+  "seed_data_creation": "Tagged existing price row KPV·Felix Chems (id 6034fc1f-...) with form='nasal' during persistence test. Remains tagged in DB.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Nasal option verified end-to-end: Quick-Add pr-form, inline pr-edit-form-{id}, save persistence, and /compare form-nasal pill filtering. KPV Felix Chems row remains tagged as nasal in DB — remove tag if it distorts other tests.",
+  "detailed_results": {
+    "quick_add_pr_form_options": ["vial","capsule","liquid","nasal","skincare","aminos"],
+    "inline_pr_edit_form_options": ["vial","capsule","liquid","nasal","skincare","aminos"],
+    "persistence_after_reload": "nasal",
+    "compare_nasal_filter": "SHOWING 1 OF 1 PEPTIDES — KPV visible"
+  }
+}
