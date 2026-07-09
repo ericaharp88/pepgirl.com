@@ -360,7 +360,77 @@ function PeptideAccordion({ peptide, prices, vendorMap, promoByVendor, expanded,
       </button>
 
       {expanded && (
-        <div className="border-t border-[#E8CDBF] bg-[#FDF8F3] overflow-x-auto" data-testid={`card-body-${peptide.slug || slugify(peptide.name)}`}>
+        <div className="border-t border-[#E8CDBF] bg-[#FDF8F3]" data-testid={`card-body-${peptide.slug || slugify(peptide.name)}`}>
+          {/* Mobile: stacked card layout — no horizontal scroll needed */}
+          <div className="sm:hidden divide-y divide-[#F0E4DA]">
+            {rows.map((r, i) => (
+              <div key={r.price.id} className={`p-3 ${i === 0 ? "bg-[#F5DED4]" : ""}`}>
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="min-w-0">
+                    <div className="font-bold text-sm text-[#0A0A0A] truncate">{r.vendor.name}</div>
+                    <div className="text-[10px] font-mono uppercase tracking-widest text-[#5C5C5C]">
+                      {r.price.size_mg}mg · {r.price.form || "vial"}
+                    </div>
+                  </div>
+                  <div className="text-right whitespace-nowrap">
+                    {r.promo?.discount_percent ? (
+                      <div>
+                        <div className="text-[10px] line-through text-[#A0A0A0]">${r.price.price_usd.toFixed(2)}</div>
+                        <div className="text-base font-black text-green-700">${r.finalPrice.toFixed(2)}</div>
+                      </div>
+                    ) : (
+                      <div className="text-base font-black text-[#0A0A0A]">${r.price.price_usd.toFixed(2)}</div>
+                    )}
+                    <div className="text-[10px] font-mono text-[#5C5C5C]">${r.pricePerMg.toFixed(2)}/mg</div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-1 flex-wrap">
+                    {r.promo?.discount_percent > 0 && (
+                      <span
+                        className="inline-block px-1.5 py-0.5 rounded bg-green-100 text-green-800 text-[9px] font-bold tracking-wider"
+                        data-testid={`promo-badge-mobile-${r.vendor.slug}`}
+                      >
+                        {r.promo.discount_percent}% OFF
+                      </span>
+                    )}
+                    {r.promo?.promo_code ? (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); copyCode(r.promo.promo_code); }}
+                        data-testid={`copy-mobile-${r.vendor.slug}-${r.promo.promo_code}`}
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#F5DED4] hover:bg-[#B87A6A] hover:text-white text-[10px] font-bold text-[#B87A6A] tracking-wider transition"
+                      >
+                        {copied === r.promo.promo_code ? <Check size={10} /> : <Copy size={10} />}
+                        {r.promo.promo_code}
+                      </button>
+                    ) : r.vendor.discount_code ? (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); copyCode(r.vendor.discount_code); }}
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#F5DED4] hover:bg-[#B87A6A] hover:text-white text-[10px] font-bold text-[#B87A6A] tracking-wider transition"
+                      >
+                        {copied === r.vendor.discount_code ? <Check size={10} /> : <Copy size={10} />}
+                        {r.vendor.discount_code}
+                      </button>
+                    ) : null}
+                  </div>
+                  <a
+                    href={r.price.product_url || r.vendor.affiliate_url}
+                    target="_blank"
+                    rel="noopener noreferrer sponsored"
+                    data-testid={`go-mobile-${r.vendor.slug}`}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#0A0A0A] hover:bg-[#B87A6A] text-white text-[10px] uppercase tracking-wider transition font-bold"
+                  >
+                    Go <ExternalLink size={10} />
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop: full table */}
+          <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-xs font-mono min-w-[720px]">
             <thead>
               <tr className="text-[10px] uppercase tracking-widest text-[#5C5C5C] border-b border-[#E8CDBF]">
@@ -438,6 +508,7 @@ function PeptideAccordion({ peptide, prices, vendorMap, promoByVendor, expanded,
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>
