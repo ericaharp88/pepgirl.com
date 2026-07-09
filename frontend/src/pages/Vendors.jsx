@@ -67,9 +67,9 @@ export default function Vendors() {
       </div>
 
       {!vendors && (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-0 border border-[#E5E5E5]">
+        <div className="space-y-2 border border-[#E5E5E5]">
           {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-72 rounded-none border-r border-b border-[#E5E5E5]" />
+            <Skeleton key={i} className="h-20 rounded-none" />
           ))}
         </div>
       )}
@@ -79,24 +79,21 @@ export default function Vendors() {
       )}
 
       {filtered && filtered.length > 0 && (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 grid-borders border-t border-l border-[#E5E5E5]">
+        <div className="divide-y divide-[#E8CDBF] border border-[#E8CDBF] bg-white">
           {filtered.map((v) => (
             <div
               key={v.id}
-              className="p-8 bg-white flex flex-col"
+              className="p-4 sm:p-5 flex items-center gap-4 hover:bg-[#FDF8F3] transition-colors"
               data-testid={`vendor-card-${v.slug}`}
             >
-              <div className="mb-6 flex items-center justify-between gap-3">
-                <div className="font-mono text-xs uppercase tracking-[0.25em] text-[#5C5C5C]">
-                  {v.featured ? "★ Featured" : "Listed"}
-                </div>
-                {v.logo_url && (
+              {/* Small logo */}
+              <div className="flex-shrink-0">
+                {v.logo_url ? (
                   <img
                     src={v.logo_url}
                     alt={`${v.name} logo`}
                     loading="lazy"
                     onError={(e) => {
-                      // Fallback: try Google favicon from the vendor's affiliate URL host
                       try {
                         const host = new URL(v.affiliate_url).hostname.replace(/^www\./, "");
                         const fallback = `https://www.google.com/s2/favicons?domain=${host}&sz=128`;
@@ -107,90 +104,90 @@ export default function Vendors() {
                       } catch (_) { /* noop */ }
                       e.currentTarget.style.display = "none";
                     }}
-                    className="h-10 w-10 object-contain rounded-sm bg-white"
+                    className="h-12 w-12 sm:h-14 sm:w-14 object-contain rounded-full bg-white border border-[#E8CDBF] p-1"
                     data-testid={`vendor-logo-${v.slug}`}
                   />
+                ) : (
+                  <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-[#F5DED4] flex items-center justify-center font-bold text-[#B87A6A]">
+                    {v.name.charAt(0)}
+                  </div>
                 )}
               </div>
-              <h2 className="text-3xl font-bold tracking-tight mb-2">{v.name}</h2>
-              <p className="text-sm text-[#5C5C5C] mb-4 flex-1">{v.description}</p>
 
-              {v.discount_code && (
-                <div
-                  data-testid={`vendor-code-${v.slug}`}
-                  className="mb-4 flex flex-wrap items-center gap-2"
-                >
-                  <div className="inline-flex items-center gap-2 bg-[#FBF3EC] border border-[#E8CDBF] px-3 py-2 rounded-sm">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#5C5C5C]">
-                      Code
-                    </span>
-                    <span className="font-mono font-bold text-sm text-[#B87A6A] tracking-wider">
-                      {v.discount_code}
-                    </span>
-                  </div>
+              {/* Middle: name + description + tags */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <h2 className="text-lg sm:text-xl font-black tracking-tight text-[#0A0A0A] truncate">
+                    {v.name}
+                  </h2>
+                  {v.featured && (
+                    <Star size={12} className="text-[#B87A6A] fill-[#B87A6A] flex-shrink-0" />
+                  )}
                   {v.promo_badge && (
                     <span
                       data-testid={`vendor-promo-${v.slug}`}
-                      className="inline-flex items-center px-2 py-2 rounded-sm bg-[#FFE700] text-[#0A0A0A] font-mono font-bold text-[11px] tracking-wider"
-                      title="Active promotion"
+                      className="inline-flex items-center px-2 py-0.5 rounded bg-[#FFE700] text-[#0A0A0A] font-mono font-bold text-[9px] tracking-wider"
                     >
                       {v.promo_badge}
                     </span>
                   )}
                 </div>
-              )}
-              {!v.discount_code && v.promo_badge && (
-                <div className="mb-4">
-                  <span
-                    data-testid={`vendor-promo-${v.slug}`}
-                    className="inline-flex items-center px-2 py-2 rounded-sm bg-[#FFE700] text-[#0A0A0A] font-mono font-bold text-[11px] tracking-wider"
-                    title="Active promotion"
-                  >
-                    {v.promo_badge}
-                  </span>
+                {v.description && (
+                  <p className="text-xs text-[#5C5C5C] leading-snug line-clamp-2 mb-1">
+                    {v.description}
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-1 items-center">
+                  {v.tags?.slice(0, 3).map((t) => (
+                    <Badge
+                      key={t}
+                      variant="outline"
+                      className="rounded-full border-[#E8CDBF] font-mono text-[9px] uppercase tracking-wider px-2 py-0 h-5"
+                    >
+                      {t}
+                    </Badge>
+                  ))}
+                  {v.nickname_notes && (
+                    <details
+                      className="inline-block"
+                      data-testid={`vendor-nickname-guide-${v.slug}`}
+                    >
+                      <summary className="cursor-pointer select-none px-2 py-0.5 rounded-full bg-[#FBF3EC] border border-[#E8CDBF] hover:bg-[#F5DED4] font-mono text-[9px] uppercase tracking-wider text-[#B87A6A]">
+                        Nicknames ↓
+                      </summary>
+                      <pre className="mt-2 p-3 whitespace-pre-wrap font-mono text-xs text-[#0A0A0A] leading-relaxed bg-[#FBF3EC] border border-[#E8CDBF]">
+                        {v.nickname_notes}
+                      </pre>
+                    </details>
+                  )}
                 </div>
-              )}
-
-              <div className="flex flex-wrap gap-2 mb-6">
-                {v.tags?.map((t) => (
-                  <Badge
-                    key={t}
-                    variant="outline"
-                    className="rounded-none border-[#0A0A0A] font-mono text-[10px] uppercase tracking-wider"
-                  >
-                    {t}
-                  </Badge>
-                ))}
               </div>
 
-              {v.nickname_notes && (
-                <details
-                  className="mb-6 border border-[#E8CDBF] bg-[#FBF3EC]"
-                  data-testid={`vendor-nickname-guide-${v.slug}`}
+              {/* Right: code + visit */}
+              <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                {v.discount_code && (
+                  <div
+                    data-testid={`vendor-code-${v.slug}`}
+                    className="inline-flex items-center gap-1.5 bg-[#FBF3EC] border border-[#E8CDBF] px-2 py-1 rounded-full whitespace-nowrap"
+                  >
+                    <span className="font-mono text-[8px] uppercase tracking-widest text-[#5C5C5C] hidden sm:inline">
+                      Code
+                    </span>
+                    <span className="font-mono font-bold text-xs text-[#B87A6A] tracking-wider">
+                      {v.discount_code}
+                    </span>
+                  </div>
+                )}
+                <a
+                  href={v.affiliate_url}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  data-testid={`vendor-visit-${v.slug}`}
+                  className="bg-[#0A0A0A] hover:bg-[#B87A6A] text-white px-3 py-2 sm:px-4 sm:py-2 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest rounded-full transition-colors"
                 >
-                  <summary className="cursor-pointer select-none px-3 py-2 flex items-center justify-between gap-2 hover:bg-[#F5DED4]">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#B87A6A] font-bold">
-                      Peptide Nickname Guide
-                    </span>
-                    <span className="font-mono text-[10px] text-[#5C5C5C]">
-                      what {v.name} calls them ↓
-                    </span>
-                  </summary>
-                  <pre className="px-3 pb-3 pt-1 whitespace-pre-wrap font-mono text-xs text-[#0A0A0A] leading-relaxed">
-                    {v.nickname_notes}
-                  </pre>
-                </details>
-              )}
-
-              <a
-                href={v.affiliate_url}
-                target="_blank"
-                rel="noopener noreferrer sponsored"
-                data-testid={`vendor-visit-${v.slug}`}
-                className="bg-[#0A0A0A] text-white px-4 py-3 inline-flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-[0.25em] hover:bg-[#B87A6A]"
-              >
-                Visit Vendor <ExternalLink size={14} />
-              </a>
+                  Visit <ExternalLink size={12} />
+                </a>
+              </div>
             </div>
           ))}
         </div>

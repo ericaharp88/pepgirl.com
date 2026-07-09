@@ -368,6 +368,15 @@ function PeptideAccordion({ peptide, prices, vendorMap, promoByVendor, expanded,
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="min-w-0">
                     <div className="font-bold text-sm text-[#0A0A0A] truncate">{r.vendor.name}</div>
+                    {r.price.display_label && (
+                      <div
+                        className="text-[11px] font-mono italic text-[#B87A6A] truncate"
+                        data-testid={`nick-mobile-${r.vendor.slug}`}
+                        title="Vendor product name"
+                      >
+                        {r.price.display_label}
+                      </div>
+                    )}
                     <div className="text-[10px] font-mono uppercase tracking-widest text-[#5C5C5C]">
                       {r.price.size_mg}mg · {r.price.form || "vial"}
                     </div>
@@ -448,6 +457,15 @@ function PeptideAccordion({ peptide, prices, vendorMap, promoByVendor, expanded,
                 <tr key={r.price.id} className={`border-b border-[#F0E4DA] ${i === 0 ? "bg-[#F5DED4]" : ""}`}>
                   <td className="px-4 py-3 align-top">
                     <div className="font-bold text-sm text-[#0A0A0A]">{r.vendor.name}</div>
+                    {r.price.display_label && (
+                      <div
+                        className="text-[11px] font-mono italic text-[#B87A6A] mt-0.5"
+                        data-testid={`nick-${r.vendor.slug}`}
+                        title="Vendor product name"
+                      >
+                        {r.price.display_label}
+                      </div>
+                    )}
                     {r.promo?.discount_percent > 0 && (
                       <span
                         className="inline-block mt-1 px-1.5 py-0.5 rounded bg-green-100 text-green-800 text-[9px] font-bold tracking-wider"

@@ -79,7 +79,7 @@ export default function Home() {
             target="_blank"
             rel="noopener noreferrer"
             data-testid="community-bar"
-            className="group block mb-8 lg:mb-10 border-2 border-[#B87A6A] bg-gradient-to-r from-[#F5DED4] via-white to-[#F5DED4] hover:from-[#B87A6A] hover:to-[#B87A6A] hover:text-white transition-colors"
+            className="group block mb-6 border-2 border-[#B87A6A] bg-gradient-to-r from-[#F5DED4] via-white to-[#F5DED4] hover:from-[#B87A6A] hover:to-[#B87A6A] hover:text-white transition-colors"
           >
             <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 px-6 py-4 text-center">
               <Sparkles size={18} className="text-[#B87A6A] group-hover:text-white transition-colors flex-shrink-0" />
@@ -95,6 +95,31 @@ export default function Home() {
               </span>
             </div>
           </a>
+
+          {/* Link-in-bio quick links — top of page */}
+          <nav
+            data-testid="linkinbio-quicklinks"
+            className="mb-8 lg:mb-10 max-w-md mx-auto flex flex-col gap-2.5"
+            aria-label="Quick navigation"
+          >
+            <div className="eyebrow text-[#B87A6A] text-center mb-1">Quick Links</div>
+            {[
+              { to: "/compare", label: "Peptide Price Tool", enabled: priceToolOn },
+              { to: "/vendors", label: "Vendor Directory", enabled: true },
+              { to: "/calculator", label: "Calculator Suite", enabled: true },
+              { to: "/resources", label: "Resources & Guides", enabled: true },
+            ].filter(l => l.enabled).map(l => (
+              <Link
+                key={l.to}
+                to={l.to}
+                data-testid={`linkinbio-${l.to.slice(1)}`}
+                className="group flex items-center justify-between gap-3 px-5 py-3.5 bg-white border-2 border-[#B87A6A] hover:bg-[#B87A6A] hover:text-white rounded-full transition-all shadow-[0_2px_10px_rgba(184,122,106,0.15)] hover:shadow-[0_6px_20px_rgba(184,122,106,0.35)]"
+              >
+                <span className="text-sm font-bold uppercase tracking-widest font-mono">{l.label}</span>
+                <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+              </Link>
+            ))}
+          </nav>
 
           {/* Brand banner image */}
           <div className="mb-10 lg:mb-14">
