@@ -240,6 +240,11 @@ class PromotionIn(BaseModel):
 class SiteSettings(BaseModel):
     """Feature flags & site-wide toggles. Single-doc collection."""
     price_tool_enabled: bool = True
+    community_bar_enabled: bool = True
+    community_bar_url: str = "https://www.skool.com/ericas-elevated-life-9005"
+    community_bar_message: str = "Join The Optimized Society community"
+    community_bar_price: str = "$3 one-time"
+    community_bar_cta: str = "Join now"
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
@@ -585,23 +590,38 @@ async def delete_promotion(pid: str, admin: dict = Depends(get_current_admin)):
 async def get_settings():
     """Public — returns feature flags used by the frontend."""
     doc = await db.settings.find_one({"_id": "site"}, {"_id": 0})
+    defaults = SiteSettings().model_dump()
     if not doc:
-        return SiteSettings().model_dump()
-    # Only expose non-sensitive flags
+        return defaults
     return {
-        "price_tool_enabled": doc.get("price_tool_enabled", True),
+        "price_tool_enabled": doc.get("price_tool_enabled", defaults["price_tool_enabled"]),
+        "community_bar_enabled": doc.get("community_bar_enabled", defaults["community_bar_enabled"]),
+        "community_bar_url": doc.get("community_bar_url", defaults["community_bar_url"]),
+        "community_bar_message": doc.get("community_bar_message", defaults["community_bar_message"]),
+        "community_bar_price": doc.get("community_bar_price", defaults["community_bar_price"]),
+        "community_bar_cta": doc.get("community_bar_cta", defaults["community_bar_cta"]),
         "updated_at": doc.get("updated_at"),
     }
 
 
 class SettingsIn(BaseModel):
     price_tool_enabled: bool = True
+    community_bar_enabled: bool = True
+    community_bar_url: str = "https://www.skool.com/ericas-elevated-life-9005"
+    community_bar_message: str = "Join The Optimized Society community"
+    community_bar_price: str = "$3 one-time"
+    community_bar_cta: str = "Join now"
 
 
 @api_router.put("/settings")
 async def update_settings(payload: SettingsIn, admin: dict = Depends(get_current_admin)):
     updates = {
         "price_tool_enabled": payload.price_tool_enabled,
+        "community_bar_enabled": payload.community_bar_enabled,
+        "community_bar_url": payload.community_bar_url.strip(),
+        "community_bar_message": payload.community_bar_message.strip(),
+        "community_bar_price": payload.community_bar_price.strip(),
+        "community_bar_cta": payload.community_bar_cta.strip(),
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.settings.update_one({"_id": "site"}, {"$set": updates}, upsert=True)

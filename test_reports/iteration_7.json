@@ -1,0 +1,39 @@
+{
+  "summary": "Tested community bar feature end-to-end. Backend GET/PUT /api/settings work correctly with all new fields (community_bar_enabled/url/message/price/cta). Frontend Home renders bar with $3 one-time price from DB; Admin Settings tab prefills inputs; editing price to '$5 test' + saving triggers success toast and reflects on home; toggle-community-bar OFF hides the bar. Price-tool toggle regression still present. DB restored to '$3 one-time'.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Admin Settings — saveBar + immediate toggle sequence",
+        "issue": "saveBar() does not await the subsequent load() call. Clicking the community-bar toggle immediately after Save can persist stale bar values (observed during automation: after saving '$3 one-time' and immediately toggling OFF, DB ended up with the earlier '$5 test' value). Not user-visible in normal, human-paced usage, but worth awaiting load() or refactoring toggle to send only its patch.",
+        "affected_selectors": ["bar-save", "toggle-community-bar"]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_settings_community_bar.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "(Optional / minor) In Admin.jsx SettingsPanel, await load() inside saveBar and/or have toggle() send only the {[key]: value} patch on top of a freshly-fetched settings doc (rather than merging client-side settings+bar state) to avoid the stale-state race when Save + Toggle happen back-to-back."
+  ],
+  "critical_code_review_comments": [
+    "SettingsPanel.putAll merges client-side state ({...settings, ...bar, ...patch}); if state hasn't synced with the last GET, toggles can overwrite freshly-saved fields. Prefer fetching-then-patching on toggle actions or awaiting load().",
+    "Admin.jsx is 1847 lines — consider splitting SettingsPanel into its own file for maintainability."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_settings_community_bar.py (new)"
+  ],
+  "success_rate": {"backend": "100% (5/5)", "frontend": "100% of critical flows verified"},
+  "test_credentials": "admin@peptidehub.com / admin123",
+  "seed_data_creation": "None. DB state restored to community_bar_price='$3 one-time', community_bar_enabled=true.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "test_settings_community_bar.py covers GET/PUT settings and community-bar toggle. Login endpoint is /api/auth/login (sets access_token httpOnly cookie AND returns token in body). Admin login route on frontend is /login (NOT /admin/login). Admin main dashboard is /admin, then click 'Settings' tab to see community-bar editor.",
+  "rca of the issue": "N/A — no unresolved bug; noted a minor race condition in SettingsPanel state merging (see integration_issues)."
+}

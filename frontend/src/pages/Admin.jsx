@@ -1680,15 +1680,37 @@ function PromotionsPanel() {
 function SettingsPanel() {
   const [settings, setSettings] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [bar, setBar] = useState(null);
 
-  const load = () => api.get("/settings").then(r => setSettings(r.data));
+  const load = () => api.get("/settings").then(r => {
+    setSettings(r.data);
+    setBar({
+      community_bar_enabled: r.data.community_bar_enabled !== false,
+      community_bar_url: r.data.community_bar_url || "",
+      community_bar_message: r.data.community_bar_message || "",
+      community_bar_price: r.data.community_bar_price || "",
+      community_bar_cta: r.data.community_bar_cta || "",
+    });
+  });
   useEffect(() => { load(); }, []);
+
+  const putAll = async (patch) => {
+    const merged = { ...settings, ...bar, ...patch };
+    await api.put("/settings", {
+      price_tool_enabled: !!merged.price_tool_enabled,
+      community_bar_enabled: !!merged.community_bar_enabled,
+      community_bar_url: (merged.community_bar_url || "").trim(),
+      community_bar_message: (merged.community_bar_message || "").trim(),
+      community_bar_price: (merged.community_bar_price || "").trim(),
+      community_bar_cta: (merged.community_bar_cta || "").trim(),
+    });
+  };
 
   const toggle = async (key, value) => {
     setSaving(true);
     try {
       const next = { ...settings, [key]: value };
-      await api.put("/settings", { price_tool_enabled: next.price_tool_enabled });
+      await putAll({ [key]: value });
       setSettings(next);
       toast.success(value ? "Turned ON — page will refresh" : "Turned OFF — page will refresh");
       setTimeout(() => window.location.reload(), 900);
@@ -1699,10 +1721,23 @@ function SettingsPanel() {
     }
   };
 
-  if (!settings) return <div className="font-mono text-sm text-[#5C5C5C]">Loading…</div>;
+  const saveBar = async () => {
+    setSaving(true);
+    try {
+      await putAll({});
+      toast.success("Community bar updated");
+      load();
+    } catch (e) {
+      toast.error(fmtErr(e.response?.data?.detail));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!settings || !bar) return <div className="font-mono text-sm text-[#5C5C5C]">Loading…</div>;
 
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-3xl space-y-8">
       <SectionHeader title="Site settings" />
       <div className="border border-[#0A0A0A] divide-y divide-[#E5E5E5]">
         <div className="p-6 flex items-start justify-between gap-6">
@@ -1727,6 +1762,83 @@ function SettingsPanel() {
               {settings.price_tool_enabled ? "ON" : "OFF"}
             </span>
           </div>
+        </div>
+      </div>
+
+      {/* Community bar editor */}
+      <div className="border border-[#0A0A0A]">
+        <div className="p-6 border-b border-[#E5E5E5] flex items-start justify-between gap-6">
+          <div className="flex-1">
+            <div className="font-bold text-lg text-[#0A0A0A]">Community bar (homepage top banner)</div>
+            <div className="text-xs font-mono text-[#5C5C5C] mt-1 leading-relaxed">
+              The rose-gold banner at the top of the home page inviting visitors to your community. Toggle off to hide it entirely. Edit the message, price label, CTA, and destination URL below.
+            </div>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <Switch
+              checked={!!bar.community_bar_enabled}
+              onCheckedChange={(v) => { setBar({ ...bar, community_bar_enabled: v }); toggle("community_bar_enabled", v); }}
+              disabled={saving}
+              data-testid="toggle-community-bar"
+              className="scale-125"
+            />
+            <span className="text-[10px] font-mono uppercase tracking-widest text-[#5C5C5C]">
+              {bar.community_bar_enabled ? "ON" : "OFF"}
+            </span>
+          </div>
+        </div>
+        <div className="p-6 space-y-4">
+          <div>
+            <Label className="eyebrow text-[#5C5C5C]">Message</Label>
+            <Input
+              value={bar.community_bar_message}
+              onChange={(e) => setBar({ ...bar, community_bar_message: e.target.value })}
+              placeholder="Join The Optimized Society community"
+              data-testid="bar-message"
+              className="rounded-none border-[#0A0A0A] h-11 mt-2 font-mono text-sm"
+            />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label className="eyebrow text-[#5C5C5C]">Price label</Label>
+              <Input
+                value={bar.community_bar_price}
+                onChange={(e) => setBar({ ...bar, community_bar_price: e.target.value })}
+                placeholder="$3 one-time"
+                data-testid="bar-price"
+                className="rounded-none border-[#0A0A0A] h-11 mt-2 font-mono text-sm"
+              />
+              <div className="text-[10px] font-mono text-[#5C5C5C] mt-1">Leave empty to hide the price chip.</div>
+            </div>
+            <div>
+              <Label className="eyebrow text-[#5C5C5C]">CTA label</Label>
+              <Input
+                value={bar.community_bar_cta}
+                onChange={(e) => setBar({ ...bar, community_bar_cta: e.target.value })}
+                placeholder="Join now"
+                data-testid="bar-cta"
+                className="rounded-none border-[#0A0A0A] h-11 mt-2 font-mono text-sm"
+              />
+            </div>
+          </div>
+          <div>
+            <Label className="eyebrow text-[#5C5C5C]">Destination URL</Label>
+            <Input
+              value={bar.community_bar_url}
+              onChange={(e) => setBar({ ...bar, community_bar_url: e.target.value })}
+              placeholder="https://www.skool.com/..."
+              data-testid="bar-url"
+              className="rounded-none border-[#0A0A0A] h-11 mt-2 font-mono text-sm"
+            />
+          </div>
+          <Button
+            onClick={saveBar}
+            disabled={saving}
+            data-testid="bar-save"
+            className="rounded-none bg-[#B87A6A] hover:bg-[#0A0A0A] text-white font-mono uppercase tracking-widest text-xs h-11"
+          >
+            {saving ? "Saving…" : "Save community bar"}
+          </Button>
         </div>
       </div>
     </div>
