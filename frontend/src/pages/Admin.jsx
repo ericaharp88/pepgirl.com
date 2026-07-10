@@ -1709,9 +1709,18 @@ function SettingsPanel() {
   const toggle = async (key, value) => {
     setSaving(true);
     try {
-      const next = { ...settings, [key]: value };
-      await putAll({ [key]: value });
-      setSettings(next);
+      // Re-fetch server truth first so an in-flight save can't be overwritten by stale client state.
+      const fresh = (await api.get("/settings")).data;
+      await api.put("/settings", {
+        price_tool_enabled: !!fresh.price_tool_enabled,
+        community_bar_enabled: !!fresh.community_bar_enabled,
+        community_bar_url: fresh.community_bar_url || "",
+        community_bar_message: fresh.community_bar_message || "",
+        community_bar_price: fresh.community_bar_price || "",
+        community_bar_cta: fresh.community_bar_cta || "",
+        [key]: value,
+      });
+      setSettings({ ...fresh, [key]: value });
       toast.success(value ? "Turned ON — page will refresh" : "Turned OFF — page will refresh");
       setTimeout(() => window.location.reload(), 900);
     } catch (e) {
