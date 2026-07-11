@@ -212,7 +212,7 @@ export default function Compare() {
         {POPULAR.map(p => (
           <button
             key={p}
-            onClick={() => setSearch(p)}
+            onClick={() => { setSearch(p); setForm("all"); }}
             data-testid={`pop-${slugify(p)}`}
             className="px-3 py-1.5 rounded-full text-[11px] font-mono bg-[#F5DED4] text-[#0A0A0A] border border-[#E8CDBF] hover:bg-[#B87A6A] hover:text-white hover:border-[#B87A6A] transition"
           >
@@ -227,7 +227,13 @@ export default function Compare() {
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5C5C5C] pointer-events-none" />
           <Input
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              const v = e.target.value;
+              setSearch(v);
+              // When user starts typing a query, drop any lingering form filter
+              // so results aren't hidden by a mismatched form/category pill.
+              if (v.trim()) setForm("all");
+            }}
             placeholder="Search peptides (e.g. Semaglutide, BPC-157, MOTS-c)"
             data-testid="compare-search"
             className="rounded-full border-[#0A0A0A] font-mono pl-10 h-11"
