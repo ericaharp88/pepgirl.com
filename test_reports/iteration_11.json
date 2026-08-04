@@ -1,0 +1,41 @@
+{
+  "summary": "Verified new 'Section dropdown' feature in Admin > Vendors that instantly moves vendors between the 5 public sections. All 5 acceptance criteria pass. Tag rewriting (strip existing category tag + prepend new one), toast, public /vendors visibility, revert flow, non-category tag preservation, and v-up/v-down regression all confirmed.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_evidence": {
+    "dropdown_present": "15/15 vendor rows expose data-testid v-section-<slug> with 5 options (peptides/skincare/supplements/telehealth/clothes)",
+    "amino_well_usa_flow": {
+      "initial_dropdown": "peptides (default via detectSection since tags were [])",
+      "after_change_to_telehealth": {"dropdown": "telehealth", "toast": "'Amino Well USA → Telehealth' shown", "GET /api/vendors tags": "['Telehealth']"},
+      "public_vendors_page": "Appeared under Telehealth (2) tab, absent from Peptides (4)",
+      "after_revert_to_peptides": {"dropdown": "peptides", "GET /api/vendors tags": "['Peptides']"}
+    },
+    "felix_chems_regression": {
+      "initial_tags": "['Peptides','BAC Water','7x Tested']",
+      "after_change_to_telehealth": "['Telehealth','BAC Water','7x Tested'] — non-category tags preserved, 'Peptides' stripped, 'Telehealth' prepended",
+      "after_revert": "['Peptides','BAC Water','7x Tested']"
+    },
+    "reorder_regression": "v-down on Auro Wellness swapped it with Celmade (['celmade','auro-wellness',...]); v-up restored order. Works."
+  },
+  "test_report_links": [],
+  "action_items": [
+    "User's original ask ('move Orderly and Lumivera to telehealth') requires those vendors to first be created in the DB — they currently do not exist. E1 should either (a) prompt user to add them via New Vendor form, or (b) add them via bulk import. The generic 'move vendor to section' feature works end-to-end and can then be used to place them.",
+    "Minor: Amino Well USA originally had empty tags []; after revert it now has ['Peptides'] (explicit). This is arguably an improvement (canonicalizes section tag) but is a small state deviation from pre-test — safe to leave."
+  ],
+  "critical_code_review_comments": [
+    "Admin.jsx is 1951 lines — recommend splitting VendorRow into its own module for maintainability.",
+    "detectSection() ordering is fine, but silent no-op when nextKey === detectSection() means selecting the currently-active option gives no feedback — acceptable UX.",
+    "CATEGORY_TAG_MATCHES includes 'clinic' and 'rx' which are stripped on section change; ensure no vendor legitimately uses 'RX' or 'Clinic' as a *non-category* tag or it'll be lost."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "admin@peptidehub.com / admin123 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "None. Restored Amino Well USA and Felix Chems back to Peptides section after tests (per cleanup request).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Feature is stable. If E1 adds Orderly/Lumivera vendors, use the same v-section-<slug> dropdown to place them in Telehealth. Public /vendors tabs come from Vendors.jsx catOf(), section counts appear in tab labels."
+}

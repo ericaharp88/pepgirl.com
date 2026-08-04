@@ -238,6 +238,32 @@ function VendorRow({ vendor, onChanged, onDelete, onMoveUp, onMoveDown, index, t
     }
   };
 
+  // Which public /vendors section is this vendor currently in?
+  const detectSection = () => {
+    const t = (vendor.tags || []).map((x) => x.toLowerCase());
+    if (t.some((x) => x.includes("telehealth") || x.includes("tele-health") || x === "clinic" || x === "rx")) return "telehealth";
+    if (t.some((x) => x.includes("skin"))) return "skincare";
+    if (t.some((x) => x === "supplements")) return "supplements";
+    if (t.some((x) => x === "clothes")) return "clothes";
+    return "peptides";
+  };
+  const SECTION_TAG = { peptides: "Peptides", skincare: "Skin Care", supplements: "Supplements", telehealth: "Telehealth", clothes: "Clothes" };
+  const CATEGORY_TAG_MATCHES = ["peptides", "skin care", "skincare", "supplements", "telehealth", "tele-health", "clinic", "rx", "clothes"];
+
+  const changeSection = async (nextKey) => {
+    if (!nextKey || nextKey === detectSection()) return;
+    // Remove any existing category-style tag, prepend the new one.
+    const stripped = (vendor.tags || []).filter((x) => !CATEGORY_TAG_MATCHES.includes(String(x).toLowerCase()));
+    const newTags = [SECTION_TAG[nextKey], ...stripped];
+    try {
+      await putVendor({ tags: newTags });
+      toast.success(`${vendor.name} → ${SECTION_TAG[nextKey]}`);
+      onChanged();
+    } catch (e) {
+      toast.error(fmtErr(e.response?.data?.detail));
+    }
+  };
+
   const saveLogin = async () => {
     // If all key fields empty, save null to clear
     const empty = !loginCfg.login_url && !loginCfg.username && !loginCfg.password;
@@ -290,6 +316,19 @@ function VendorRow({ vendor, onChanged, onDelete, onMoveUp, onMoveDown, index, t
           )}
         </div>
         <div className="flex gap-1">
+          <select
+            value={detectSection()}
+            onChange={(e) => changeSection(e.target.value)}
+            data-testid={`v-section-${vendor.slug}`}
+            title="Move to section"
+            className="h-9 rounded-none border border-[#B87A6A] bg-[#FBF3EC] hover:bg-[#F5DED4] text-[#B87A6A] px-2 font-mono uppercase tracking-widest text-[10px] cursor-pointer"
+          >
+            <option value="peptides">Peptides</option>
+            <option value="skincare">Skin Care</option>
+            <option value="supplements">Supplements</option>
+            <option value="telehealth">Telehealth</option>
+            <option value="clothes">Clothes</option>
+          </select>
           <div className="flex flex-col mr-1" data-testid={`v-reorder-${vendor.slug}`}>
             <button
               type="button"
