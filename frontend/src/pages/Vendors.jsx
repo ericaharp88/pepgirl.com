@@ -12,17 +12,30 @@ export default function Vendors() {
     path: "/vendors",
   });
   const [vendors, setVendors] = useState(null);
+  const [promotions, setPromotions] = useState([]);
   const [filter, setFilter] = useState("All");
 
   useEffect(() => {
     api.get("/vendors").then(({ data }) => setVendors(data)).catch(() => setVendors([]));
+    api.get("/promotions").then(({ data }) => setPromotions(data || [])).catch(() => setPromotions([]));
   }, []);
+
+  // Map vendor_id -> best active promotion (highest discount first)
+  const nowIso = new Date().toISOString();
+  const promoByVendor = {};
+  for (const p of promotions) {
+    if (!p.active) continue;
+    if (p.end_date && p.end_date < nowIso) continue;
+    if (p.start_date && p.start_date > nowIso) continue;
+    const existing = promoByVendor[p.vendor_id];
+    if (!existing || (p.discount_percent || 0) > (existing.discount_percent || 0)) {
+      promoByVendor[p.vendor_id] = p;
+    }
+  }
 
   const isSkin = (v) => (v.tags || []).some((t) => t.toLowerCase().includes("skin"));
   const isSupp = (v) => (v.tags || []).some((t) => t.toLowerCase() === "supplements");
   const isClothes = (v) => (v.tags || []).some((t) => t.toLowerCase() === "clothes");
-  // Sort key: peptides/skincare first (0), supplements (1), clothes (2)
-  const sortKey = (v) => (isClothes(v) ? 2 : isSupp(v) ? 1 : 0);
   const filtered = !vendors ? null : vendors
     .filter((v) =>
       filter === "All" ? true
@@ -30,8 +43,8 @@ export default function Vendors() {
       : filter === "Supplements" ? isSupp(v)
       : filter === "Clothes" ? isClothes(v)
       : (!isSkin(v) && !isSupp(v) && !isClothes(v))
-    )
-    .sort((a, b) => sortKey(a) - sortKey(b));
+    );
+  // NOTE: honour backend `order` field — do not re-sort on client.
 
   const tabs = ["All", "Peptides", "Skin Care", "Supplements", "Clothes"];
 
@@ -80,7 +93,9 @@ export default function Vendors() {
 
       {filtered && filtered.length > 0 && (
         <div className="divide-y divide-[#E8CDBF] border border-[#E8CDBF] bg-white">
-          {filtered.map((v) => (
+          {filtered.map((v) => {
+            const activePromo = promoByVendor[v.id];
+            return (
             <div
               key={v.id}
               className="p-4 sm:p-5 flex items-center gap-4 hover:bg-[#FDF8F3] transition-colors"
@@ -137,6 +152,33 @@ export default function Vendors() {
                     {v.description}
                   </p>
                 )}
+                {activePromo && (
+                  <div
+                    className="mb-1.5 inline-flex items-center gap-1.5 flex-wrap"
+                    data-testid={`vendor-active-promo-${v.slug}`}
+                  >
+                    {activePromo.discount_percent > 0 && (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-green-100 text-green-800 font-mono font-bold text-[9px] tracking-wider">
+                        {activePromo.discount_percent}% OFF
+                      </span>
+                    )}
+                    {activePromo.discount_description && (
+                      <span className="text-[10px] font-mono text-[#0A0A0A] font-bold">
+                        {activePromo.discount_description}
+                      </span>
+                    )}
+                    {activePromo.promo_code && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#F5DED4] font-mono text-[10px] font-bold text-[#B87A6A] tracking-wider">
+                        code: {activePromo.promo_code}
+                      </span>
+                    )}
+                    {activePromo.end_date && (
+                      <span className="text-[9px] font-mono text-[#5C5C5C] uppercase tracking-wider">
+                        ends {new Date(activePromo.end_date).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-1 items-center">
                   {v.tags?.slice(0, 3).map((t) => (
                     <Badge
@@ -189,7 +231,8 @@ export default function Vendors() {
                 </a>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

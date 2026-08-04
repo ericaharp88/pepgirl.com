@@ -136,9 +136,43 @@ function VendorsPanel() {
       </div>
       <div className="lg:col-span-7">
         <SectionHeader title={`Vendors (${items.length})`} />
+        <div className="text-[10px] font-mono uppercase tracking-widest text-[#5C5C5C] mb-2 px-1">
+          Use ↑↓ to reorder — the order shown here reflects the public /vendors page.
+        </div>
         <div className="border border-[#E5E5E5]">
-          {items.map((v) => (
-            <VendorRow key={v.id} vendor={v} onChanged={load} onDelete={() => del(v.id)} />
+          {items.map((v, idx) => (
+            <VendorRow
+              key={v.id}
+              vendor={v}
+              index={idx}
+              total={items.length}
+              onChanged={load}
+              onDelete={() => del(v.id)}
+              onMoveUp={async () => {
+                if (idx === 0) return;
+                const next = [...items];
+                [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+                setItems(next);
+                try {
+                  await api.post("/vendors/reorder", { ids: next.map(x => x.id) });
+                } catch (e) {
+                  toast.error(fmtErr(e.response?.data?.detail));
+                  load();
+                }
+              }}
+              onMoveDown={async () => {
+                if (idx === items.length - 1) return;
+                const next = [...items];
+                [next[idx + 1], next[idx]] = [next[idx], next[idx + 1]];
+                setItems(next);
+                try {
+                  await api.post("/vendors/reorder", { ids: next.map(x => x.id) });
+                } catch (e) {
+                  toast.error(fmtErr(e.response?.data?.detail));
+                  load();
+                }
+              }}
+            />
           ))}
         </div>
       </div>
@@ -146,7 +180,7 @@ function VendorsPanel() {
   );
 }
 
-function VendorRow({ vendor, onChanged, onDelete }) {
+function VendorRow({ vendor, onChanged, onDelete, onMoveUp, onMoveDown, index, total }) {
   const [editing, setEditing] = useState(false);
   const [notes, setNotes] = useState(vendor.nickname_notes || "");
   const [logoUrl, setLogoUrl] = useState(vendor.logo_url || "");
@@ -256,6 +290,28 @@ function VendorRow({ vendor, onChanged, onDelete }) {
           )}
         </div>
         <div className="flex gap-1">
+          <div className="flex flex-col mr-1" data-testid={`v-reorder-${vendor.slug}`}>
+            <button
+              type="button"
+              onClick={onMoveUp}
+              disabled={index === 0}
+              title="Move up"
+              data-testid={`v-up-${vendor.slug}`}
+              className="h-4 w-8 inline-flex items-center justify-center border border-[#E5E5E5] bg-white hover:bg-[#F5DED4] hover:border-[#B87A6A] disabled:opacity-30 disabled:cursor-not-allowed text-[10px]"
+            >
+              ▲
+            </button>
+            <button
+              type="button"
+              onClick={onMoveDown}
+              disabled={index === total - 1}
+              title="Move down"
+              data-testid={`v-down-${vendor.slug}`}
+              className="h-4 w-8 inline-flex items-center justify-center border border-[#E5E5E5] border-t-0 bg-white hover:bg-[#F5DED4] hover:border-[#B87A6A] disabled:opacity-30 disabled:cursor-not-allowed text-[10px]"
+            >
+              ▼
+            </button>
+          </div>
           <button
             type="button"
             onClick={toggleFeatured}

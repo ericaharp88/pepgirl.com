@@ -112,6 +112,7 @@ class Vendor(BaseModel):
     login_config: Optional[VendorLoginConfig] = None  # optional scraper login
     featured: bool = False
     comparison_enabled: bool = True
+    order: int = 0  # ascending — lower shows first (0 = unset, treated as bottom)
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
@@ -129,6 +130,7 @@ class VendorIn(BaseModel):
     login_config: Optional[VendorLoginConfig] = None
     featured: bool = False
     comparison_enabled: bool = True
+    order: int = 0
 
 
 class Resource(BaseModel):
@@ -277,7 +279,13 @@ async def me(admin: dict = Depends(get_current_admin)):
 # ---------------- Vendors ----------------
 @api_router.get("/vendors")
 async def list_vendors(request: Request):
-    docs = await db.vendors.find({}, {"_id": 0}).sort("featured", -1).to_list(500)
+    # Sort: manual order (asc, 0 = unset), then featured, then name
+    docs = await db.vendors.find({}, {"_id": 0}).to_list(500)
+    docs.sort(key=lambda d: (
+        d.get("order") or 999999,
+        0 if d.get("featured") else 1,
+        (d.get("name") or "").lower(),
+    ))
     # Strip sensitive login_config unless caller is an authenticated admin
     is_admin = False
     try:
@@ -298,9 +306,26 @@ async def list_vendors(request: Request):
 
 @api_router.post("/vendors", response_model=Vendor)
 async def create_vendor(payload: VendorIn, admin: dict = Depends(get_current_admin)):
-    obj = Vendor(**payload.model_dump())
+    # Auto-assign order if not set — put new vendors at the bottom
+    data = payload.model_dump()
+    if not data.get("order"):
+        last = await db.vendors.find({}, {"order": 1}).sort("order", -1).limit(1).to_list(1)
+        data["order"] = ((last[0].get("order") or 0) + 10) if last else 10
+    obj = Vendor(**data)
     await db.vendors.insert_one(obj.model_dump())
     return obj
+
+
+class ReorderVendors(BaseModel):
+    ids: List[str]
+
+
+@api_router.post("/vendors/reorder")
+async def reorder_vendors(payload: ReorderVendors, admin: dict = Depends(get_current_admin)):
+    """Set order field on all provided ids based on their position (10, 20, 30, ...)."""
+    for idx, vid in enumerate(payload.ids):
+        await db.vendors.update_one({"id": vid}, {"$set": {"order": (idx + 1) * 10}})
+    return {"ok": True, "count": len(payload.ids)}
 
 
 @api_router.put("/vendors/{vendor_id}")

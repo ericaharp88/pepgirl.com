@@ -1,0 +1,31 @@
+{
+  "summary": "Verified vendor reordering (backend + admin UI) and public /vendors promo chip display. All 8 review-request scenarios pass. 7/7 pytest cases pass.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_vendor_reorder.py",
+    "/app/test_reports/pytest/vendor_reorder.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py reorder endpoint issues individual update_one calls in a loop (N round-trips). For 15 vendors it is fine; if catalog grows consider bulk_write with UpdateOne operations."
+  ],
+  "updated_files": ["/app/backend/tests/test_vendor_reorder.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "admin@peptidehub.com / admin123",
+  "seed_data_creation": "Temporary promotion (vendor=amino-well-usa, 15% off, TESTPROMO) and temporary vendor 'ZZTestVendor' created and DELETED after tests. No residual test data.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Vendor reorder: /api/vendors/reorder POST {ids:[...]} (admin). GET /api/vendors sorted by 'order' asc. Admin UI test IDs: v-up-<slug>, v-down-<slug>, v-reorder-<slug>. Public: vendor-card-<slug>, vendor-active-promo-<slug>. Login route is /login (not /admin/login) using data-testid login-email/login-password/login-submit.",
+  "scenarios_verified": [
+    "PASS: Admin Vendors tab shows 15 rows each with v-up-<slug> and v-down-<slug>",
+    "PASS: v-down on first vendor (amino-well-usa) moved it to position 2; persisted after reload",
+    "PASS: v-up on last vendor (routine-skin) moved to N-1; persisted",
+    "PASS: first row v-up is disabled; last row v-down is disabled",
+    "PASS: GET /api/vendors sorted by order asc (pytest)",
+    "PASS: POST /api/vendors/reorder updates order to 10,20,30... (pytest)",
+    "PASS: public /vendors page order matches API order",
+    "PASS: vendor-active-promo-<slug> chip renders with '15% OFF' badge and 'code: TESTPROMO'",
+    "PASS: POST /api/vendors auto-assigns highest order (pytest)"
+  ]
+}
