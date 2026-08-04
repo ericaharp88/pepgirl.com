@@ -1,0 +1,26 @@
+{
+  "summary": "Backend regression tests for the deleted_seeds fix (user bug: 'Erica Elevated Peptide' resource kept coming back after delete). Wrote 5 pytest tests covering the exact scenarios requested. All 5 passed.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": ["/app/backend/tests/test_deleted_seeds.py", "/app/test_reports/pytest/deleted_seeds.xml"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py is 1256 lines — consider splitting resources/vendors/peptides/socials/settings/seed logic into separate modules for maintainability (per code review guideline: >700 lines should be split).",
+    "deleted_seeds mechanism works but does not have an admin endpoint to *restore* a killed seed title. If admin ever wants a seed back after purging it, they must recreate via POST (which does work). Consider adding DELETE /api/deleted_seeds/{title} for future flexibility.",
+    "Seed matching uses exact title equality (`db.resources.find_one({title: r['title']})` and `deleted_seeds` lookup by title). Any renamed seed record could theoretically be resurrected — acceptable for now, but worth documenting."
+  ],
+  "updated_files": ["/app/backend/tests/test_deleted_seeds.py"],
+  "success_rate": {"backend": "100%", "frontend": "N/A"},
+  "test_credentials": "admin@peptidehub.com / admin123 — worked.",
+  "seed_data_creation": "Test 3 created a new 'My Peptide Community — Erica's Elevated Life' resource, then deleted it (verified stays gone across restart). Test 5 deleted 'How to Read a COA' and re-created it via POST as cleanup so preview stays healthy. Final GET /api/resources confirms: Erica absent, COA + Peppy Pens present (7 resources total).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "The deleted_seeds regression is fully covered by /app/backend/tests/test_deleted_seeds.py. Each restart-test calls `sudo supervisorctl restart backend` and waits for readiness. Tests are idempotent and self-cleaning. Preview verified healthy after run.",
+  "verified_scenarios": [
+    "GET /api/resources does not contain any Erica+Elevated resource",
+    "After sudo supervisorctl restart backend, Erica still absent (core regression)",
+    "Admin can create + delete a new Erica-titled resource; after restart it stays gone (title-based blacklist works)",
+    "Other seeded resources ('How to Read a COA', 'Peppy Pens') still seed normally",
+    "Generic proof: deleted 'How to Read a COA', restarted backend, verified absent, then restored via POST — mechanism works for any seed title, not just Erica"
+  ]
+}

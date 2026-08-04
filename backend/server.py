@@ -401,6 +401,14 @@ async def update_resource(rid: str, payload: ResourceIn, admin: dict = Depends(g
 
 @api_router.delete("/resources/{rid}")
 async def delete_resource(rid: str, admin: dict = Depends(get_current_admin)):
+    # Remember the title so the startup seeder won't re-insert it on next restart.
+    doc = await db.resources.find_one({"id": rid}, {"_id": 0, "title": 1})
+    if doc and doc.get("title"):
+        await db.deleted_seeds.update_one(
+            {"kind": "resource", "title": doc["title"]},
+            {"$set": {"kind": "resource", "title": doc["title"], "deleted_at": datetime.now(timezone.utc).isoformat()}},
+            upsert=True,
+        )
     await db.resources.delete_one({"id": rid})
     return {"ok": True}
 
@@ -1206,6 +1214,10 @@ async def seed_sample_data():
     ]
     inserted_resource = 0
     for r in resources:
+        # Skip if user has deleted this seeded resource — never resurrect.
+        killed = await db.deleted_seeds.find_one({"kind": "resource", "title": r["title"]}, {"_id": 1})
+        if killed:
+            continue
         existing = await db.resources.find_one({"title": r["title"]}, {"id": 1, "_id": 0})
         if existing:
             continue
