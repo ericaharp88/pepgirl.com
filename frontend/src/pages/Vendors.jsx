@@ -7,14 +7,16 @@ import { toast } from "sonner";
 import useSeo from "../hooks/useSeo";
 
 const SECTIONS = [
-  { key: "peptides",    label: "Peptides",   description: "Trusted research peptide vendors" },
-  { key: "skincare",    label: "Skin Care",  description: "Topicals, serums, cosmetic peptides" },
+  { key: "peptides",    label: "Peptides",    description: "Trusted research peptide vendors" },
+  { key: "skincare",    label: "Skin Care",   description: "Topicals, serums, cosmetic peptides" },
   { key: "supplements", label: "Supplements", description: "Health & wellness picks" },
-  { key: "clothes",     label: "Clothes",    description: "Comfort & style favorites" },
+  { key: "telehealth",  label: "Telehealth",  description: "Prescription & clinic access" },
+  { key: "clothes",     label: "Clothes",     description: "Comfort & style favorites" },
 ];
 
 const catOf = (v) => {
   const tags = (v.tags || []).map((t) => t.toLowerCase());
+  if (tags.some((t) => t.includes("telehealth") || t.includes("tele-health") || t === "clinic" || t === "rx")) return "telehealth";
   if (tags.some((t) => t.includes("skin"))) return "skincare";
   if (tags.some((t) => t === "supplements")) return "supplements";
   if (tags.some((t) => t === "clothes")) return "clothes";
@@ -29,6 +31,7 @@ export default function Vendors() {
   });
   const [vendors, setVendors] = useState(null);
   const [promotions, setPromotions] = useState([]);
+  const [tab, setTab] = useState("peptides");
 
   useEffect(() => {
     api.get("/vendors").then(({ data }) => setVendors(data)).catch(() => setVendors([]));
@@ -53,9 +56,12 @@ export default function Vendors() {
   SECTIONS.forEach((s) => { grouped[s.key] = []; });
   (vendors || []).forEach((v) => { grouped[catOf(v)].push(v); });
 
+  const activeSection = SECTIONS.find((s) => s.key === tab) || SECTIONS[0];
+  const activeRows = grouped[activeSection.key] || [];
+
   return (
     <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-16">
-      <div className="flex items-end justify-between border-b border-[#0A0A0A] pb-6 mb-12">
+      <div className="flex items-end justify-between border-b border-[#0A0A0A] pb-6 mb-8">
         <div>
           <div className="eyebrow text-[#B87A6A] mb-3">Directory · 01</div>
           <h1 className="text-5xl lg:text-7xl font-black tracking-tighter">Vendors</h1>
@@ -70,6 +76,25 @@ export default function Vendors() {
         </div>
       </div>
 
+      {/* Category tabs — one per section, no 'All' */}
+      <div className="flex flex-wrap gap-0 border border-[#0A0A0A] mb-8 w-fit max-w-full overflow-x-auto" data-testid="vendor-filter">
+        {SECTIONS.map((s) => {
+          const count = grouped[s.key]?.length || 0;
+          return (
+            <button
+              key={s.key}
+              onClick={() => setTab(s.key)}
+              data-testid={`filter-${s.key}`}
+              className={`px-4 sm:px-5 py-2 text-xs font-mono uppercase tracking-[0.25em] border-r border-[#0A0A0A] last:border-r-0 whitespace-nowrap ${
+                tab === s.key ? "bg-[#B87A6A] text-white" : "bg-white hover:bg-[#F5DED4]"
+              }`}
+            >
+              {s.label} {count > 0 && <span className="opacity-70 ml-1">({count})</span>}
+            </button>
+          );
+        })}
+      </div>
+
       {!vendors && (
         <div className="space-y-2 border border-[#E5E5E5]">
           {[...Array(6)].map((_, i) => (
@@ -78,37 +103,38 @@ export default function Vendors() {
         </div>
       )}
 
-      {vendors && SECTIONS.map((section) => {
-        const rows = grouped[section.key];
-        if (!rows.length) return null;
-        return (
-          <section
-            key={section.key}
-            className="mb-14"
-            data-testid={`vendor-section-${section.key}`}
-          >
-            <div className="mb-4 flex items-end justify-between gap-3 border-b border-[#B87A6A] pb-2">
-              <div>
-                <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-[#0A0A0A]">
-                  {section.label}
-                </h2>
-                <div className="text-[11px] font-mono uppercase tracking-[0.2em] text-[#5C5C5C] mt-0.5">
-                  {section.description}
-                </div>
-              </div>
-              <div className="text-[10px] font-mono uppercase tracking-widest text-[#B87A6A]">
-                {String(rows.length).padStart(2, "0")} listed
+      {vendors && (
+        <section
+          key={activeSection.key}
+          data-testid={`vendor-section-${activeSection.key}`}
+        >
+          <div className="mb-4 flex items-end justify-between gap-3 border-b border-[#B87A6A] pb-2">
+            <div>
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-[#0A0A0A]">
+                {activeSection.label}
+              </h2>
+              <div className="text-[11px] font-mono uppercase tracking-[0.2em] text-[#5C5C5C] mt-0.5">
+                {activeSection.description}
               </div>
             </div>
+            <div className="text-[10px] font-mono uppercase tracking-widest text-[#B87A6A]">
+              {String(activeRows.length).padStart(2, "0")} listed
+            </div>
+          </div>
 
+          {activeRows.length === 0 ? (
+            <p className="font-mono text-sm text-[#5C5C5C] py-8">
+              No vendors in this section yet. Check back soon.
+            </p>
+          ) : (
             <div className="divide-y divide-[#E8CDBF] border border-[#E8CDBF] bg-white">
-              {rows.map((v) => (
+              {activeRows.map((v) => (
                 <VendorRow key={v.id} v={v} promo={promoByVendor[v.id]} />
               ))}
             </div>
-          </section>
-        );
-      })}
+          )}
+        </section>
+      )}
     </div>
   );
 }
