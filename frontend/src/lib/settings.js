@@ -15,7 +15,6 @@ export function SettingsProvider({ children }) {
       .catch(() => { /* keep defaults */ });
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { reload(); }, []);
 
   return (

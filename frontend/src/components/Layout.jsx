@@ -1,4 +1,5 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { useAuth } from "../lib/auth";
 import { useSettings } from "../lib/settings";
 import { Button } from "./ui/button";
@@ -106,6 +107,44 @@ export default function Layout({ children }) {
           healthcare professional before making decisions about your health.
         </div>
       </div>
+
+      {/* Global Community bar — visible on every page */}
+      {settings?.community_bar_enabled !== false && (
+        <a
+          href={settings?.community_bar_url || "https://www.skool.com/ericas-elevated-life-9005"}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="community-bar"
+          className="group block border-b-2 border-[#B87A6A] bg-gradient-to-r from-[#F5DED4] via-white to-[#F5DED4] hover:from-[#B87A6A] hover:to-[#B87A6A] hover:text-white transition-colors"
+        >
+          <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 px-6 lg:px-12 py-3 text-center">
+            <Sparkles size={16} className="text-[#B87A6A] group-hover:text-white transition-colors flex-shrink-0" />
+            <span
+              className="text-xs sm:text-sm font-bold text-[#0A0A0A] group-hover:text-white transition-colors"
+              data-testid="community-bar-message"
+            >
+              {settings?.community_bar_message || "Join The Optimized Society community"}
+            </span>
+            {(settings?.community_bar_price || "").trim() && (
+              <>
+                <span className="hidden sm:inline text-[#B87A6A] group-hover:text-white/60 transition-colors">·</span>
+                <span
+                  className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-[#B87A6A] group-hover:bg-white group-hover:text-[#B87A6A] text-white text-[10px] font-mono font-bold uppercase tracking-widest rounded-full transition-colors"
+                  data-testid="community-bar-price"
+                >
+                  {settings.community_bar_price}
+                </span>
+              </>
+            )}
+            <span
+              className="text-[10px] font-mono uppercase tracking-widest text-[#B87A6A] group-hover:text-white transition-colors inline-flex items-center gap-1"
+              data-testid="community-bar-cta"
+            >
+              {settings?.community_bar_cta || "Join now"} <ArrowRight size={12} />
+            </span>
+          </div>
+        </a>
+      )}
 
       <main className="flex-1">{children}</main>
 

@@ -1,0 +1,34 @@
+{
+  "summary": "Backend + Frontend regression testing for vendor tombstone (recurring-seed bug) + global community bar on every page. All backend tests (3) and all frontend route checks (6) passed.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_vendor_tombstone.py",
+    "/app/test_reports/pytest/vendor_tombstone.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py is now 1271 lines - splitting into modules (vendors, prices, promotions, resources, seed) is overdue per >700 line guideline.",
+    "deleted_seeds lookup key: vendors use 'slug', resources use 'title'. Different key strategies are OK but should be documented in a comment near the schema/collection.",
+    "No admin UI/endpoint to list or restore tombstoned vendors. If admin accidentally deletes a real vendor, they must either recreate it manually or delete the deleted_seeds entry via Mongo shell. Consider GET/DELETE /api/deleted_seeds endpoints."
+  ],
+  "updated_files": ["/app/backend/tests/test_vendor_tombstone.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "admin@peptidehub.com / admin123 - worked.",
+  "seed_data_creation": "Created and deleted ZZ-Tombstone-Test vendor twice during tests. Cleanup fixture removes both the vendor row and the deleted_seeds tombstone via direct Mongo access. Verified real seeded vendors (Amino Well USA, Felix Chems) remain intact after test-triggered backend restarts. Final GET /api/vendors matches pre-test state.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Vendor tombstone regression fully covered by /app/backend/tests/test_vendor_tombstone.py. Test 1 verifies delete persists across sudo supervisorctl restart backend. Test 2 verifies cascade to prices AND promotions AND /api/comparison. Test 3 verifies real seeds still present. Frontend community bar verified: 1 bar on every route (/, /vendors, /calculator, /compare, /resources, /login) with correct data-testids (community-bar, community-bar-message, community-bar-price='$3 one-time', community-bar-cta='Join now'), positioned below disclaimer-banner, no duplicates on Home. To run pytest, must export REACT_APP_BACKEND_URL and MONGO_URL first (subshell doesn't inherit them). Use: export REACT_APP_BACKEND_URL=$(grep REACT_APP_BACKEND_URL /app/frontend/.env | cut -d= -f2) && export MONGO_URL=$(grep '^MONGO_URL=' /app/backend/.env | cut -d= -f2-).",
+  "verified_scenarios": [
+    "POST /api/vendors + DELETE /api/vendors/{id} returns 200 and vendor removed",
+    "After sudo supervisorctl restart backend, deleted vendor stays gone (tombstone via deleted_seeds{kind:'vendor',slug} works)",
+    "Delete cascades to /api/prices (0 rows for deleted vendor_id)",
+    "Delete cascades to /api/promotions (0 rows for deleted vendor_id)",
+    "/api/comparison excludes deleted vendor from vendors[], prices[], promotions[]",
+    "Real seeded vendors (Amino Well USA, Felix Chems) still present after all restart cycles",
+    "Community bar (data-testid='community-bar') renders exactly ONCE on /, /vendors, /calculator, /compare, /resources, /login",
+    "Community bar displays settings values: message='Join The Optimized Society community', price='$3 one-time', cta='Join now'",
+    "Community bar is positioned AFTER disclaimer-banner on every page (compareDocumentPosition check)",
+    "No duplicate community bar on Home (previous Home.jsx duplicate confirmed removed)"
+  ]
+}

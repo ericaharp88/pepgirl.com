@@ -339,8 +339,19 @@ async def update_vendor(vendor_id: str, payload: VendorIn, admin: dict = Depends
 
 @api_router.delete("/vendors/{vendor_id}")
 async def delete_vendor(vendor_id: str, admin: dict = Depends(get_current_admin)):
+    # Tombstone the vendor so the startup seeder can't resurrect it on restart/redeploy.
+    doc = await db.vendors.find_one({"id": vendor_id}, {"_id": 0, "slug": 1, "name": 1})
+    if doc and doc.get("slug"):
+        await db.deleted_seeds.update_one(
+            {"kind": "vendor", "slug": doc["slug"]},
+            {"$set": {"kind": "vendor", "slug": doc["slug"], "name": doc.get("name", ""),
+                      "deleted_at": datetime.now(timezone.utc).isoformat()}},
+            upsert=True,
+        )
     await db.vendors.delete_one({"id": vendor_id})
+    # Cascade: prices AND any active promotions for this vendor
     await db.prices.delete_many({"vendor_id": vendor_id})
+    await db.promotions.delete_many({"vendor_id": vendor_id})
     return {"ok": True}
 
 
@@ -1139,6 +1150,10 @@ async def seed_sample_data():
     vendor_ids = {}
     inserted_vendor = 0
     for v in vendors:
+        # Skip if the admin deleted this vendor slug — never resurrect.
+        killed = await db.deleted_seeds.find_one({"kind": "vendor", "slug": v["slug"]}, {"_id": 1})
+        if killed:
+            continue
         existing = await db.vendors.find_one({"slug": v["slug"]}, {"id": 1, "_id": 0})
         if existing:
             vendor_ids[v["slug"]] = existing["id"]
