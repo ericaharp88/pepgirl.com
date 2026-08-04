@@ -1,0 +1,34 @@
+{
+  "summary": "Frontend testing of restructured /vendors page and prominent promo block. All acceptance criteria PASS. Created TESTBIG promo on felix-chems, verified rendering & clipboard, then cleaned up.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "tests_executed": {
+    "vendor_filter_tab_removed": "PASS - data-testid=vendor-filter absent",
+    "sections_rendered_separately": "PASS - peptides(06 listed), skincare(04 listed), supplements(04 listed), clothes(01 listed) all present with header + description subheader + NN listed count",
+    "empty_sections_hidden": "N/A - all 4 categories had vendors; logic verified via code (returns null when rows.length===0)",
+    "active_promo_block_felix_chems": "PASS - contains 'LIVE PROMO', '25% OFF', 'TESTBIG', 'Test — 25% off site-wide, GLP peptides included', 'ENDS 12/31/2026'",
+    "promo_desc_testid": "PASS - vendor-active-promo-desc-felix-chems present",
+    "copy_button_click": "PASS - clipboard contains 'TESTBIG', sonner toast 'Code \"TESTBIG\" copied' visible",
+    "no_promo_vendor": "PASS - vendor-active-promo-peptide-tech absent",
+    "regression_logo_visit": "PASS - vendor-logo-felix-chems + vendor-visit-felix-chems render",
+    "regression_pre_existing_solas_promo": "PASS - Solas Science shows its ERICA/10% promo block correctly (production promo untouched)"
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Vendors.jsx uses ISO string comparison for promo start/end date filtering (p.end_date < nowIso). Works for well-formed UTC ISO strings but fragile if dates are stored with mixed timezones/precision — consider Date.parse() comparison.",
+    "catOf() classifier is case-insensitive but tag matching uses includes('skin') which correctly matches 'Skin Care'; supplements/clothes require exact lowercase equality. This is intentional but could miss 'Supplement' (singular) or 'Clothing' variants.",
+    "VendorRow copyCode uses navigator.clipboard.writeText without await on the Promise; toast fires optimistically even if the write fails on unsupported browsers (catch still fires for sync throw only). Minor."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a", "frontend": "100%"},
+  "test_credentials": "admin@peptidehub.com / admin123",
+  "seed_data_creation": "Created promo id=92f1fe22-85a2-4ce7-9c0d-22fab6b11f12 (TESTBIG, felix-chems) for verification and DELETED after test. Final /api/promotions state: 1 promo (ERICA on solas-science, pre-existing production data untouched).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Vendors page fully sectioned (peptides/skincare/supplements/clothes). Prominent promo block renders all Promotion model fields (promo_code, discount_percent, description, start_date, end_date). Copy-to-clipboard works with sonner toast. Cleanup performed."
+}
