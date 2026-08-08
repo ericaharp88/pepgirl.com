@@ -258,6 +258,21 @@ function VendorRow({ v, promo }) {
           </div>
         )}
 
+        {/* Peptide nickname guide — visible bubble (no hidden expander) */}
+        {v.nickname_notes && (
+          <div
+            className="mb-2 border border-[#B87A6A] bg-[#FBF3EC] rounded-lg overflow-hidden"
+            data-testid={`vendor-nickname-guide-${v.slug}`}
+          >
+            <div className="px-3 py-1.5 bg-[#B87A6A] text-white font-mono text-[10px] uppercase tracking-widest font-bold">
+              🏷 Peptide Nickname Guide · what {v.name} calls them
+            </div>
+            <pre className="px-3 py-2 whitespace-pre-wrap font-mono text-xs text-[#0A0A0A] leading-relaxed max-h-40 overflow-y-auto">
+              {v.nickname_notes}
+            </pre>
+          </div>
+        )}
+
         <div className="flex flex-wrap gap-1 items-center">
           {v.tags?.slice(0, 3).map((t) => (
             <Badge
@@ -268,19 +283,6 @@ function VendorRow({ v, promo }) {
               {t}
             </Badge>
           ))}
-          {v.nickname_notes && (
-            <details
-              className="inline-block"
-              data-testid={`vendor-nickname-guide-${v.slug}`}
-            >
-              <summary className="cursor-pointer select-none px-2 py-0.5 rounded-full bg-[#FBF3EC] border border-[#E8CDBF] hover:bg-[#F5DED4] font-mono text-[9px] uppercase tracking-wider text-[#B87A6A]">
-                Nicknames ↓
-              </summary>
-              <pre className="mt-2 p-3 whitespace-pre-wrap font-mono text-xs text-[#0A0A0A] leading-relaxed bg-[#FBF3EC] border border-[#E8CDBF]">
-                {v.nickname_notes}
-              </pre>
-            </details>
-          )}
         </div>
       </div>
 
