@@ -50,16 +50,25 @@ export default function Home() {
             {/* LEFT — text */}
             <div>
               <div className="text-xs font-mono uppercase tracking-[0.28em] text-[#B87A6A] font-semibold mb-6" data-testid="hero-eyebrow">
-                Peptide Education · Wellness · Community
+                {settings?.home_hero_eyebrow || "Peptide Education · Wellness · Community"}
               </div>
               <h1 className="font-serif-luxe text-5xl sm:text-6xl lg:text-7xl leading-[1.02] text-[#0A0A0A] font-semibold" data-testid="hero-headline">
-                Optimize your health.<br />
-                <span className="italic text-[#B87A6A]">Elevate</span> your life.
+                {(settings?.home_hero_title || "Optimize your health. Elevate your life.").split(".").filter(Boolean).map((s, i, arr) => (
+                  <span key={i}>
+                    {i === arr.length - 1 && arr.length > 1 ? (
+                      <>
+                        <span className="italic text-[#B87A6A]">{s.trim()}</span>.
+                      </>
+                    ) : (
+                      <>
+                        {s.trim()}.{i < arr.length - 1 && <br />}
+                      </>
+                    )}
+                  </span>
+                ))}
               </h1>
-              <p className="mt-6 text-base sm:text-lg text-[#3A3A3A] leading-relaxed max-w-xl">
-                I&apos;m Erica. After losing <span className="font-bold text-[#B87A6A]">90 pounds</span> on GLP-1 peptides, I built this
-                corner of the internet to share the vendors, protocols, and tools that actually
-                move the needle — nothing gate-kept.
+              <p className="mt-6 text-base sm:text-lg text-[#3A3A3A] leading-relaxed max-w-xl" data-testid="hero-intro">
+                {settings?.home_hero_intro || "I'm Erica. After losing 90 pounds on GLP-1 peptides, I built this corner of the internet to share the vendors, protocols, and tools that actually move the needle — nothing gate-kept."}
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <a

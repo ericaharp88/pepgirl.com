@@ -1,0 +1,53 @@
+{
+  "summary": "Backend: 5/5 iter16 tests + full existing suite pass. Reviews CRUD, new vendors (IronWithin, Vector Research), settings PUT with hero fields all persist. Frontend: Admin Reviews tab (create/edit/delete/rating dropdown/edit-button-label 'Update review') works end-to-end. Home hero editor fields exist and are pre-filled BUT saving hero does NOT persist to public homepage — the Admin `putAll` helper drops the 3 home_hero_* fields from the PUT payload, so saveHero and saveBar both silently reset hero to backend defaults. Also, RE:SEQ logo URL 'https://reseq.io/apple-touch-icon.png' returns HTTP 404, so the frontend falls back to a tiny 16px Google favicon.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Admin.jsx SettingsPanel putAll()",
+        "issue": "putAll() at lines 1912-1922 sends only price_tool_enabled + community_bar_* fields. It omits home_hero_eyebrow / home_hero_title / home_hero_intro. Because backend PUT /settings declares those fields with string defaults, every save resets hero back to defaults. Effects: (a) 'Save home hero' button appears to succeed but public home never updates. (b) Saving Community bar ALSO wipes any previously edited hero back to defaults. Fix: include home_hero_eyebrow/title/intro (from `merged`) in the api.put payload inside putAll, mirroring the payload used by toggle().",
+        "selector": "[data-testid=\"hero-save\"]",
+        "priority": "HIGH"
+      },
+      {
+        "component": "Vendors page — RE:SEQ logo",
+        "issue": "Configured logo_url 'https://reseq.io/apple-touch-icon.png' returns HTTP 404 (verified via direct fetch). Frontend correctly falls back to https://www.google.com/s2/favicons?domain=reseq.io&sz=128 which is only 16x16 and displays as a tiny generic globe. Suggest hosting the RE:SEQ logo locally in /public or picking an actual working asset URL from reseq.io (e.g. their favicon-32x32 or og-image).",
+        "selector": "[data-testid=\"vendor-logo-re-seq\"]",
+        "priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "Admin → Settings → Home hero editor → Save → public /",
+        "issue": "Verified via UI: set hero title to 'TEST_HERO_UI_HEADLINE. italic sentence.', clicked hero-save (toast fires), reloaded /, but hero-headline still rendered the DEFAULT title. Root cause: putAll() payload omits home_hero_* fields (see above).",
+        "affected_selectors": ["[data-testid=\"hero-save\"]","[data-testid=\"hero-headline\"]"]
+      }
+    ],
+    "design_issues": [
+      {"screen": "/vendors → Skin Care → RE:SEQ card", "issues": ["Logo circle displays only a 16x16 Google favicon (globe) because the configured logo URL 404s — visually inconsistent with the crisp logos of other vendors."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter16.py",
+    "/app/test_reports/pytest/iter16_results.xml"
+  ],
+  "action_items": [
+    "FIX (HIGH): In /app/frontend/src/pages/Admin.jsx SettingsPanel.putAll (~line 1912), add home_hero_eyebrow, home_hero_title, home_hero_intro to the api.put payload (use values from `merged`). Otherwise hero edits never persist and community-bar saves silently reset hero.",
+    "FIX (MEDIUM): Replace the RE:SEQ vendor logo_url. https://reseq.io/apple-touch-icon.png returns HTTP 404. Either upload a local logo asset to /public/logos/re-seq.png or use a verified reseq.io asset (e.g. their favicon-32x32.png)."
+  ],
+  "critical_code_review_comments": [
+    "Admin.jsx is now ~2130 lines — long overdue for splitting SettingsPanel, ReviewsPanel, VendorsPanel etc into their own files. The putAll payload bug is a direct symptom of this size (easy to forget a field when adding new settings).",
+    "Backend PUT /settings uses Pydantic defaults for hero fields, which means partial payloads silently overwrite unspecified fields with defaults instead of preserving them. Consider making the PUT endpoint accept Optional[str] with None => keep-existing semantics, so client-side field omissions no longer wipe data.",
+    "The onError fallback in Vendors.jsx uses Google favicon service (16px) which produces a tiny, low-fidelity image. Consider a larger fallback (?sz=128 already used but Google returns 16px anyway) or a locally-hosted default vendor placeholder image."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter16.py (new — 5 tests, all pass)"
+  ],
+  "success_rate": {"backend": "100% (5/5 new + full suite green)", "frontend": "80% (reviews CRUD + hero editor UI + new vendors OK; hero persistence + reseq logo broken)"},
+  "test_credentials": "admin@peptidehub.com / admin123 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "None. Test creates & cleans up TEST_ prefixed reviews and restores hero title after each run.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Confirmed working: (1) GET /api/settings returns home_hero_eyebrow/title/intro with defaults. (2) PUT /api/settings with full payload persists hero fields (backend fine). (3) Admin tab-reviews present between promotions & resources; ReviewsPanel form uses <select> for review-rating-input (use page.select_option, not page.fill). Full create/edit/update/delete round-trip works; edit button changes save-btn label to 'Update review'; delete confirms via window.confirm dialog. (4) New vendors: /api/vendors returns ironwithin & vector-research with Peptides tag; both render under Peptides tab of /vendors. (5) re-seq vendor's logo_url IS 'https://reseq.io/apple-touch-icon.png' in DB, but that URL 404s — frontend falls back to google favicon. BROKEN: SettingsPanel.putAll drops home_hero_* fields, so hero saves never persist AND community-bar saves also reset hero. Re-test after fix: set a title via hero-save, reload /, verify hero-headline reflects it; then save community bar and verify hero-headline is not reset.",
+  "rca of the issue": "SettingsPanel.putAll (Admin.jsx ~1912-1922) merges bar+hero into `merged` but only spreads community_bar_* and price_tool_enabled fields into the api.put body. Because backend SettingsUpdate Pydantic model declares home_hero_* with default string values, any PUT missing those fields is accepted with defaults, overwriting whatever was in DB. Fix: extend the api.put payload with `home_hero_eyebrow: merged.home_hero_eyebrow, home_hero_title: merged.home_hero_title, home_hero_intro: merged.home_hero_intro`. Verified via UI-level reproduction: hero-save fires success toast, but GET /api/settings shows defaults and public / renders defaults."
+}

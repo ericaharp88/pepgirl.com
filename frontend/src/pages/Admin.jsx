@@ -30,7 +30,7 @@ export default function Admin() {
       </div>
       <Tabs defaultValue="vendors">
         <TabsList className="rounded-none bg-white border border-[#0A0A0A] p-0 h-auto flex-wrap">
-          {["vendors", "peptides", "prices", "promotions", "resources", "socials", "settings"].map((t) => (
+          {["vendors", "peptides", "prices", "promotions", "reviews", "resources", "socials", "settings"].map((t) => (
             <TabsTrigger
               key={t}
               value={t}
@@ -45,6 +45,7 @@ export default function Admin() {
         <TabsContent value="peptides" className="mt-8"><PeptidesPanel /></TabsContent>
         <TabsContent value="prices" className="mt-8"><PricesPanel /></TabsContent>
         <TabsContent value="promotions" className="mt-8"><PromotionsPanel /></TabsContent>
+        <TabsContent value="reviews" className="mt-8"><ReviewsPanel /></TabsContent>
         <TabsContent value="resources" className="mt-8"><ResourcesPanel /></TabsContent>
         <TabsContent value="socials" className="mt-8"><SocialsPanel /></TabsContent>
         <TabsContent value="settings" className="mt-8"><SettingsPanel /></TabsContent>
@@ -1431,6 +1432,119 @@ function PricesPanel() {
 }
 
 /* ----------------- RESOURCES ----------------- */
+function ReviewsPanel() {
+  const [items, setItems] = useState(null);
+  const [form, setForm] = useState({ author: "", quote: "", rating: 5, location: "", active: true });
+  const [saving, setSaving] = useState(false);
+  const [editing, setEditing] = useState(null); // id being edited
+
+  const load = () => api.get("/reviews/all").then((r) => setItems(r.data));
+  useEffect(() => { load(); }, []);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!form.author.trim() || !form.quote.trim()) { toast.error("Author + quote required"); return; }
+    setSaving(true);
+    try {
+      if (editing) {
+        await api.put(`/reviews/${editing}`, form);
+        toast.success("Review updated");
+      } else {
+        await api.post("/reviews", form);
+        toast.success("Review added");
+      }
+      setForm({ author: "", quote: "", rating: 5, location: "", active: true });
+      setEditing(null);
+      await load();
+    } catch (e2) { toast.error(fmtErr(e2.response?.data?.detail)); }
+    finally { setSaving(false); }
+  };
+
+  const remove = async (id) => {
+    if (!window.confirm("Delete this review?")) return;
+    try { await api.delete(`/reviews/${id}`); toast.success("Deleted"); load(); }
+    catch (e) { toast.error(fmtErr(e.response?.data?.detail)); }
+  };
+
+  const startEdit = (r) => {
+    setEditing(r.id);
+    setForm({ author: r.author, quote: r.quote, rating: r.rating || 5, location: r.location || "", active: r.active !== false });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  return (
+    <div className="grid lg:grid-cols-12 gap-8">
+      <div className="lg:col-span-5">
+        <SectionHeader title={editing ? "Edit review" : "Add customer review"} />
+        <form onSubmit={submit} className="space-y-4 bg-white border border-[#0A0A0A] p-6">
+          <div>
+            <Label className="eyebrow text-[#5C5C5C]">Author name</Label>
+            <Input data-testid="review-author-input" value={form.author} onChange={(e) => setForm({ ...form, author: e.target.value })} className="rounded-none border-[#0A0A0A] h-11 mt-2" placeholder="Sarah M." />
+          </div>
+          <div>
+            <Label className="eyebrow text-[#5C5C5C]">Quote</Label>
+            <Textarea data-testid="review-quote-input" value={form.quote} onChange={(e) => setForm({ ...form, quote: e.target.value })} className="rounded-none border-[#0A0A0A] mt-2 min-h-[100px]" placeholder="What they said..." />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="eyebrow text-[#5C5C5C]">Rating</Label>
+              <select data-testid="review-rating-input" value={form.rating} onChange={(e) => setForm({ ...form, rating: +e.target.value })} className="rounded-none border border-[#0A0A0A] h-11 mt-2 w-full px-2 font-mono">
+                {[5,4,3,2,1].map(n => <option key={n} value={n}>{"★".repeat(n)}{"☆".repeat(5-n)} ({n})</option>)}
+              </select>
+            </div>
+            <div>
+              <Label className="eyebrow text-[#5C5C5C]">Location / tag</Label>
+              <Input data-testid="review-location-input" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="rounded-none border-[#0A0A0A] h-11 mt-2" placeholder="Skool member" />
+            </div>
+          </div>
+          <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest cursor-pointer">
+            <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} data-testid="review-active-input" className="h-4 w-4 accent-[#B87A6A]" />
+            Show on home page
+          </label>
+          <div className="flex gap-2">
+            <Button type="submit" disabled={saving} data-testid="review-save-btn" className="rounded-none bg-[#B87A6A] hover:bg-[#0A0A0A] text-white font-mono uppercase tracking-widest text-xs h-11 flex-1">
+              {saving ? "Saving…" : editing ? "Update review" : "Add review"}
+            </Button>
+            {editing && (
+              <Button type="button" onClick={() => { setEditing(null); setForm({ author:"", quote:"", rating:5, location:"", active:true }); }} className="rounded-none border-2 border-[#0A0A0A] bg-white text-[#0A0A0A] hover:bg-[#F5DED4] font-mono uppercase tracking-widest text-xs h-11">
+                Cancel
+              </Button>
+            )}
+          </div>
+        </form>
+      </div>
+
+      <div className="lg:col-span-7">
+        <SectionHeader title={`Reviews (${items?.length || 0})`} />
+        {!items && <div className="font-mono text-sm text-[#5C5C5C]">Loading…</div>}
+        {items && items.length === 0 && <p className="font-mono text-sm">No reviews yet. Add one!</p>}
+        {items && items.length > 0 && (
+          <div className="space-y-2">
+            {items.map((r) => (
+              <div key={r.id} data-testid={`review-row-${r.id}`} className={`p-4 border border-[#E5E5E5] bg-white ${r.active === false ? "opacity-50" : ""}`}>
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[#B87A6A]">{"★".repeat(r.rating || 5)}</span>
+                    <span className="font-bold text-sm">{r.author}</span>
+                    {r.location && <span className="text-[10px] font-mono uppercase tracking-widest text-[#5C5C5C]">· {r.location}</span>}
+                    {r.active === false && <span className="text-[10px] font-mono uppercase tracking-widest text-red-600">· hidden</span>}
+                  </div>
+                  <div className="flex gap-1">
+                    <button type="button" onClick={() => startEdit(r)} data-testid={`review-edit-${r.id}`} className="text-[10px] font-mono uppercase tracking-widest px-2 py-1 border border-[#0A0A0A] hover:bg-[#F5DED4]">Edit</button>
+                    <button type="button" onClick={() => remove(r.id)} data-testid={`review-delete-${r.id}`} className="text-[10px] font-mono uppercase tracking-widest px-2 py-1 border border-red-500 text-red-600 hover:bg-red-50">Delete</button>
+                  </div>
+                </div>
+                <p className="text-xs italic text-[#3A3A3A] leading-relaxed">&ldquo;{r.quote}&rdquo;</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
 function ResourcesPanel() {
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(blankResource);
@@ -1776,6 +1890,7 @@ function SettingsPanel() {
   const [settings, setSettings] = useState(null);
   const [saving, setSaving] = useState(false);
   const [bar, setBar] = useState(null);
+  const [hero, setHero] = useState(null);
 
   const load = () => api.get("/settings").then(r => {
     setSettings(r.data);
@@ -1786,11 +1901,16 @@ function SettingsPanel() {
       community_bar_price: r.data.community_bar_price || "",
       community_bar_cta: r.data.community_bar_cta || "",
     });
+    setHero({
+      home_hero_eyebrow: r.data.home_hero_eyebrow || "",
+      home_hero_title: r.data.home_hero_title || "",
+      home_hero_intro: r.data.home_hero_intro || "",
+    });
   });
   useEffect(() => { load(); }, []);
 
   const putAll = async (patch) => {
-    const merged = { ...settings, ...bar, ...patch };
+    const merged = { ...settings, ...bar, ...hero, ...patch };
     await api.put("/settings", {
       price_tool_enabled: !!merged.price_tool_enabled,
       community_bar_enabled: !!merged.community_bar_enabled,
@@ -1798,6 +1918,9 @@ function SettingsPanel() {
       community_bar_message: (merged.community_bar_message || "").trim(),
       community_bar_price: (merged.community_bar_price || "").trim(),
       community_bar_cta: (merged.community_bar_cta || "").trim(),
+      home_hero_eyebrow: (merged.home_hero_eyebrow || "").trim(),
+      home_hero_title: (merged.home_hero_title || "").trim(),
+      home_hero_intro: (merged.home_hero_intro || "").trim(),
     });
   };
 
@@ -1813,6 +1936,9 @@ function SettingsPanel() {
         community_bar_message: fresh.community_bar_message || "",
         community_bar_price: fresh.community_bar_price || "",
         community_bar_cta: fresh.community_bar_cta || "",
+        home_hero_eyebrow: fresh.home_hero_eyebrow || "",
+        home_hero_title: fresh.home_hero_title || "",
+        home_hero_intro: fresh.home_hero_intro || "",
         [key]: value,
       });
       setSettings({ ...fresh, [key]: value });
@@ -1838,7 +1964,14 @@ function SettingsPanel() {
     }
   };
 
-  if (!settings || !bar) return <div className="font-mono text-sm text-[#5C5C5C]">Loading…</div>;
+  if (!settings || !bar || !hero) return <div className="font-mono text-sm text-[#5C5C5C]">Loading…</div>;
+
+  const saveHero = async () => {
+    setSaving(true);
+    try { await putAll({}); toast.success("Home hero updated"); load(); }
+    catch (e) { toast.error(fmtErr(e.response?.data?.detail)); }
+    finally { setSaving(false); }
+  };
 
   return (
     <div className="max-w-3xl space-y-8">
@@ -1866,6 +1999,56 @@ function SettingsPanel() {
               {settings.price_tool_enabled ? "ON" : "OFF"}
             </span>
           </div>
+        </div>
+      </div>
+
+      {/* Home hero editor */}
+      <div className="border border-[#0A0A0A]">
+        <div className="p-6 border-b border-[#E5E5E5]">
+          <div className="font-bold text-lg text-[#0A0A0A]">Home page hero</div>
+          <div className="text-xs font-mono text-[#5C5C5C] mt-1 leading-relaxed">
+            The big serif headline block at the top of the home page. Titles containing multiple sentences will render each on its own line, with the last sentence auto-italicized in rose-gold.
+          </div>
+        </div>
+        <div className="p-6 space-y-4">
+          <div>
+            <Label className="eyebrow text-[#5C5C5C]">Eyebrow (small line above title)</Label>
+            <Input
+              value={hero.home_hero_eyebrow}
+              onChange={(e) => setHero({ ...hero, home_hero_eyebrow: e.target.value })}
+              data-testid="hero-eyebrow-input"
+              className="rounded-none border-[#0A0A0A] h-11 mt-2 font-mono text-sm"
+              placeholder="Peptide Education · Wellness · Community"
+            />
+          </div>
+          <div>
+            <Label className="eyebrow text-[#5C5C5C]">Title</Label>
+            <Textarea
+              value={hero.home_hero_title}
+              onChange={(e) => setHero({ ...hero, home_hero_title: e.target.value })}
+              data-testid="hero-title-input"
+              className="rounded-none border-[#0A0A0A] mt-2 min-h-[80px] font-serif-luxe text-lg"
+              placeholder="Optimize your health. Elevate your life."
+            />
+          </div>
+          <div>
+            <Label className="eyebrow text-[#5C5C5C]">Intro paragraph</Label>
+            <Textarea
+              value={hero.home_hero_intro}
+              onChange={(e) => setHero({ ...hero, home_hero_intro: e.target.value })}
+              data-testid="hero-intro-input"
+              className="rounded-none border-[#0A0A0A] mt-2 min-h-[100px] font-mono text-sm"
+              placeholder="I'm Erica. After losing 90 pounds..."
+            />
+          </div>
+          <Button
+            onClick={saveHero}
+            disabled={saving}
+            data-testid="hero-save"
+            className="rounded-none bg-[#B87A6A] hover:bg-[#0A0A0A] text-white font-mono uppercase tracking-widest text-xs h-11"
+          >
+            {saving ? "Saving…" : "Save home hero"}
+          </Button>
         </div>
       </div>
 

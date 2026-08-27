@@ -267,6 +267,9 @@ class SiteSettings(BaseModel):
     community_bar_message: str = "Join The Optimized Society community"
     community_bar_price: str = "$3 one-time"
     community_bar_cta: str = "Join now"
+    home_hero_eyebrow: str = "Peptide Education · Wellness · Community"
+    home_hero_title: str = "Optimize your health. Elevate your life."
+    home_hero_intro: str = "I'm Erica. After losing 90 pounds on GLP-1 peptides, I built this corner of the internet to share the vendors, protocols, and tools that actually move the needle — nothing gate-kept."
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
@@ -704,6 +707,9 @@ async def get_settings():
         "community_bar_message": doc.get("community_bar_message", defaults["community_bar_message"]),
         "community_bar_price": doc.get("community_bar_price", defaults["community_bar_price"]),
         "community_bar_cta": doc.get("community_bar_cta", defaults["community_bar_cta"]),
+        "home_hero_eyebrow": doc.get("home_hero_eyebrow", defaults["home_hero_eyebrow"]),
+        "home_hero_title": doc.get("home_hero_title", defaults["home_hero_title"]),
+        "home_hero_intro": doc.get("home_hero_intro", defaults["home_hero_intro"]),
         "updated_at": doc.get("updated_at"),
     }
 
@@ -715,6 +721,9 @@ class SettingsIn(BaseModel):
     community_bar_message: str = "Join The Optimized Society community"
     community_bar_price: str = "$3 one-time"
     community_bar_cta: str = "Join now"
+    home_hero_eyebrow: str = "Peptide Education · Wellness · Community"
+    home_hero_title: str = "Optimize your health. Elevate your life."
+    home_hero_intro: str = "I'm Erica. After losing 90 pounds on GLP-1 peptides, I built this corner of the internet."
 
 
 @api_router.put("/settings")
@@ -726,6 +735,9 @@ async def update_settings(payload: SettingsIn, admin: dict = Depends(get_current
         "community_bar_message": payload.community_bar_message.strip(),
         "community_bar_price": payload.community_bar_price.strip(),
         "community_bar_cta": payload.community_bar_cta.strip(),
+        "home_hero_eyebrow": payload.home_hero_eyebrow.strip(),
+        "home_hero_title": payload.home_hero_title.strip(),
+        "home_hero_intro": payload.home_hero_intro.strip(),
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.settings.update_one({"_id": "site"}, {"$set": updates}, upsert=True)
