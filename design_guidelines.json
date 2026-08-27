@@ -1,72 +1,160 @@
 {
-  "theme": "light",
-  "archetype": "4_swiss_high_contrast",
+  "project_meta": {
+    "title": "The Optimized Society by Erica - Visual Redesign & Structural Alignment",
+    "reference_site": "https://bhwithbails.com/",
+    "app_type": "hybrid_fullstack",
+    "theme_archetype": "ORGANIC_LUXURY_CREATOR",
+    "base_palette_notes": "Rose-gold primary (#B87A6A), warm blush accent (#F5DED4), ivory champagne base (#FBF3EC), deep obsidian background/text (#0A0A0A)"
+  },
+  "color_system": {
+    "css_variables": {
+      "--background": "30 40% 98%",
+      "--foreground": "0 0% 4%",
+      "--primary": "12 36% 57%",
+      "--primary-foreground": "0 0% 100%",
+      "--secondary": "18 55% 90%",
+      "--secondary-foreground": "0 0% 10%",
+      "--accent": "15 50% 94%",
+      "--accent-foreground": "12 36% 40%",
+      "--card": "30 30% 97%",
+      "--card-foreground": "0 0% 4%",
+      "--border": "15 20% 88%",
+      "--muted": "20 20% 92%",
+      "--muted-foreground": "0 0% 35%",
+      "--ring": "12 36% 57%"
+    },
+    "hex_swatches": {
+      "rose_gold_primary": "#B87A6A",
+      "rose_gold_dark": "#925A4B",
+      "blush_light": "#F5DED4",
+      "cream_ivory": "#FBF3EC",
+      "charcoal_black": "#0A0A0A",
+      "soft_border": "#E8D8D0",
+      "emerald_active_badge": "#2D6A4F",
+      "gold_accent": "#D4AF37"
+    }
+  },
   "typography": {
-    "headings": "Outfit",
-    "body": "IBM Plex Sans",
-    "mono": "JetBrains Mono",
+    "google_fonts_to_import": [
+      "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap"
+    ],
+    "font_family_map": {
+      "display_heading": "'Cormorant Garamond', Georgia, serif",
+      "body_text": "'Plus Jakarta Sans', system-ui, sans-serif",
+      "code_mono_label": "'JetBrains Mono', monospace"
+    },
     "hierarchy": {
-      "h1": "text-4xl sm:text-5xl lg:text-6xl tracking-tighter font-black",
-      "h2": "text-2xl sm:text-3xl lg:text-4xl tracking-tight font-bold",
-      "h3": "text-xl sm:text-2xl tracking-tight font-semibold",
-      "body": "text-base leading-relaxed",
-      "labels": "text-xs uppercase tracking-[0.2em] font-mono",
-      "calculator_output": "text-5xl sm:text-6xl tracking-tighter font-mono font-black"
+      "hero_h1": "text-4xl sm:text-5xl lg:text-6xl font-serif font-bold tracking-tight text-[#0A0A0A]",
+      "section_h2": "text-3xl sm:text-4xl lg:text-5xl font-serif font-semibold text-[#0A0A0A]",
+      "card_h3": "text-xl sm:text-2xl font-serif font-medium text-[#0A0A0A]",
+      "eyebrow_label": "text-xs uppercase tracking-[0.2em] font-mono text-[#B87A6A] font-semibold",
+      "body": "text-base leading-relaxed text-[#2A2A2A]"
     }
   },
-  "colors": {
-    "background": "#FFFFFF",
-    "foreground": "#0A0A0A",
-    "primary": "#002FA7",
-    "primary_foreground": "#FFFFFF",
-    "secondary": "#F5F5F5",
-    "secondary_foreground": "#0A0A0A",
-    "accent": "#E60000",
-    "accent_foreground": "#FFFFFF",
-    "muted": "#F2F2F2",
-    "muted_foreground": "#5C5C5C",
-    "border": "#E5E5E5",
-    "surface": {
-      "strategy": "grid_borders",
-      "description": "Expose the skeleton. 95% monochrome. Color is function only. Use pure white or 10% grey with 1px stark borders. Zero shadows. Flat UI."
-    }
+  "layout_and_sections_blueprint": {
+    "homepage_section_flow": [
+      {
+        "section_id": "sticky_header",
+        "component": "HeaderNav",
+        "description": "Sticky top bar with blurred cream background, Erica circular logo, navigation pills (Home, Vendors, Compare Prices, Calculators, Resources), and 'Join Circle' primary button.",
+        "test_ids": ["nav-logo", "nav-link-vendors", "nav-link-compare", "nav-cta-community"]
+      },
+      {
+        "section_id": "hero_banner",
+        "component": "HeroSection",
+        "description": "Split layout. Left: Eyebrow tag 'BIOHACKING & PEPTIDE EDUCATION', massive serif headline ('Find what works. Get your joy back.'), introductory bio paragraph, primary CTA buttons ('Join Community', 'Explore Vendors'). Right: Portrait frame with Erica's picture, subtle rose-gold ambient ring, and before/after -90 lb transformation highlight pill.",
+        "test_ids": ["hero-headline", "hero-cta-community", "hero-cta-vendors"]
+      },
+      {
+        "section_id": "stats_counter_row",
+        "component": "StatsRow",
+        "description": "3-column grid featuring high-impact metrics: '100,000+ Lives Impacted', 'Trusted by Thousands', 'Hundreds of Resources & Protocols'.",
+        "test_ids": ["stat-card-lives", "stat-card-trusted", "stat-card-resources"]
+      },
+      {
+        "section_id": "meet_erica_preview",
+        "component": "MeetEricaBlock",
+        "description": "Mini video/audio welcome card featuring Erica's avatar, 'A 56-second intro', play button, and hover-to-preview audio label.",
+        "test_ids": ["meet-erica-card", "meet-erica-video-btn"]
+      },
+      {
+        "section_id": "customer_reviews_carousel",
+        "component": "ReviewsCarousel",
+        "description": "NEW required section! Auto-scrolling or swipeable testimonial cards with quotes, reviewer initial avatar circle, verified customer badge, and rating stars. Data fetched from `/api/reviews`.",
+        "test_ids": ["reviews-section", "review-card", "review-rating-stars"]
+      },
+      {
+        "section_id": "trusted_vendors_grid",
+        "component": "TrustedVendorsGrid",
+        "description": "High-conversion grid for top recommended peptide & wellness vendors. Each card includes vendor circular logo/avatar, name, 'Active' green badge, short review/desc, rose-pink promo percentage tag, copyable discount code chip with instant feedback, and 'Shop <Name>' primary button.",
+        "test_ids": ["trusted-vendors-grid", "vendor-card-slug", "vendor-promo-copy-btn"]
+      },
+      {
+        "section_id": "pep_match_banner",
+        "component": "PepMatchCTA",
+        "description": "Rose-gold gradient featured banner card promoting the Peptide Price Comparison tool (/compare) with arrow icon and 'Find Your Best Fit' header.",
+        "test_ids": ["pep-match-banner", "pep-match-btn"]
+      },
+      {
+        "section_id": "coaching_cta",
+        "component": "CoachingSection",
+        "description": "1-on-1 Coaching invitation card with Calendly booking integration, 'Ready to get your energy back?', and booking count pill.",
+        "test_ids": ["coaching-banner", "coaching-book-btn"]
+      },
+      {
+        "section_id": "join_the_circle",
+        "component": "CommunityCircleGrid",
+        "description": "5 community pillar cards (Skool Community, YouTube Channel, Weekly Newsletter, Podcast, Inner Circle Text Club) with distinct icon badges, member counts, and actionable CTAs.",
+        "test_ids": ["community-circle-grid", "community-card-skool", "community-card-youtube"]
+      },
+      {
+        "section_id": "more_things_i_love",
+        "component": "SecondaryVendorsGrid",
+        "description": "Grid of secondary lifestyle, skincare, and supplement favorites (e.g., Primally Pure, AirDoctor, OLIVEDA) with discount codes.",
+        "test_ids": ["secondary-vendors-grid"]
+      },
+      {
+        "section_id": "partner_storefront_banners",
+        "component": "StorefrontBanners",
+        "description": "Side-by-side promo banners for Bloodwork with Rythm ($10 off) and Erica's Amazon Favorites Storefront.",
+        "test_ids": ["bloodwork-banner", "amazon-storefront-banner"]
+      },
+      {
+        "section_id": "newsletter_signup",
+        "component": "NewsletterSection",
+        "description": "Full-width warm champagne block with bullet list of weekly inside perks (protocol breakdowns, research updates, flash sales), email input, and 'Subscribe Free' CTA button.",
+        "test_ids": ["newsletter-section", "newsletter-email-input", "newsletter-submit-btn"]
+      },
+      {
+        "section_id": "footer",
+        "component": "Footer",
+        "description": "Dark obsidian or deep rose background footer with disclaimer text ('Educational purposes only, not medical advice'), copyright, logo, and quick links.",
+        "test_ids": ["footer-disclaimer", "footer-quicklinks"]
+      }
+    ]
   },
-  "layout_spacing": {
-    "philosophy": "Generous spacing combined with strict geometric grids. Dense tables for data tools.",
-    "marketing_hero": "p-12 md:p-24. High contrast, asymmetric.",
-    "dashboard_tools": "The 'Control Room' grid. gap-4, tight data alignment.",
-    "radii": "rounded-none"
+  "vendor_page_refresh_guidelines": {
+    "page_path": "/app/frontend/src/pages/Vendors.jsx",
+    "enhancements": [
+      "Adopt bhwithbails.com card aesthetic with rose-gold accents.",
+      "Include active status indicator, copyable code pill with toast notification.",
+      "Keep existing category tabs (Peptides, Skin Care, Supplements, Telehealth, Clothes).",
+      "Preserve Peptide Nickname Guide callout box and data-testid attributes."
+    ]
   },
-  "components": {
-    "buttons": "Square edges, high contrast. Primary buttons are #002FA7 with white text. Hover states explicitly invert or lighten.",
-    "cards": "border-collapse layout. No shadows. 1px borders.",
-    "calculator": "Input fields must use monospace fonts. Results panel should be inverted (Black bg, White text) for dramatic contrast. Use Shadcn forms but strip any soft aesthetics.",
-    "tables": "Price comparison tool MUST use dense, border-collapsed tables with hover-row highlighting. Keep it extremely scannable.",
-    "navigation": "Solid white header, 1px bottom border. Clean links, no hamburger menu on desktop."
+  "motion_and_interactions": {
+    "smooth_scroll": "Lenis or Framer Motion scroll",
+    "transitions": "transition-colors duration-200 ease-in-out, hover:-translate-y-1 transform transition-all",
+    "hover_effects": "Card glow borders, button scale 1.02 on hover, smooth copy-code pulse"
   },
-  "motion": {
-    "strategy": "Minimalist and precise. Micro-interactions only.",
-    "hover": "Instant or very fast (0.15s) color/bg swaps. No bouncy scaling."
-  },
-  "icons_assets": {
-    "library": "@phosphor-icons/react",
-    "style": "Sharp, geometric, or duotone. Functional, not decorative.",
-    "images": {
-      "hero_background": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1600",
-      "abstract_science": "https://images.unsplash.com/photo-xhkYt9Q5xfk?auto=format&fit=crop&q=80&w=1200",
-      "vial_lab_1": "https://images.unsplash.com/photo-x8Wbe0rGrjA?auto=format&fit=crop&q=80&w=800",
-      "vial_lab_2": "https://images.unsplash.com/photo-iuiKtPNHObA?auto=format&fit=crop&q=80&w=800"
-    }
-  },
+  "data_testid_preservation_rules": [
+    "Retain all 'data-testid' attributes in existing codebase including nav, vendor cards, compare price inputs, calculator tabs, and admin controls.",
+    "Add new data-testids for the reviews section and newly introduced community cards."
+  ],
   "instructions_to_main_agent": [
-    "Install required fonts from Google Fonts: Outfit (headings), IBM Plex Sans (body), and JetBrains Mono (data/calculator). Do NOT use Inter.",
-    "Install @phosphor-icons/react for functional, sharp icons.",
-    "Strictly follow the color palette. Do NOT use soft shadows, rounded corners (use rounded-none), or gradients.",
-    "For the Vendor Directory, use a Bento-style or strict Grid Border layout. Expose borders between cards.",
-    "The Peptide Reconstitution Calculator must have an inverted (dark) results panel with large monospace numbers (JetBrains Mono).",
-    "The Peptide Price Comparison tool must use a dense Shadcn Table, heavily optimized for scanning. Make the headers sortable.",
-    "CRITICAL: Ensure ALL interactive and key informational elements have 'data-testid' attributes (e.g., data-testid='calculator-submit-btn').",
-    "Admin dashboard should follow 'Control Room' grid: dense, utilitarian, strictly functional.",
-    "Do NOT use HTML inputs for advanced interactions; rely entirely on heavily customized Shadcn components with sharp edges."
+    "Update `/app/frontend/src/index.css` or CSS config to include font imports and color variables.",
+    "Implement the complete `/app/frontend/src/pages/Home.jsx` according to the section blueprint.",
+    "Ensure backend endpoint `/api/reviews` exists or mock appropriately so the review carousel renders seamlessly.",
+    "Style components with Tailwind using generous padding, serif headlines, rose-gold accents (#B87A6A), and clean rounded-2xl cards."
   ]
 }

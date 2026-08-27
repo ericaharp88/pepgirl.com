@@ -189,6 +189,26 @@ class PeptideIn(BaseModel):
     category: str = ""
 
 
+class Review(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    author: str
+    quote: str
+    rating: int = 5  # 1-5
+    location: str = ""  # optional (e.g., "Skool member")
+    order: int = 0
+    active: bool = True
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class ReviewIn(BaseModel):
+    author: str
+    quote: str
+    rating: int = 5
+    location: str = ""
+    order: int = 0
+    active: bool = True
+
+
 class PriceEntry(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     peptide_id: str
@@ -421,6 +441,46 @@ async def delete_resource(rid: str, admin: dict = Depends(get_current_admin)):
             upsert=True,
         )
     await db.resources.delete_one({"id": rid})
+    return {"ok": True}
+
+
+# ---------------- Reviews (customer testimonials) ----------------
+@api_router.get("/reviews")
+async def list_reviews():
+    docs = await db.reviews.find({"active": True}, {"_id": 0}).to_list(200)
+    docs.sort(key=lambda d: (d.get("order") or 999999, d.get("created_at") or ""))
+    return docs
+
+
+@api_router.get("/reviews/all")
+async def list_reviews_admin(admin: dict = Depends(get_current_admin)):
+    docs = await db.reviews.find({}, {"_id": 0}).to_list(500)
+    docs.sort(key=lambda d: (d.get("order") or 999999, d.get("created_at") or ""))
+    return docs
+
+
+@api_router.post("/reviews", response_model=Review)
+async def create_review(payload: ReviewIn, admin: dict = Depends(get_current_admin)):
+    data = payload.model_dump()
+    if not data.get("order"):
+        last = await db.reviews.find({}, {"order": 1}).sort("order", -1).limit(1).to_list(1)
+        data["order"] = ((last[0].get("order") or 0) + 10) if last else 10
+    obj = Review(**data)
+    await db.reviews.insert_one(obj.model_dump())
+    return obj
+
+
+@api_router.put("/reviews/{rid}")
+async def update_review(rid: str, payload: ReviewIn, admin: dict = Depends(get_current_admin)):
+    result = await db.reviews.update_one({"id": rid}, {"$set": payload.model_dump()})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return await db.reviews.find_one({"id": rid}, {"_id": 0})
+
+
+@api_router.delete("/reviews/{rid}")
+async def delete_review(rid: str, admin: dict = Depends(get_current_admin)):
+    await db.reviews.delete_one({"id": rid})
     return {"ok": True}
 
 
