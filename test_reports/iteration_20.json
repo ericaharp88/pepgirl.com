@@ -1,0 +1,23 @@
+{
+  "summary": "Regression re-check of preview Meet Erica section. All assertions pass: no 'A quick hello' text, no meet-erica-video-btn, 'MEET ERICA' eyebrow + IMG_0603 portrait + 'Eleven years ago' paragraph all present. GET /api/settings returns home_meet_title=''. No build folder to grep. Preview is definitively clean.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [],
+  "action_items": ["User is likely seeing cached/stale production build. Advise hard refresh or wait for deploy propagation. Preview is clean."],
+  "critical_code_review_comments": [],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "seed_data_creation": "",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Meet Erica cleanup verified on preview at https://peptide-dosing-1.preview.emergentagent.com/. Verified: A quick hello=0, video-btn=0, MEET ERICA eyebrow present, IMG_0603 rendered twice (hero + portrait), 'Eleven years ago' paragraph present, /api/settings home_meet_title=''.",
+  "verification_results": {
+    "a_quick_hello_count": 0,
+    "meet_erica_video_btn_count": 0,
+    "meet_erica_eyebrow_count": 1,
+    "eleven_years_ago_count": 1,
+    "img_0603_sources": 2,
+    "api_settings_home_meet_title": "",
+    "build_folder_exists": false
+  }
+}
