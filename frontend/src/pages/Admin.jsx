@@ -20,15 +20,17 @@ const blankPrice = { peptide_id: "", vendor_id: "", size_mg: 5, price_usd: 0, pr
 export default function Admin() {
   const { user, loading } = useAuth();
   const [subStats, setSubStats] = useState({ week: 0, total: 0 });
+  const [revStats, setRevStats] = useState({ week: 0, total: 0 });
   useEffect(() => {
     if (!user || user.role !== "admin") return;
+    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     api.get("/subscribers").then(({ data }) => {
-      const now = Date.now();
-      const week = data.filter(s => {
-        const t = new Date(s.created_at).getTime();
-        return !isNaN(t) && now - t < 7 * 24 * 60 * 60 * 1000;
-      }).length;
+      const week = data.filter(s => new Date(s.created_at).getTime() >= weekAgo).length;
       setSubStats({ week, total: data.length });
+    }).catch(() => {});
+    api.get("/reviews/all").then(({ data }) => {
+      const week = data.filter(r => new Date(r.created_at).getTime() >= weekAgo).length;
+      setRevStats({ week, total: data.length });
     }).catch(() => {});
   }, [user]);
 
@@ -42,19 +44,28 @@ export default function Admin() {
           <div className="eyebrow text-[#B87A6A] mb-2">Control Room</div>
           <h1 className="text-4xl lg:text-6xl font-black tracking-tighter">Admin Dashboard</h1>
         </div>
-        {subStats.total > 0 && (
-          <div
-            data-testid="admin-subs-chip"
-            className="inline-flex flex-col items-end gap-0.5 border-2 border-[#B87A6A] bg-[#F5DED4] px-5 py-3"
-          >
-            <div className="text-[10px] font-mono uppercase tracking-widest text-[#B87A6A]">Newsletter growth</div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black text-[#0A0A0A]" data-testid="admin-subs-week">+{subStats.week}</span>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-[#5C5C5C]">this week</span>
+        <div className="flex gap-3 flex-wrap">
+          {subStats.total > 0 && (
+            <div data-testid="admin-subs-chip" className="inline-flex flex-col items-end gap-0.5 border-2 border-[#B87A6A] bg-[#F5DED4] px-5 py-3">
+              <div className="text-[10px] font-mono uppercase tracking-widest text-[#B87A6A]">Newsletter growth</div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black text-[#0A0A0A]" data-testid="admin-subs-week">+{subStats.week}</span>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-[#5C5C5C]">this week</span>
+              </div>
+              <div className="text-[10px] font-mono text-[#5C5C5C]" data-testid="admin-subs-total">{subStats.total} total subscribers</div>
             </div>
-            <div className="text-[10px] font-mono text-[#5C5C5C]" data-testid="admin-subs-total">{subStats.total} total subscribers</div>
-          </div>
-        )}
+          )}
+          {revStats.total > 0 && (
+            <div data-testid="admin-revs-chip" className="inline-flex flex-col items-end gap-0.5 border-2 border-[#0A0A0A] bg-white px-5 py-3">
+              <div className="text-[10px] font-mono uppercase tracking-widest text-[#0A0A0A]">Reviews growth</div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black text-[#B87A6A]" data-testid="admin-revs-week">+{revStats.week}</span>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-[#5C5C5C]">this week</span>
+              </div>
+              <div className="text-[10px] font-mono text-[#5C5C5C]" data-testid="admin-revs-total">{revStats.total} total reviews</div>
+            </div>
+          )}
+        </div>
       </div>
       <Tabs defaultValue="vendors">
         <TabsList className="rounded-none bg-white border border-[#0A0A0A] p-0 h-auto flex-wrap">
