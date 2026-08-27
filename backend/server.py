@@ -283,7 +283,7 @@ class SiteSettings(BaseModel):
     home_hero_eyebrow: str = "Peptide Education · Wellness · Community"
     home_hero_title: str = "Optimize your health. Elevate your life."
     home_hero_intro: str = "I'm Erica. After losing 90 pounds on GLP-1 peptides, I built this corner of the internet to share the vendors, protocols, and tools that actually move the needle — nothing gate-kept."
-    home_meet_title: str = "A quick hello."
+    home_meet_title: str = ""
     home_meet_body: str = "Eleven years ago I chose weight-loss surgery. The weight came back. On June 1, 2025 I found GLP-1 peptides and everything changed. Now I share every vendor, code, and protocol I use."
     home_stat_1_value: str = "−90 lbs"
     home_stat_1_label: str = "My peptide journey"
@@ -1264,7 +1264,28 @@ async def seed_sample_data():
          "rating": 4.6, "tags": ["Skin Care", "Peptides"],
          "discount_code": "ERICA", "featured": True},
 
+        # ───── Peptides (research vendors, tail of list) ─────
+        {"name": "IronWithin Research", "slug": "ironwithin",
+         "description": "Research-grade peptides with focus on purity and precise dosing.",
+         "affiliate_url": "https://www.ironwithin.io/",
+         "logo_url": "https://www.google.com/s2/favicons?domain=ironwithin.io&sz=128",
+         "rating": 4.8, "tags": ["Peptides", "Research"],
+         "discount_code": "ERICA", "featured": False},
+        {"name": "Vector Research", "slug": "vector-research",
+         "description": "High-purity peptides for laboratory use.",
+         "affiliate_url": "https://vectorresearch.io/",
+         "logo_url": "https://www.google.com/s2/favicons?domain=vectorresearch.io&sz=128",
+         "rating": 4.7, "tags": ["Peptides", "Research"],
+         "discount_code": "ERICA", "featured": False},
+
         # ───── Skin Care ─────
+        {"name": "RE:SEQ", "slug": "re-seq",
+         "description": "Regenerative peptide science for skin — GHK-Cu, AHK-Cu, Synake, and multi-peptide formulas. Face, body, hair, and lip.",
+         "affiliate_url": "https://reseq.io/?ref=ERICA",
+         "logo_url": "https://reseq.io/img/apple-icon.png",
+         "rating": 5.0, "tags": ["Skin Care", "Peptides", "GHK-Cu", "Copper Peptides"],
+         "discount_code": "ERICA", "featured": True, "promo_badge": "PRE-ORDER",
+         "nickname_notes": "GHK-Cu = Copper Tripeptide-1\nAHK-Cu = Complex\nSynake = Dipeptide Diaminobutyroyl Benzylamide Diacetate\nSNAP-8 = Acetyl Octapeptide-3"},
         {"name": "Scantifix", "slug": "scantifix",
          "description": "Raw peptide skin care and microneedling pens.",
          "affiliate_url": "https://www.scantifix.com?sca_ref=9118700.xZuOQ8i17C",

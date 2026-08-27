@@ -145,15 +145,6 @@ export default function Home() {
             <div className="w-52 h-52 sm:w-64 sm:h-64 rounded-full overflow-hidden border-4 border-white shadow-[0_0_0_3px_#B87A6A,0_12px_40px_rgba(184,122,106,0.35)] mx-auto">
               <img src="https://customer-assets.emergentagent.com/job_peptide-dosing-1/artifacts/p90s5a8i_IMG_0603.JPG" alt="Erica" className="w-full h-full object-cover" />
             </div>
-            <button
-              type="button"
-              data-testid="meet-erica-video-btn"
-              className="absolute inset-0 m-auto w-16 h-16 rounded-full bg-[#B87A6A] hover:bg-[#0A0A0A] text-white flex items-center justify-center shadow-xl transition"
-              title="Video coming soon"
-              onClick={() => toast.info("Video coming soon — subscribe to get notified")}
-            >
-              <Play size={26} fill="currentColor" />
-            </button>
           </div>
           <p className="mt-8 text-base sm:text-lg text-[#3A3A3A] leading-relaxed max-w-2xl mx-auto whitespace-pre-line" data-testid="meet-body">
             {settings?.home_meet_body || "Eleven years ago I chose weight-loss surgery. The weight came back. On June 1, 2025 I found GLP-1 peptides and everything changed. Now I share every vendor, code, and protocol I use."}
