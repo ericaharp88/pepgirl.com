@@ -136,9 +136,11 @@ export default function Home() {
       <section className="border-b border-[#E8CDBF]" data-testid="meet-erica-card">
         <div className="max-w-[1000px] mx-auto px-6 lg:px-12 py-20 text-center">
           <div className="text-xs font-mono uppercase tracking-[0.28em] text-[#B87A6A] font-semibold mb-3">Meet Erica</div>
-          <h2 className="font-serif-luxe text-4xl sm:text-5xl font-semibold text-[#0A0A0A]" data-testid="meet-title">
-            {settings?.home_meet_title || "A quick hello."}
-          </h2>
+          {(settings?.home_meet_title || "").trim() && (
+            <h2 className="font-serif-luxe text-4xl sm:text-5xl font-semibold text-[#0A0A0A]" data-testid="meet-title">
+              {settings.home_meet_title}
+            </h2>
+          )}
           <div className="mt-8 relative inline-block">
             <div className="w-52 h-52 sm:w-64 sm:h-64 rounded-full overflow-hidden border-4 border-white shadow-[0_0_0_3px_#B87A6A,0_12px_40px_rgba(184,122,106,0.35)] mx-auto">
               <img src="https://customer-assets.emergentagent.com/job_peptide-dosing-1/artifacts/p90s5a8i_IMG_0603.JPG" alt="Erica" className="w-full h-full object-cover" />
