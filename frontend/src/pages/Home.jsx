@@ -120,9 +120,9 @@ export default function Home() {
       <section className="border-b border-[#E8CDBF] bg-[#0A0A0A] text-white">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-14 grid sm:grid-cols-3 gap-10 text-center">
           {[
-            { n: "−90 lbs", t: "My peptide journey", tid: "stat-card-weight" },
-            { n: "150+", t: "Vendor codes curated", tid: "stat-card-vendors" },
-            { n: "3", t: "Free calculators & tools", tid: "stat-card-tools" },
+            { n: settings?.home_stat_1_value || "−90 lbs", t: settings?.home_stat_1_label || "My peptide journey", tid: "stat-card-weight" },
+            { n: settings?.home_stat_2_value || "150+", t: settings?.home_stat_2_label || "Vendor codes curated", tid: "stat-card-vendors" },
+            { n: settings?.home_stat_3_value || "3", t: settings?.home_stat_3_label || "Free calculators & tools", tid: "stat-card-tools" },
           ].map((s) => (
             <div key={s.tid} data-testid={s.tid}>
               <div className="font-serif-luxe text-5xl sm:text-6xl text-[#F5DED4] font-semibold">{s.n}</div>
@@ -136,7 +136,9 @@ export default function Home() {
       <section className="border-b border-[#E8CDBF]" data-testid="meet-erica-card">
         <div className="max-w-[1000px] mx-auto px-6 lg:px-12 py-20 text-center">
           <div className="text-xs font-mono uppercase tracking-[0.28em] text-[#B87A6A] font-semibold mb-3">Meet Erica</div>
-          <h2 className="font-serif-luxe text-4xl sm:text-5xl font-semibold text-[#0A0A0A]">A quick hello.</h2>
+          <h2 className="font-serif-luxe text-4xl sm:text-5xl font-semibold text-[#0A0A0A]" data-testid="meet-title">
+            {settings?.home_meet_title || "A quick hello."}
+          </h2>
           <div className="mt-8 relative inline-block">
             <div className="w-52 h-52 sm:w-64 sm:h-64 rounded-full overflow-hidden border-4 border-white shadow-[0_0_0_3px_#B87A6A,0_12px_40px_rgba(184,122,106,0.35)] mx-auto">
               <img src="https://customer-assets.emergentagent.com/job_peptide-dosing-1/artifacts/p90s5a8i_IMG_0603.JPG" alt="Erica" className="w-full h-full object-cover" />
@@ -151,8 +153,8 @@ export default function Home() {
               <Play size={26} fill="currentColor" />
             </button>
           </div>
-          <p className="mt-8 text-base sm:text-lg text-[#3A3A3A] leading-relaxed max-w-2xl mx-auto">
-            Eleven years ago I chose weight-loss surgery. The weight came back. On <span className="font-bold text-[#B87A6A]">June 1, 2025</span> I found GLP-1 peptides and everything changed. Now I share every vendor, code, and protocol I use.
+          <p className="mt-8 text-base sm:text-lg text-[#3A3A3A] leading-relaxed max-w-2xl mx-auto whitespace-pre-line" data-testid="meet-body">
+            {settings?.home_meet_body || "Eleven years ago I chose weight-loss surgery. The weight came back. On June 1, 2025 I found GLP-1 peptides and everything changed. Now I share every vendor, code, and protocol I use."}
           </p>
         </div>
       </section>
@@ -271,11 +273,11 @@ export default function Home() {
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12 py-20 grid lg:grid-cols-2 gap-10 items-center">
           <div>
             <div className="text-xs font-mono uppercase tracking-[0.28em] text-[#F5DED4] font-semibold mb-3">Free Weekly Newsletter</div>
-            <h2 className="font-serif-luxe text-4xl sm:text-5xl font-semibold">
-              Peptide education + exclusive deals <span className="italic text-[#F5DED4]">every week.</span>
+            <h2 className="font-serif-luxe text-4xl sm:text-5xl font-semibold" data-testid="newsletter-title">
+              {settings?.home_newsletter_title || "Peptide education + exclusive deals every week."}
             </h2>
-            <p className="mt-4 text-[#E5D6CB] leading-relaxed">
-              Practical protocols, research you can use, and vendor discounts — delivered free.
+            <p className="mt-4 text-[#E5D6CB] leading-relaxed whitespace-pre-line" data-testid="newsletter-body">
+              {settings?.home_newsletter_body || "Practical protocols, research you can use, and vendor discounts — delivered free."}
             </p>
           </div>
           <div className="bg-white text-[#0A0A0A] rounded-2xl p-6 sm:p-8">
@@ -294,11 +296,23 @@ export default function Home() {
               ))}
             </ul>
             <form
-              onSubmit={(e) => { e.preventDefault(); toast.success("Thanks! Newsletter coming soon."); e.target.reset(); }}
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const email = e.target.email.value.trim();
+                if (!email) return;
+                try {
+                  const { data } = await api.post("/subscribers", { email, source: "home_newsletter" });
+                  toast.success(data.already_subscribed ? "You're already on the list — welcome back!" : "Subscribed! Talk soon.");
+                  e.target.reset();
+                } catch (err) {
+                  toast.error(err.response?.data?.detail || "Couldn't subscribe — try again.");
+                }
+              }}
               className="flex gap-2"
             >
               <input
                 type="email"
+                name="email"
                 required
                 placeholder="you@email.com"
                 data-testid="newsletter-email-input"

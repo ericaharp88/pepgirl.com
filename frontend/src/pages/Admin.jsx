@@ -30,7 +30,7 @@ export default function Admin() {
       </div>
       <Tabs defaultValue="vendors">
         <TabsList className="rounded-none bg-white border border-[#0A0A0A] p-0 h-auto flex-wrap">
-          {["vendors", "peptides", "prices", "promotions", "reviews", "resources", "socials", "settings"].map((t) => (
+          {["vendors", "peptides", "prices", "promotions", "reviews", "subscribers", "resources", "socials", "settings"].map((t) => (
             <TabsTrigger
               key={t}
               value={t}
@@ -46,6 +46,7 @@ export default function Admin() {
         <TabsContent value="prices" className="mt-8"><PricesPanel /></TabsContent>
         <TabsContent value="promotions" className="mt-8"><PromotionsPanel /></TabsContent>
         <TabsContent value="reviews" className="mt-8"><ReviewsPanel /></TabsContent>
+        <TabsContent value="subscribers" className="mt-8"><SubscribersPanel /></TabsContent>
         <TabsContent value="resources" className="mt-8"><ResourcesPanel /></TabsContent>
         <TabsContent value="socials" className="mt-8"><SocialsPanel /></TabsContent>
         <TabsContent value="settings" className="mt-8"><SettingsPanel /></TabsContent>
@@ -1432,6 +1433,79 @@ function PricesPanel() {
 }
 
 /* ----------------- RESOURCES ----------------- */
+function SubscribersPanel() {
+  const [items, setItems] = useState(null);
+  const load = () => api.get("/subscribers").then(r => setItems(r.data));
+  useEffect(() => { load(); }, []);
+
+  const downloadCsv = async () => {
+    try {
+      const token = localStorage.getItem("token") || "";
+      const res = await fetch(`${api.defaults.baseURL}/subscribers/export.csv?mark_exported=true`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "beacons-subscribers.csv"; a.click();
+      URL.revokeObjectURL(url);
+      toast.success("CSV downloaded — upload it to Beacons.ai");
+      load();
+    } catch (e) { toast.error("Couldn't export CSV"); }
+  };
+
+  const remove = async (id) => {
+    if (!window.confirm("Delete this subscriber?")) return;
+    try { await api.delete(`/subscribers/${id}`); load(); toast.success("Deleted"); }
+    catch (e) { toast.error(fmtErr(e.response?.data?.detail)); }
+  };
+
+  const total = items?.length || 0;
+  const pending = items?.filter(s => !s.exported).length || 0;
+
+  return (
+    <div className="max-w-4xl">
+      <SectionHeader title={`Newsletter subscribers (${total})`} />
+      <div className="border border-[#0A0A0A] mb-4">
+        <div className="p-6 flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <div className="font-bold text-lg text-[#0A0A0A]">Export to Beacons.ai</div>
+            <div className="text-xs font-mono text-[#5C5C5C] mt-1 leading-relaxed max-w-md">
+              Downloads a CSV of every email captured on your Home newsletter form. Upload it into Beacons → Contacts → Import CSV. Rows are marked as "exported" after download so you can filter next time.
+            </div>
+            <div className="text-[10px] font-mono uppercase tracking-widest text-[#5C5C5C] mt-2">
+              🟢 {pending} new since last export · {total} total
+            </div>
+          </div>
+          <Button onClick={downloadCsv} disabled={total === 0} data-testid="subscribers-export-csv" className="rounded-none bg-[#B87A6A] hover:bg-[#0A0A0A] text-white font-mono uppercase tracking-widest text-xs h-11 px-6">
+            Download CSV
+          </Button>
+        </div>
+      </div>
+
+      {!items && <div className="font-mono text-sm text-[#5C5C5C]">Loading…</div>}
+      {items && items.length === 0 && <p className="font-mono text-sm">No subscribers yet.</p>}
+      {items && items.length > 0 && (
+        <div className="border border-[#E5E5E5] divide-y divide-[#E5E5E5] bg-white">
+          {items.map(s => (
+            <div key={s.id} data-testid={`sub-row-${s.id}`} className="px-4 py-2 flex items-center gap-3">
+              <span className="flex-1 font-mono text-sm truncate">{s.email}</span>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-[#5C5C5C]">{s.source}</span>
+              {s.exported && <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-[#F5DED4] text-[#B87A6A]">EXPORTED</span>}
+              <span className="text-[10px] font-mono text-[#5C5C5C]">{s.created_at?.slice(0,10)}</span>
+              <button type="button" onClick={() => remove(s.id)} data-testid={`sub-del-${s.id}`} className="text-[10px] font-mono uppercase tracking-widest px-2 py-1 border border-red-500 text-red-600 hover:bg-red-50">
+                Del
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 function ReviewsPanel() {
   const [items, setItems] = useState(null);
   const [form, setForm] = useState({ author: "", quote: "", rating: 5, location: "", active: true });
@@ -1905,6 +1979,16 @@ function SettingsPanel() {
       home_hero_eyebrow: r.data.home_hero_eyebrow || "",
       home_hero_title: r.data.home_hero_title || "",
       home_hero_intro: r.data.home_hero_intro || "",
+      home_meet_title: r.data.home_meet_title || "",
+      home_meet_body: r.data.home_meet_body || "",
+      home_stat_1_value: r.data.home_stat_1_value || "",
+      home_stat_1_label: r.data.home_stat_1_label || "",
+      home_stat_2_value: r.data.home_stat_2_value || "",
+      home_stat_2_label: r.data.home_stat_2_label || "",
+      home_stat_3_value: r.data.home_stat_3_value || "",
+      home_stat_3_label: r.data.home_stat_3_label || "",
+      home_newsletter_title: r.data.home_newsletter_title || "",
+      home_newsletter_body: r.data.home_newsletter_body || "",
     });
   });
   useEffect(() => { load(); }, []);
@@ -1921,6 +2005,16 @@ function SettingsPanel() {
       home_hero_eyebrow: (merged.home_hero_eyebrow || "").trim(),
       home_hero_title: (merged.home_hero_title || "").trim(),
       home_hero_intro: (merged.home_hero_intro || "").trim(),
+      home_meet_title: (merged.home_meet_title || "").trim(),
+      home_meet_body: (merged.home_meet_body || "").trim(),
+      home_stat_1_value: (merged.home_stat_1_value || "").trim(),
+      home_stat_1_label: (merged.home_stat_1_label || "").trim(),
+      home_stat_2_value: (merged.home_stat_2_value || "").trim(),
+      home_stat_2_label: (merged.home_stat_2_label || "").trim(),
+      home_stat_3_value: (merged.home_stat_3_value || "").trim(),
+      home_stat_3_label: (merged.home_stat_3_label || "").trim(),
+      home_newsletter_title: (merged.home_newsletter_title || "").trim(),
+      home_newsletter_body: (merged.home_newsletter_body || "").trim(),
     });
   };
 
@@ -1939,6 +2033,16 @@ function SettingsPanel() {
         home_hero_eyebrow: fresh.home_hero_eyebrow || "",
         home_hero_title: fresh.home_hero_title || "",
         home_hero_intro: fresh.home_hero_intro || "",
+        home_meet_title: fresh.home_meet_title || "",
+        home_meet_body: fresh.home_meet_body || "",
+        home_stat_1_value: fresh.home_stat_1_value || "",
+        home_stat_1_label: fresh.home_stat_1_label || "",
+        home_stat_2_value: fresh.home_stat_2_value || "",
+        home_stat_2_label: fresh.home_stat_2_label || "",
+        home_stat_3_value: fresh.home_stat_3_value || "",
+        home_stat_3_label: fresh.home_stat_3_label || "",
+        home_newsletter_title: fresh.home_newsletter_title || "",
+        home_newsletter_body: fresh.home_newsletter_body || "",
         [key]: value,
       });
       setSettings({ ...fresh, [key]: value });
@@ -2048,6 +2152,79 @@ function SettingsPanel() {
             className="rounded-none bg-[#B87A6A] hover:bg-[#0A0A0A] text-white font-mono uppercase tracking-widest text-xs h-11"
           >
             {saving ? "Saving…" : "Save home hero"}
+          </Button>
+        </div>
+      </div>
+
+      {/* Meet Erica editor */}
+      <div className="border border-[#0A0A0A]">
+        <div className="p-6 border-b border-[#E5E5E5]">
+          <div className="font-bold text-lg text-[#0A0A0A]">Meet Erica section</div>
+          <div className="text-xs font-mono text-[#5C5C5C] mt-1 leading-relaxed">
+            The short bio block below the stats row on the home page.
+          </div>
+        </div>
+        <div className="p-6 space-y-4">
+          <div>
+            <Label className="eyebrow text-[#5C5C5C]">Title</Label>
+            <Input value={hero.home_meet_title} onChange={(e) => setHero({ ...hero, home_meet_title: e.target.value })} data-testid="meet-title-input" className="rounded-none border-[#0A0A0A] h-11 mt-2 font-serif-luxe text-lg" />
+          </div>
+          <div>
+            <Label className="eyebrow text-[#5C5C5C]">Body</Label>
+            <Textarea value={hero.home_meet_body} onChange={(e) => setHero({ ...hero, home_meet_body: e.target.value })} data-testid="meet-body-input" className="rounded-none border-[#0A0A0A] mt-2 min-h-[100px] font-mono text-sm" />
+          </div>
+          <Button onClick={saveHero} disabled={saving} data-testid="meet-save" className="rounded-none bg-[#B87A6A] hover:bg-[#0A0A0A] text-white font-mono uppercase tracking-widest text-xs h-11">
+            {saving ? "Saving…" : "Save meet Erica"}
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats editor */}
+      <div className="border border-[#0A0A0A]">
+        <div className="p-6 border-b border-[#E5E5E5]">
+          <div className="font-bold text-lg text-[#0A0A0A]">Home stats row (3 numbers)</div>
+          <div className="text-xs font-mono text-[#5C5C5C] mt-1 leading-relaxed">
+            Big numbers on the dark banner between hero and Meet Erica. Value + label per column.
+          </div>
+        </div>
+        <div className="p-6 space-y-4">
+          {[1, 2, 3].map((n) => (
+            <div key={n} className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="eyebrow text-[#5C5C5C]">Stat {n} value</Label>
+                <Input value={hero[`home_stat_${n}_value`]} onChange={(e) => setHero({ ...hero, [`home_stat_${n}_value`]: e.target.value })} data-testid={`stat-${n}-value-input`} className="rounded-none border-[#0A0A0A] h-11 mt-2 font-serif-luxe text-lg" placeholder="−90 lbs" />
+              </div>
+              <div>
+                <Label className="eyebrow text-[#5C5C5C]">Stat {n} label</Label>
+                <Input value={hero[`home_stat_${n}_label`]} onChange={(e) => setHero({ ...hero, [`home_stat_${n}_label`]: e.target.value })} data-testid={`stat-${n}-label-input`} className="rounded-none border-[#0A0A0A] h-11 mt-2 font-mono text-sm" placeholder="My peptide journey" />
+              </div>
+            </div>
+          ))}
+          <Button onClick={saveHero} disabled={saving} data-testid="stats-save" className="rounded-none bg-[#B87A6A] hover:bg-[#0A0A0A] text-white font-mono uppercase tracking-widest text-xs h-11">
+            {saving ? "Saving…" : "Save stats"}
+          </Button>
+        </div>
+      </div>
+
+      {/* Newsletter copy editor */}
+      <div className="border border-[#0A0A0A]">
+        <div className="p-6 border-b border-[#E5E5E5]">
+          <div className="font-bold text-lg text-[#0A0A0A]">Newsletter section</div>
+          <div className="text-xs font-mono text-[#5C5C5C] mt-1 leading-relaxed">
+            Copy shown next to the email signup at the bottom of the home page. Submitted emails go to Admin → Subscribers, where you can export CSV for Beacons.
+          </div>
+        </div>
+        <div className="p-6 space-y-4">
+          <div>
+            <Label className="eyebrow text-[#5C5C5C]">Title</Label>
+            <Textarea value={hero.home_newsletter_title} onChange={(e) => setHero({ ...hero, home_newsletter_title: e.target.value })} data-testid="newsletter-title-input" className="rounded-none border-[#0A0A0A] mt-2 min-h-[80px] font-serif-luxe text-lg" />
+          </div>
+          <div>
+            <Label className="eyebrow text-[#5C5C5C]">Body</Label>
+            <Textarea value={hero.home_newsletter_body} onChange={(e) => setHero({ ...hero, home_newsletter_body: e.target.value })} data-testid="newsletter-body-input" className="rounded-none border-[#0A0A0A] mt-2 min-h-[80px] font-mono text-sm" />
+          </div>
+          <Button onClick={saveHero} disabled={saving} data-testid="newsletter-save" className="rounded-none bg-[#B87A6A] hover:bg-[#0A0A0A] text-white font-mono uppercase tracking-widest text-xs h-11">
+            {saving ? "Saving…" : "Save newsletter"}
           </Button>
         </div>
       </div>

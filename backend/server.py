@@ -181,6 +181,19 @@ class Peptide(BaseModel):
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
+class Subscriber(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    email: str
+    source: str = "home_newsletter"
+    exported: bool = False
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class SubscriberIn(BaseModel):
+    email: str
+    source: str = "home_newsletter"
+
+
 class PeptideIn(BaseModel):
     name: str
     slug: str
@@ -270,6 +283,16 @@ class SiteSettings(BaseModel):
     home_hero_eyebrow: str = "Peptide Education · Wellness · Community"
     home_hero_title: str = "Optimize your health. Elevate your life."
     home_hero_intro: str = "I'm Erica. After losing 90 pounds on GLP-1 peptides, I built this corner of the internet to share the vendors, protocols, and tools that actually move the needle — nothing gate-kept."
+    home_meet_title: str = "A quick hello."
+    home_meet_body: str = "Eleven years ago I chose weight-loss surgery. The weight came back. On June 1, 2025 I found GLP-1 peptides and everything changed. Now I share every vendor, code, and protocol I use."
+    home_stat_1_value: str = "−90 lbs"
+    home_stat_1_label: str = "My peptide journey"
+    home_stat_2_value: str = "150+"
+    home_stat_2_label: str = "Vendor codes curated"
+    home_stat_3_value: str = "3"
+    home_stat_3_label: str = "Free calculators & tools"
+    home_newsletter_title: str = "Peptide education + exclusive deals every week."
+    home_newsletter_body: str = "Practical protocols, research you can use, and vendor discounts — delivered free."
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
@@ -444,6 +467,53 @@ async def delete_resource(rid: str, admin: dict = Depends(get_current_admin)):
             upsert=True,
         )
     await db.resources.delete_one({"id": rid})
+    return {"ok": True}
+
+
+# ---------------- Newsletter subscribers ----------------
+@api_router.post("/subscribers")
+async def create_subscriber(payload: SubscriberIn):
+    email = payload.email.strip().lower()
+    if "@" not in email or "." not in email:
+        raise HTTPException(status_code=400, detail="Invalid email")
+    existing = await db.subscribers.find_one({"email": email}, {"_id": 1})
+    if existing:
+        return {"ok": True, "already_subscribed": True}
+    obj = Subscriber(email=email, source=payload.source or "home_newsletter")
+    await db.subscribers.insert_one(obj.model_dump())
+    return {"ok": True, "already_subscribed": False}
+
+
+@api_router.get("/subscribers")
+async def list_subscribers(admin: dict = Depends(get_current_admin)):
+    docs = await db.subscribers.find({}, {"_id": 0}).to_list(5000)
+    docs.sort(key=lambda d: d.get("created_at") or "", reverse=True)
+    return docs
+
+
+@api_router.get("/subscribers/export.csv")
+async def export_subscribers_csv(admin: dict = Depends(get_current_admin), mark_exported: bool = True):
+    """CSV formatted for Beacons.ai import (email column). Optionally marks rows as exported."""
+    docs = await db.subscribers.find({}, {"_id": 0}).to_list(10000)
+    docs.sort(key=lambda d: d.get("created_at") or "", reverse=True)
+    lines = ["email,subscribed_at,source"]
+    ids = []
+    for d in docs:
+        lines.append(f"{d.get('email','')},{d.get('created_at','')},{d.get('source','')}")
+        ids.append(d.get("id"))
+    if mark_exported and ids:
+        await db.subscribers.update_many({"id": {"$in": ids}}, {"$set": {"exported": True}})
+    from fastapi.responses import PlainTextResponse
+    return PlainTextResponse(
+        "\n".join(lines),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=beacons-subscribers.csv"},
+    )
+
+
+@api_router.delete("/subscribers/{sid}")
+async def delete_subscriber(sid: str, admin: dict = Depends(get_current_admin)):
+    await db.subscribers.delete_one({"id": sid})
     return {"ok": True}
 
 
@@ -710,6 +780,16 @@ async def get_settings():
         "home_hero_eyebrow": doc.get("home_hero_eyebrow", defaults["home_hero_eyebrow"]),
         "home_hero_title": doc.get("home_hero_title", defaults["home_hero_title"]),
         "home_hero_intro": doc.get("home_hero_intro", defaults["home_hero_intro"]),
+        "home_meet_title": doc.get("home_meet_title", defaults["home_meet_title"]),
+        "home_meet_body": doc.get("home_meet_body", defaults["home_meet_body"]),
+        "home_stat_1_value": doc.get("home_stat_1_value", defaults["home_stat_1_value"]),
+        "home_stat_1_label": doc.get("home_stat_1_label", defaults["home_stat_1_label"]),
+        "home_stat_2_value": doc.get("home_stat_2_value", defaults["home_stat_2_value"]),
+        "home_stat_2_label": doc.get("home_stat_2_label", defaults["home_stat_2_label"]),
+        "home_stat_3_value": doc.get("home_stat_3_value", defaults["home_stat_3_value"]),
+        "home_stat_3_label": doc.get("home_stat_3_label", defaults["home_stat_3_label"]),
+        "home_newsletter_title": doc.get("home_newsletter_title", defaults["home_newsletter_title"]),
+        "home_newsletter_body": doc.get("home_newsletter_body", defaults["home_newsletter_body"]),
         "updated_at": doc.get("updated_at"),
     }
 
@@ -721,9 +801,19 @@ class SettingsIn(BaseModel):
     community_bar_message: str = "Join The Optimized Society community"
     community_bar_price: str = "$3 one-time"
     community_bar_cta: str = "Join now"
-    home_hero_eyebrow: str = "Peptide Education · Wellness · Community"
-    home_hero_title: str = "Optimize your health. Elevate your life."
-    home_hero_intro: str = "I'm Erica. After losing 90 pounds on GLP-1 peptides, I built this corner of the internet."
+    home_hero_eyebrow: str = ""
+    home_hero_title: str = ""
+    home_hero_intro: str = ""
+    home_meet_title: str = ""
+    home_meet_body: str = ""
+    home_stat_1_value: str = ""
+    home_stat_1_label: str = ""
+    home_stat_2_value: str = ""
+    home_stat_2_label: str = ""
+    home_stat_3_value: str = ""
+    home_stat_3_label: str = ""
+    home_newsletter_title: str = ""
+    home_newsletter_body: str = ""
 
 
 @api_router.put("/settings")
@@ -738,6 +828,16 @@ async def update_settings(payload: SettingsIn, admin: dict = Depends(get_current
         "home_hero_eyebrow": payload.home_hero_eyebrow.strip(),
         "home_hero_title": payload.home_hero_title.strip(),
         "home_hero_intro": payload.home_hero_intro.strip(),
+        "home_meet_title": payload.home_meet_title.strip(),
+        "home_meet_body": payload.home_meet_body.strip(),
+        "home_stat_1_value": payload.home_stat_1_value.strip(),
+        "home_stat_1_label": payload.home_stat_1_label.strip(),
+        "home_stat_2_value": payload.home_stat_2_value.strip(),
+        "home_stat_2_label": payload.home_stat_2_label.strip(),
+        "home_stat_3_value": payload.home_stat_3_value.strip(),
+        "home_stat_3_label": payload.home_stat_3_label.strip(),
+        "home_newsletter_title": payload.home_newsletter_title.strip(),
+        "home_newsletter_body": payload.home_newsletter_body.strip(),
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.settings.update_one({"_id": "site"}, {"$set": updates}, upsert=True)
