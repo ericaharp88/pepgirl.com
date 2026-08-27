@@ -1435,24 +1435,24 @@ function PricesPanel() {
 /* ----------------- RESOURCES ----------------- */
 function SubscribersPanel() {
   const [items, setItems] = useState(null);
+  const [copied, setCopied] = useState(null); // 'commas' | 'lines' | null
   const load = () => api.get("/subscribers").then(r => setItems(r.data));
   useEffect(() => { load(); }, []);
 
-  const downloadCsv = async () => {
+  const copyEmails = async (sep) => {
+    const list = (items || []).map(s => s.email).join(sep);
     try {
+      await navigator.clipboard.writeText(list);
+      setCopied(sep === "," ? "commas" : "lines");
+      toast.success(`Copied ${items.length} email${items.length === 1 ? "" : "s"}`);
+      // Mark all as exported so user can filter "new" next time
       const token = localStorage.getItem("token") || "";
-      const res = await fetch(`${api.defaults.baseURL}/subscribers/export.csv?mark_exported=true`, {
+      await fetch(`${api.defaults.baseURL}/subscribers/export.csv?mark_exported=true`, {
         headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error(await res.text());
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = "beacons-subscribers.csv"; a.click();
-      URL.revokeObjectURL(url);
-      toast.success("CSV downloaded — upload it to Beacons.ai");
+      }).catch(() => {});
       load();
-    } catch (e) { toast.error("Couldn't export CSV"); }
+      setTimeout(() => setCopied(null), 1800);
+    } catch (e) { toast.error("Couldn't copy — try selecting the list below"); }
   };
 
   const remove = async (id) => {
@@ -1463,24 +1463,52 @@ function SubscribersPanel() {
 
   const total = items?.length || 0;
   const pending = items?.filter(s => !s.exported).length || 0;
+  const emailsString = (items || []).map(s => s.email).join(", ");
 
   return (
     <div className="max-w-4xl">
       <SectionHeader title={`Newsletter subscribers (${total})`} />
       <div className="border border-[#0A0A0A] mb-4">
-        <div className="p-6 flex items-center justify-between gap-4 flex-wrap">
+        <div className="p-6 space-y-4">
           <div>
-            <div className="font-bold text-lg text-[#0A0A0A]">Export to Beacons.ai</div>
-            <div className="text-xs font-mono text-[#5C5C5C] mt-1 leading-relaxed max-w-md">
-              Downloads a CSV of every email captured on your Home newsletter form. Upload it into Beacons → Contacts → Import CSV. Rows are marked as "exported" after download so you can filter next time.
+            <div className="font-bold text-lg text-[#0A0A0A]">Grab your emails</div>
+            <div className="text-xs font-mono text-[#5C5C5C] mt-1 leading-relaxed">
+              Copy every subscriber email to your clipboard, then paste into whatever email tool you use.
             </div>
             <div className="text-[10px] font-mono uppercase tracking-widest text-[#5C5C5C] mt-2">
-              🟢 {pending} new since last export · {total} total
+              🟢 {pending} new since last copy · {total} total
             </div>
           </div>
-          <Button onClick={downloadCsv} disabled={total === 0} data-testid="subscribers-export-csv" className="rounded-none bg-[#B87A6A] hover:bg-[#0A0A0A] text-white font-mono uppercase tracking-widest text-xs h-11 px-6">
-            Download CSV
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={() => copyEmails(", ")}
+              disabled={total === 0}
+              data-testid="subscribers-copy-commas"
+              className="rounded-none bg-[#B87A6A] hover:bg-[#0A0A0A] text-white font-mono uppercase tracking-widest text-xs h-11 px-6"
+            >
+              {copied === "commas" ? "Copied ✓" : `Copy all (${total})`}
+            </Button>
+            <Button
+              onClick={() => copyEmails("\n")}
+              disabled={total === 0}
+              data-testid="subscribers-copy-lines"
+              className="rounded-none border-2 border-[#0A0A0A] bg-white text-[#0A0A0A] hover:bg-[#F5DED4] font-mono uppercase tracking-widest text-xs h-11 px-6"
+            >
+              {copied === "lines" ? "Copied ✓" : "Copy one per line"}
+            </Button>
+          </div>
+          {total > 0 && (
+            <div>
+              <Label className="eyebrow text-[#5C5C5C]">Preview — click the field to select</Label>
+              <textarea
+                readOnly
+                value={emailsString}
+                onFocus={(e) => e.target.select()}
+                data-testid="subscribers-preview-textarea"
+                className="mt-2 w-full min-h-[80px] max-h-40 border border-[#0A0A0A] p-3 font-mono text-xs bg-[#FBF3EC] rounded-none"
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -1492,7 +1520,7 @@ function SubscribersPanel() {
             <div key={s.id} data-testid={`sub-row-${s.id}`} className="px-4 py-2 flex items-center gap-3">
               <span className="flex-1 font-mono text-sm truncate">{s.email}</span>
               <span className="text-[10px] font-mono uppercase tracking-widest text-[#5C5C5C]">{s.source}</span>
-              {s.exported && <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-[#F5DED4] text-[#B87A6A]">EXPORTED</span>}
+              {s.exported && <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-[#F5DED4] text-[#B87A6A]">COPIED</span>}
               <span className="text-[10px] font-mono text-[#5C5C5C]">{s.created_at?.slice(0,10)}</span>
               <button type="button" onClick={() => remove(s.id)} data-testid={`sub-del-${s.id}`} className="text-[10px] font-mono uppercase tracking-widest px-2 py-1 border border-red-500 text-red-600 hover:bg-red-50">
                 Del
