@@ -1274,7 +1274,7 @@ async def seed_sample_data():
         {"name": "Vector Research", "slug": "vector-research",
          "description": "High-purity peptides for laboratory use.",
          "affiliate_url": "https://vectorresearch.io/",
-         "logo_url": "https://www.google.com/s2/favicons?domain=vectorresearch.io&sz=128",
+         "logo_url": "https://customer-assets-jai6qajn.emergentagent.net/job_peptide-dosing-1/artifacts/6ebayqia_bec54a23-50e3-4a1e-89ac-f49aa1d356e3.png",
          "rating": 4.7, "tags": ["Peptides", "Research"],
          "discount_code": "ERICA", "featured": False},
 
