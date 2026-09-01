@@ -1,0 +1,36 @@
+{
+  "summary": "Verified canonical logo/featured/order sync on backend startup for re-seq and vector-research. Simulated production stale state (bad logo URLs, order=99, featured=False), restarted backend via supervisorctl, and confirmed all canonical fields resync correctly. Also verified non-canonical admin edits (description, promo_badge) on RE:SEQ survive the restart, and 4 unrelated vendors (Amino Well USA, Felix Chems, Auro Wellness, Celmade) are completely untouched. All 7 pytest cases PASS.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "verification_results": {
+    "reseq_logo_url": "https://customer-assets-jai6qajn.emergentagent.net/job_peptide-dosing-1/artifacts/wa4m27i2_22705d52-022b-45aa-9109-3a305f9c90fa.png (MATCH)",
+    "reseq_order": "1 (MATCH, was set stale to 99)",
+    "reseq_featured": "True (MATCH, was set stale to False)",
+    "vector_logo_url": "https://customer-assets-jai6qajn.emergentagent.net/job_peptide-dosing-1/artifacts/6ebayqia_bec54a23-50e3-4a1e-89ac-f49aa1d356e3.png (MATCH)",
+    "reseq_non_canonical_admin_edits_preserved": true,
+    "other_vendors_untouched": ["amino-well-usa", "felix-chems", "auro-wellness", "celmade"],
+    "pytest_pass_count": "7/7"
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_canonical_sync.py",
+    "/app/test_reports/pytest/canonical_sync_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "canonical_updates block at /app/backend/server.py:1445 is minimal, idempotent, and only $sets whitelisted fields — good production-safety design. logs 'Canonical sync: updated <slug>' only when modified_count>0, giving observability on prod restart.",
+    "Cleanup fixture restores re-seq description/promo_badge to seed defaults so no TEST_ markers remain in the DB."
+  ],
+  "updated_files": ["/app/backend/tests/test_canonical_sync.py"],
+  "success_rate": {"backend": "100%", "frontend": "N/A (backend-only)"},
+  "seed_data_creation": "Temporarily mutated re-seq and vector-research to simulate stale prod state; restored after test.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Canonical sync test at /app/backend/tests/test_canonical_sync.py is fully idempotent and safe to re-run. It simulates stale prod state, restarts backend, verifies sync, and cleans up."
+}

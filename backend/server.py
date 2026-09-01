@@ -1437,6 +1437,24 @@ async def seed_sample_data():
     logger.info(f"Seed complete. Inserted: {inserted_vendor} vendors, "
                 f"{inserted_peptide} peptides, {inserted_resource} resources.")
 
+    # ─────────────────────────────────────────────
+    # Canonical logo/featured/order sync — always brings production
+    # in line with the seed for these specific vendors even when they
+    # already exist. Only touches the listed fields; other admin edits are left alone.
+    # ─────────────────────────────────────────────
+    canonical_updates = [
+        {"slug": "re-seq",
+         "logo_url": "https://customer-assets-jai6qajn.emergentagent.net/job_peptide-dosing-1/artifacts/wa4m27i2_22705d52-022b-45aa-9109-3a305f9c90fa.png",
+         "featured": True, "order": 1},
+        {"slug": "vector-research",
+         "logo_url": "https://customer-assets-jai6qajn.emergentagent.net/job_peptide-dosing-1/artifacts/6ebayqia_bec54a23-50e3-4a1e-89ac-f49aa1d356e3.png"},
+    ]
+    for cu in canonical_updates:
+        slug = cu.pop("slug")
+        result = await db.vendors.update_one({"slug": slug}, {"$set": cu})
+        if result.modified_count:
+            logger.info(f"Canonical sync: updated {slug} → {list(cu.keys())}")
+
 
 @app.on_event("startup")
 async def startup():
