@@ -1235,7 +1235,7 @@ async def seed_sample_data():
          "discount_code": "ERICAS10", "promo_badge": "FREE BAC water", "featured": True},
         {"name": "Glow Aminos", "slug": "glow-aminos",
          "description": "Curated peptide selection with member savings.",
-         "affiliate_url": "https://glowaminos.com/shop/?coupon=ERICA",
+         "affiliate_url": "https://glowaminos.com/?ref=195",
          "logo_url": "https://www.google.com/s2/favicons?domain=glowaminos.com&sz=128",
          "rating": 4.5, "tags": ["Peptides", "7x Tested"],
          "discount_code": "ERICA", "featured": False},
@@ -1448,12 +1448,29 @@ async def seed_sample_data():
          "featured": True, "order": 1},
         {"slug": "vector-research",
          "logo_url": "https://customer-assets-jai6qajn.emergentagent.net/job_peptide-dosing-1/artifacts/6ebayqia_bec54a23-50e3-4a1e-89ac-f49aa1d356e3.png"},
+        {"slug": "glow-aminos",
+         "affiliate_url": "https://glowaminos.com/?ref=195"},
     ]
     for cu in canonical_updates:
         slug = cu.pop("slug")
         result = await db.vendors.update_one({"slug": slug}, {"$set": cu})
         if result.modified_count:
             logger.info(f"Canonical sync: updated {slug} → {list(cu.keys())}")
+
+    # Rewrite Glow Aminos price product_urls to use new ?ref=195 tracker
+    glow = await db.vendors.find_one({"slug": "glow-aminos"}, {"_id": 0, "id": 1})
+    if glow:
+        rewritten = 0
+        async for p in db.prices.find({"vendor_id": glow["id"]}, {"_id": 0, "id": 1, "product_url": 1}):
+            url = p.get("product_url") or ""
+            if "glowaminos.com" in url:
+                base = url.split("?")[0]
+                new_url = f"{base}?ref=195"
+                if new_url != url:
+                    await db.prices.update_one({"id": p["id"]}, {"$set": {"product_url": new_url}})
+                    rewritten += 1
+        if rewritten:
+            logger.info(f"Glow Aminos: rewrote {rewritten} product_urls with ?ref=195")
 
 
 @app.on_event("startup")
